@@ -46,6 +46,7 @@ ns.RollAnimations = {}
 ns.RollManager = {}
 ns.RollListener = {}
 ns.HistoryFrame = {}
+ns.HistoryListener = {}
 ns.ConfigWindow = {}
 ns.MinimapIcon = {}
 ns.Listeners = {}
@@ -185,6 +186,7 @@ function Addon:OnEnable()
     if ns.LootFrame.Initialize then ns.LootFrame.Initialize() end
     if ns.RollManager.Initialize then ns.RollManager.Initialize() end
     if ns.HistoryFrame.Initialize then ns.HistoryFrame.Initialize() end
+    if ns.HistoryListener.Initialize then ns.HistoryListener.Initialize(self) end
     if ns.Listeners.Initialize then ns.Listeners.Initialize(self) end
 end
 
@@ -196,6 +198,7 @@ function Addon:OnDisable()
     -- Shutdown modules if present
     if ns.LootFrame.Shutdown then ns.LootFrame.Shutdown() end
     if ns.RollManager.Shutdown then ns.RollManager.Shutdown() end
+    if ns.HistoryListener.Shutdown then ns.HistoryListener.Shutdown() end
     if ns.HistoryFrame.Shutdown then ns.HistoryFrame.Shutdown() end
     if ns.Listeners.Shutdown then ns.Listeners.Shutdown() end
 end

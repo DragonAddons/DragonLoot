@@ -23,6 +23,7 @@ local function PrintHelp()
     print("  " .. ns.COLOR_WHITE .. "/dl disable" .. ns.COLOR_RESET .. " - Disable addon")
     print("  " .. ns.COLOR_WHITE .. "/dl reset" .. ns.COLOR_RESET .. " - Reset loot frame position")
     print("  " .. ns.COLOR_WHITE .. "/dl test" .. ns.COLOR_RESET .. " - Show test loot")
+    print("  " .. ns.COLOR_WHITE .. "/dl history" .. ns.COLOR_RESET .. " - Toggle loot history")
     print("  " .. ns.COLOR_WHITE .. "/dl status" .. ns.COLOR_RESET .. " - Show current settings")
     print("  " .. ns.COLOR_WHITE .. "/dl help" .. ns.COLOR_RESET .. " - Show this help")
 end
@@ -103,6 +104,13 @@ local commandHandlers = {
             ns.LootFrame.ShowTestLoot()
         else
             ns.Print("Test loot not yet available.")
+        end
+    end,
+    ["history"] = function()
+        if ns.HistoryFrame.Toggle then
+            ns.HistoryFrame.Toggle()
+        else
+            ns.Print("Loot history not yet available.")
         end
     end,
 }
