@@ -1,7 +1,8 @@
 ## Interface: 110207, 120001, 120000
 ## Interface-BCC: 20505
+## Interface-Mists: 50503
 ## Title: Dragon Loot
-## Notes: Placeholder - loot tracking addon (not yet implemented)
+## Notes: Customizable loot addon that replaces the default Blizzard loot window and loot roll views.
 ## Author: @project-author@
 ## Version: @project-version@
 ## SavedVariables: DragonLootDB
@@ -13,3 +14,10 @@
 
 # Libraries
 Libs\embeds.xml
+
+# Core
+Core\Init.lua
+Core\Config.lua
+Core\ConfigWindow.lua
+Core\MinimapIcon.lua
+Core\SlashCommands.lua

@@ -6,9 +6,9 @@ Project-specific guidelines for DragonLoot. See the parent `../AGENTS.md` for ge
 
 ## Overview
 
-DragonLoot is a loot tracking addon for World of Warcraft.
+DragonLoot is a customizable loot addon that replaces the default Blizzard loot window and loot roll views.
 
-**Status**: Scaffolding only. No Lua source files have been implemented yet.
+**Status**: Phase 1 complete - Core bootstrap, config, slash commands, and minimap icon.
 
 **GitHub**: TBD
 
@@ -20,8 +20,9 @@ DragonLoot is a loot tracking addon for World of Warcraft.
 |---------|-----------|---------------|
 | Retail | 110207, 120001, 120000 | `## Interface: 110207, 120001, 120000` |
 | TBC Anniversary | 20505 | `## Interface-BCC: 20505` |
+| MoP Classic | 50503 | `## Interface-Mists: 50503` |
 
-Version-specific files are loaded via BigWigsMods packager comment directives (`#@retail@` / `#@tbc-anniversary@`) in the TOC.
+Version-specific files are loaded via BigWigsMods packager comment directives (`#@retail@` / `#@tbc-anniversary@` / `#@version-mists@`) in the TOC.
 
 ---
 
@@ -29,10 +30,9 @@ Version-specific files are loaded via BigWigsMods packager comment directives (`
 
 | Layer | Directory | Responsibility |
 |-------|-----------|----------------|
-| Core | `Core/` | Addon lifecycle, config, slash commands |
-| Engine | `Engine/` | Pure Lua logic (no WoW API) |
-| Display | `Display/` | UI frames and presentation |
-| Listeners | `Listeners/` | Event handling and version-specific parsing |
+| Core | `Core/` | Addon lifecycle, config, slash commands, minimap icon |
+| Display | `Display/` | UI frames and presentation (loot window, roll frame, history) |
+| Listeners | `Listeners/` | Event handling and version-specific loot/roll parsing |
 | Libs | `Libs/` | Embedded Ace3 + utility libraries |
 
 ### Namespace Pattern
@@ -41,6 +41,10 @@ All files use the shared private namespace:
 ```lua
 local ADDON_NAME, ns = ...
 ```
+
+### Namespace Sub-tables
+
+All modules attach to `ns`: `ns.Addon`, `ns.LootFrame`, `ns.LootAnimations`, `ns.RollFrame`, `ns.RollAnimations`, `ns.RollManager`, `ns.HistoryFrame`, `ns.ConfigWindow`, `ns.MinimapIcon`, `ns.Listeners`, `ns.Print`, `ns.DebugPrint`.
 
 ---
 
@@ -118,12 +122,28 @@ New-Item -ItemType Junction -Path "E:\World of Warcraft\_anniversary_\Interface\
 
 ### Testing
 
-No automated tests. No Lua source files exist yet.
+No automated test framework. Test manually in-game.
 
-Once source files are added, test manually in-game:
-1. Load the addon in the target game version
-2. Exercise core features and slash commands
-3. `/console scriptErrors 1` to catch Lua errors
+#### Phase 1 - Manual Test Steps
+
+1. Load the addon in any supported game version
+2. `/console scriptErrors 1` to catch Lua errors
+3. Verify addon loaded message appears in chat on login
+4. `/dl help` - verify help text lists all commands
+5. `/dl status` - verify status output shows current settings
+6. `/dl config` - verify config window opens with all tab groups
+7. `/dl config` again - verify config window toggles closed
+8. `/dl` - verify addon toggles disabled, then `/dl` again to re-enable
+9. `/dl enable` and `/dl disable` - verify explicit enable/disable
+10. `/dl minimap` - verify minimap icon toggles visibility
+11. `/dl reset` - verify message about loot frame not yet available
+12. `/dl test` - verify message about test loot not yet available
+13. Left-click minimap icon - verify config window opens
+14. Right-click minimap icon - verify addon toggles enabled/disabled
+15. Shift-left-click minimap icon - verify test message prints
+16. Hover minimap icon - verify tooltip shows name, status, and shortcuts
+17. `/dl unknowncommand` - verify unknown command message and help output
+18. `/dragonloot help` - verify long alias works
 
 ---
 
@@ -131,5 +151,6 @@ Once source files are added, test manually in-game:
 
 1. **GetItemInfo may return nil** on first call if item not cached - handle with retry timers
 2. **CHAT_MSG_LOOT patterns are localized** - parsing requires Lua pattern matching on localized strings
-3. **TOC conditional loading** - Mid-file `## Interface:` directives don't work. Use BigWigsMods packager comment directives (`#@retail@`, `#@tbc-anniversary@`)
+3. **TOC conditional loading** - Mid-file `## Interface:` directives don't work. Use BigWigsMods packager comment directives (`#@retail@`, `#@tbc-anniversary@`, `#@version-mists@`)
 4. **pull_request vs pull_request_target** - GitHub doesn't trigger `pull_request` workflows for PRs created by GITHUB_TOKEN (release-please). Use `pull_request_target` for lint workflows
+5. **Blizzard frame suppression** - Must restore events on disable or the default loot window breaks permanently for the session

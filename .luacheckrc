@@ -21,18 +21,35 @@ globals = {
 read_globals = {
     -- Lua
     "table", "string", "math", "pairs", "ipairs", "type", "tostring", "tonumber",
-    "select", "unpack", "wipe", "strsplit", "strmatch", "format",
+    "select", "unpack", "wipe", "strsplit", "strmatch", "strtrim", "format",
 
-    -- WoW API
+    -- WoW API - General
     "CreateFrame", "GetTime", "IsInInstance", "UnitName", "UnitClass",
     "GetItemInfo", "GetItemQualityColor", "C_Timer", "C_Item", "C_Container",
     "GameTooltip", "UIParent", "PlaySound", "PlaySoundFile",
     "ChatFrame_OpenChat", "IsShiftKeyDown",
     "InCombatLockdown", "hooksecurefunc",
     "InterfaceOptionsFrame_OpenToCategory", "Settings",
+    "_G",
+
+    -- WoW API - Loot
+    "GetNumLootItems", "GetLootSlotInfo", "GetLootSlotLink", "GetLootSlotType",
+    "LootSlot", "CloseLoot", "IsFishingLoot",
+
+    -- WoW API - Loot Roll
+    "GetLootRollItemInfo", "GetLootRollItemLink", "RollOnLoot", "GetLootRollTimeLeft",
+
+    -- WoW API - Loot History
+    "C_LootHistory",
+
+    -- WoW Frames - Loot
+    "LootFrame",
+    "GroupLootFrame1", "GroupLootFrame2", "GroupLootFrame3", "GroupLootFrame4",
+    "GroupLootContainer",
 
     -- WoW Globals
     "Enum", "RAID_CLASS_COLORS", "ITEM_QUALITY_COLORS", "STANDARD_TEXT_FONT",
+    "SOUNDKIT",
     "LOOT_ITEM_SELF", "LOOT_ITEM_SELF_MULTIPLE",
     "LOOT_ITEM", "LOOT_ITEM_MULTIPLE",
     "LOOT_MONEY", "YOU_LOOT_MONEY",
