@@ -1,5 +1,6 @@
 ## Interface: 110207, 120001, 120000
 ## Interface-BCC: 20505
+## Interface-Cata: 40402
 ## Interface-Mists: 50503
 ## Title: Dragon Loot
 ## Notes: Customizable loot addon that replaces the default Blizzard loot window and loot roll views.
@@ -21,3 +22,21 @@ Core\Config.lua
 Core\ConfigWindow.lua
 Core\MinimapIcon.lua
 Core\SlashCommands.lua
+
+# Display (shared)
+Display\LootFrame.lua
+Display\LootAnimations.lua
+
+# Version-specific listeners
+#@retail@
+Listeners\LootListener_Retail.lua
+#@end-retail@
+#@tbc-anniversary@
+Listeners\LootListener_Classic.lua
+#@end-tbc-anniversary@
+#@version-mists@
+Listeners\LootListener_Classic.lua
+#@end-version-mists@
+#@version-cata@
+Listeners\LootListener_Classic.lua
+#@end-version-cata@

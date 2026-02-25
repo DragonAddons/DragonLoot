@@ -47,6 +47,10 @@ read_globals = {
     "GroupLootFrame1", "GroupLootFrame2", "GroupLootFrame3", "GroupLootFrame4",
     "GroupLootContainer",
 
+    -- WoW Globals - Version detection
+    "WOW_PROJECT_ID", "WOW_PROJECT_MAINLINE",
+    "WOW_PROJECT_BURNING_CRUSADE_CLASSIC", "WOW_PROJECT_MISTS_CLASSIC",
+
     -- WoW Globals
     "Enum", "RAID_CLASS_COLORS", "ITEM_QUALITY_COLORS", "STANDARD_TEXT_FONT",
     "SOUNDKIT",

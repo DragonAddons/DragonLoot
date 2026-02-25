@@ -13,8 +13,6 @@ local IsShiftKeyDown = IsShiftKeyDown
 -- Minimap Icon Module
 -------------------------------------------------------------------------------
 
-ns.MinimapIcon = {}
-
 local function OnMinimapClick(_, button)
     if button == "LeftButton" then
         if IsShiftKeyDown() then

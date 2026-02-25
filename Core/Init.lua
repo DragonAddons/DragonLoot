@@ -96,12 +96,6 @@ end
 -- Blizzard Frame Suppression
 -------------------------------------------------------------------------------
 
--- Events the default loot frame listens for
-local LOOT_FRAME_EVENTS = {
-    "LOOT_OPENED", "LOOT_CLOSED", "LOOT_SLOT_CLEARED",
-    "LOOT_SLOT_CHANGED", "LOOT_READY",
-}
-
 -- Events the default group roll frames listen for
 local ROLL_FRAME_EVENTS = {
     "START_LOOT_ROLL", "CANCEL_LOOT_ROLL",
@@ -129,10 +123,11 @@ end
 
 local function RestoreBlizzardLootFrame()
     if not LootFrame then return end
-    for _, event in ipairs(LOOT_FRAME_EVENTS) do
-        LootFrame:RegisterEvent(event)
-    end
-    LootFrame:Show()
+    -- Only restore the base events all versions register at load time.
+    -- Dynamic events (LOOT_SLOT_CLEARED, LOOT_SLOT_CHANGED) are re-registered
+    -- by Blizzard's own OnShow handler when the frame next shows.
+    LootFrame:RegisterEvent("LOOT_OPENED")
+    LootFrame:RegisterEvent("LOOT_CLOSED")
 end
 
 local function RestoreBlizzardRollFrames()
