@@ -9,6 +9,7 @@ ignore = {
     "212/self",
     "211/ADDON_NAME",
     "211/_.*",  -- unused variables prefixed with underscore
+    "213/_.*",  -- unused loop variables prefixed with underscore
 }
 
 globals = {
@@ -16,6 +17,7 @@ globals = {
     "SLASH_DRAGONLOOT1",
     "SLASH_DRAGONLOOT2",
     "SlashCmdList",
+    "StaticPopupDialogs",
 }
 
 read_globals = {
@@ -34,10 +36,12 @@ read_globals = {
 
     -- WoW API - Loot
     "GetNumLootItems", "GetLootSlotInfo", "GetLootSlotLink", "GetLootSlotType",
-    "LootSlot", "CloseLoot", "IsFishingLoot",
+    "LootSlot", "CloseLoot", "IsFishingLoot", "C_Loot",
 
     -- WoW API - Loot Roll
     "GetLootRollItemInfo", "GetLootRollItemLink", "RollOnLoot", "GetLootRollTimeLeft",
+    "GetActiveLootRollIDs", "ConfirmLootRoll",
+    "StaticPopup_Show", "HandleModifiedItemClick",
 
     -- WoW API - Loot History
     "C_LootHistory",
@@ -62,6 +66,7 @@ read_globals = {
     "GOLD_AMOUNT_TEXTURE", "SILVER_AMOUNT_TEXTURE", "COPPER_AMOUNT_TEXTURE",
     "GetCoinTextureString",
     "UNKNOWN",
+    "LOOT_NO_DROP", "YES", "NO",
 
     -- Ace3
     "LibStub",

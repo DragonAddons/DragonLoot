@@ -26,17 +26,24 @@ Core\SlashCommands.lua
 # Display (shared)
 Display\LootFrame.lua
 Display\LootAnimations.lua
+Display\RollFrame.lua
+Display\RollAnimations.lua
+Display\RollManager.lua
 
 # Version-specific listeners
 #@retail@
 Listeners\LootListener_Retail.lua
+Listeners\RollListener_Retail.lua
 #@end-retail@
 #@tbc-anniversary@
 Listeners\LootListener_Classic.lua
+Listeners\RollListener_Classic.lua
 #@end-tbc-anniversary@
 #@version-mists@
 Listeners\LootListener_Classic.lua
+Listeners\RollListener_Classic.lua
 #@end-version-mists@
 #@version-cata@
 Listeners\LootListener_Classic.lua
+Listeners\RollListener_Classic.lua
 #@end-version-cata@

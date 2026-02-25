@@ -44,6 +44,7 @@ ns.LootAnimations = {}
 ns.RollFrame = {}
 ns.RollAnimations = {}
 ns.RollManager = {}
+ns.RollListener = {}
 ns.HistoryFrame = {}
 ns.ConfigWindow = {}
 ns.MinimapIcon = {}
