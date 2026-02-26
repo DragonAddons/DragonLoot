@@ -193,6 +193,9 @@ local function OnSlotClick(self)
 end
 
 local function OnSlotEnter(self)
+    if self.highlight then
+        self.highlight:Show()
+    end
     if self.slotIndex then
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip:SetLootItem(self.slotIndex)
@@ -200,7 +203,10 @@ local function OnSlotEnter(self)
     end
 end
 
-local function OnSlotLeave()
+local function OnSlotLeave(self)
+    if self.highlight then
+        self.highlight:Hide()
+    end
     GameTooltip:Hide()
 end
 
@@ -272,11 +278,11 @@ local function CreateSlotFrame()
     slot.slotType:SetJustifyH("LEFT")
     slot.slotType:SetTextColor(0.6, 0.6, 0.6)
 
-    -- Highlight (text area only, not the icon)
-    slot.highlight = slot:CreateTexture(nil, "HIGHLIGHT")
-    slot.highlight:SetPoint("TOPLEFT", slot.icon, "TOPRIGHT", 2, 0)
-    slot.highlight:SetPoint("BOTTOMRIGHT", slot, "BOTTOMRIGHT", 0, 0)
+    -- Hover highlight (rendered below the icon via ARTWORK sublevel -1)
+    slot.highlight = slot:CreateTexture(nil, "ARTWORK", nil, -1)
+    slot.highlight:SetAllPoints()
     slot.highlight:SetColorTexture(1, 1, 1, 0.15)
+    slot.highlight:Hide()
 
     -- Interaction scripts
     slot:SetScript("OnClick", OnSlotClick)
@@ -304,6 +310,7 @@ local function ReleaseSlot(slot)
     slot._isPooled = true
 
     slot.iconBorder:Hide()
+    slot.highlight:Hide()
     slot:Hide()
     slot:ClearAllPoints()
     slot.slotIndex = nil
