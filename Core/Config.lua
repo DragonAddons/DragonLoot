@@ -834,9 +834,9 @@ function ns.InitializeDB(addon)
     MigrateProfile(addon.db)
 
     -- Re-migrate on profile changes
-    addon.db:RegisterCallback(addon, "OnProfileChanged", function() MigrateProfile(addon.db) end)
-    addon.db:RegisterCallback(addon, "OnProfileCopied", function() MigrateProfile(addon.db) end)
-    addon.db:RegisterCallback(addon, "OnProfileReset", function() MigrateProfile(addon.db) end)
+    addon.db.RegisterCallback(addon, "OnProfileChanged", function() MigrateProfile(addon.db) end)
+    addon.db.RegisterCallback(addon, "OnProfileCopied", function() MigrateProfile(addon.db) end)
+    addon.db.RegisterCallback(addon, "OnProfileReset", function() MigrateProfile(addon.db) end)
 
     -- Register options
     AceConfig:RegisterOptionsTable(ADDON_NAME, GetOptions)
