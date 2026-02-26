@@ -148,7 +148,7 @@ local function ApplyLayoutOffsets(frame)
 
     -- Close button
     frame.closeBtn:ClearAllPoints()
-    frame.closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -(4 + borderSize), -(4 + borderSize))
+    frame.closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -borderSize, -borderSize)
 
     -- Fishing hint text
     frame.fishingText:ClearAllPoints()
@@ -394,7 +394,7 @@ local function CreateCloseButton(parent)
         btn:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
     end
     btn:SetSize(24, 24)
-    btn:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -2, -2)
+    btn:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, 0)
 
     btn:SetScript("OnClick", function()
         CloseLoot()
@@ -662,15 +662,15 @@ end
 
 local TEST_ITEMS = {
     {
-        icon = 133152, name = "Flask of the Titans", quantity = 3, quality = 1,
+        icon = 134762, name = "Super Mana Potion", quantity = 3, quality = 1,
         slotType = LOOT_SLOT_ITEM, isQuestItem = false,
     },
     {
-        icon = 134939, name = "Hearthstone", quantity = 1, quality = 1,
+        icon = 132608, name = "Bog Walker's Bands", quantity = 1, quality = 2,
         slotType = LOOT_SLOT_ITEM, isQuestItem = false,
     },
     {
-        icon = 132344, name = "Blade of the Fallen", quantity = 1, quality = 4,
+        icon = 132447, name = "Gorehowl", quantity = 1, quality = 4,
         slotType = LOOT_SLOT_ITEM, isQuestItem = false,
     },
     {
@@ -678,7 +678,7 @@ local TEST_ITEMS = {
         slotType = LOOT_SLOT_MONEY, isQuestItem = false,
     },
     {
-        icon = 134128, name = "Mysterious Artifact", quantity = 1, quality = 5,
+        icon = 132798, name = "Cenarion Spirits", quantity = 1, quality = 1,
         slotType = LOOT_SLOT_ITEM, isQuestItem = true,
     },
 }

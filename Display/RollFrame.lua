@@ -48,8 +48,8 @@ local ROLL_TYPE_NAMES = {
 
 local TEST_ROLLS = {
     {
-        texture = 135225,           -- INV_Sword_04
-        name = "Blade of the Fallen",
+        texture = 132447,           -- Gorehowl
+        name = "Gorehowl",
         count = 1,
         quality = 4,                -- Epic
         bindOnPickUp = true,
@@ -60,14 +60,14 @@ local TEST_ROLLS = {
         duration = 15,
     },
     {
-        texture = 134004,           -- INV_Potion_54
-        name = "Flask of the Titans",
-        count = 5,
-        quality = 3,                -- Rare
-        bindOnPickUp = false,
+        texture = 135506,           -- Sunfury Bow of the Phoenix
+        name = "Sunfury Bow of the Phoenix",
+        count = 1,
+        quality = 4,                -- Epic
+        bindOnPickUp = true,
         canNeed = true,
         canGreed = true,
-        canDisenchant = false,
+        canDisenchant = true,
         canTransmog = false,
         duration = 20,
     },
