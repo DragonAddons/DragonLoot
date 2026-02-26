@@ -34,8 +34,8 @@ local function OnLootOpened(_, autoLoot)
     ns.SuppressBlizzardLootFrame()
     ns.LootFrame.Show(autoLoot)
 
-    -- Message hook for Roll/History modules (Phase 3/4)
-    ns.Addon:SendMessage("DRAGONLOOT_LOOT_OPENED")
+    -- Suppress DragonToast item toasts while loot window is open
+    ns.Addon:SendMessage("DRAGONTOAST_SUPPRESS", "DragonLoot")
     ns.DebugPrint("LOOT_OPENED fired (Classic)")
 end
 
@@ -55,8 +55,8 @@ local function OnLootClosed()
         isLootOpen = false
         ns.LootFrame.Hide()
 
-        -- Message hook for Roll/History modules (Phase 3/4)
-        ns.Addon:SendMessage("DRAGONLOOT_LOOT_CLOSED")
+        -- Resume DragonToast item toasts
+        ns.Addon:SendMessage("DRAGONTOAST_UNSUPPRESS", "DragonLoot")
         ns.DebugPrint("LOOT_CLOSED fired (Classic)")
     end
 end

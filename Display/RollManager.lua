@@ -26,6 +26,22 @@ local max = math.max
 local MAX_VISIBLE_ROLLS = 4
 local TIMER_INTERVAL = 0.05
 
+-- Canonical roll type enum (shared with listeners)
+local ROLL_TYPE_PASS = 0
+local ROLL_TYPE_NEED = 1
+local ROLL_TYPE_GREED = 2
+local ROLL_TYPE_DISENCHANT = 3
+local ROLL_TYPE_TRANSMOG = 4
+
+-- Human-readable roll type names for toast display
+local ROLL_TYPE_NAMES = {
+    [ROLL_TYPE_PASS] = "Pass",
+    [ROLL_TYPE_NEED] = "Need",
+    [ROLL_TYPE_GREED] = "Greed",
+    [ROLL_TYPE_DISENCHANT] = "Disenchant",
+    [ROLL_TYPE_TRANSMOG] = "Transmog",
+}
+
 -------------------------------------------------------------------------------
 -- State
 -------------------------------------------------------------------------------
@@ -169,36 +185,41 @@ end
 -- DragonToast integration - notify when a player wins a roll
 -------------------------------------------------------------------------------
 
-local function SendRollWonNotification(rollID, winnerName, winnerClass, rollType, rollValue)
+local function SendRollWonNotification(rollID, winnerName, _winnerClass, rollType, rollValue)
     if notifiedRolls[rollID] then return end
     notifiedRolls[rollID] = true
 
-    if not ns.hasDragonToast then return end
     local roll = activeRolls[rollID]
     if not roll or not roll.itemName then return end
 
     local db = ns.Addon.db.profile
+    if not db.rollNotifications.showRollWon then return end
+
     local playerName = UnitName("player")
     local isSelf = (winnerName == playerName)
 
     -- Check config: skip group wins if not enabled
-    if not isSelf and not db.rollWon.showGroupWins then return end
+    if not isSelf and not db.rollNotifications.showGroupWins then return end
 
-    ns.Addon:SendMessage("DRAGONLOOT_ROLL_WON", {
+    local rollTypeName = ROLL_TYPE_NAMES[rollType] or "Unknown"
+
+    -- Fire generic DragonToast message (fire-and-forget, no detection needed)
+    ns.Addon:SendMessage("DRAGONTOAST_QUEUE_TOAST", {
         itemLink = roll.itemLink,
         itemName = roll.itemName,
         itemQuality = roll.itemQuality,
         itemIcon = roll.itemTexture,
         itemID = roll.itemLink and tonumber(roll.itemLink:match("item:(%d+)")),
         quantity = roll.itemCount or 1,
-        rollType = rollType,
-        rollValue = rollValue,
-        winnerName = winnerName,
-        winnerClass = winnerClass,
+        isRollWin = true,
         isSelf = isSelf,
+        looter = winnerName,
+        -- Roll details for display
+        itemType = rollTypeName .. (rollValue and (" (" .. rollValue .. ")") or ""),
+        timestamp = GetTime(),
     })
     ns.DebugPrint(
-        "Sent DRAGONLOOT_ROLL_WON for " .. (roll.itemName or "unknown")
+        "Sent DRAGONTOAST_QUEUE_TOAST (roll won) for " .. (roll.itemName or "unknown")
         .. " won by " .. (winnerName or "unknown")
     )
 end

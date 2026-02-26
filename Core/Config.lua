@@ -59,7 +59,8 @@ local defaults = {
             closeDuration = 0.5,
         },
 
-        rollWon = {
+        rollNotifications = {
+            showRollWon = true,
             showGroupWins = false,
         },
 
@@ -70,7 +71,7 @@ local defaults = {
 -- Profile Migration
 -------------------------------------------------------------------------------
 
-local CURRENT_SCHEMA = 2
+local CURRENT_SCHEMA = 1
 
 local function FillMissingDefaults(profile)
     for section, sectionDefaults in pairs(defaults.profile) do
@@ -93,10 +94,6 @@ local function MigrateProfile(db)
 
     if version < 1 then
         FillMissingDefaults(profile)
-    end
-
-    if version < 2 then
-        profile.sound = nil
     end
 
     profile.schemaVersion = CURRENT_SCHEMA
@@ -348,13 +345,23 @@ local function BuildLootRollOptions(db)
         type = "header",
         order = 10,
     }
-    args.showGroupWins = {
-        name = "Show Group Roll Wins",
-        desc = "Show DragonToast celebration toasts when any group member wins a roll, not just you.",
+    args.showRollWon = {
+        name = "Show Roll Won Toasts",
+        desc = "Send a DragonToast notification when you win a loot roll.",
         type = "toggle",
         order = 11,
-        get = function() return db.rollWon.showGroupWins end,
-        set = function(_, val) db.rollWon.showGroupWins = val end,
+        width = "full",
+        get = function() return db.rollNotifications.showRollWon end,
+        set = function(_, val) db.rollNotifications.showRollWon = val end,
+    }
+    args.showGroupWins = {
+        name = "Show Group Roll Wins",
+        desc = "Also show DragonToast notifications when other group members win rolls.",
+        type = "toggle",
+        order = 12,
+        get = function() return db.rollNotifications.showGroupWins end,
+        set = function(_, val) db.rollNotifications.showGroupWins = val end,
+        disabled = function() return not db.rollNotifications.showRollWon end,
     }
     return {
         name = "Loot Roll",

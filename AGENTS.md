@@ -40,7 +40,7 @@ Version-specific files are loaded via BigWigsMods packager comment directives (`
 
 | File | Purpose |
 |------|---------|
-| `Core/Init.lua` | AceAddon bootstrap, lifecycle, Blizzard frame suppression, DragonToast detection |
+| `Core/Init.lua` | AceAddon bootstrap, lifecycle, Blizzard frame suppression |
 | `Core/Config.lua` | AceDB defaults, AceConfig options table, schema migration |
 | `Core/ConfigWindow.lua` | AceConfigDialog toggle |
 | `Core/MinimapIcon.lua` | LDB + LibDBIcon minimap button |
@@ -49,7 +49,7 @@ Version-specific files are loaded via BigWigsMods packager comment directives (`
 | `Display/LootAnimations.lua` | LibAnimate fadeIn/fadeOut for loot window |
 | `Display/RollFrame.lua` | Roll frame pool (up to 4), timer bar, Need/Greed/DE/Pass/Transmog buttons |
 | `Display/RollAnimations.lua` | LibAnimate slideInRight/fadeOut for roll frames |
-| `Display/RollManager.lua` | Roll orchestration, overflow FIFO queue, timer tick, DRAGONLOOT_ROLL_WON messaging |
+| `Display/RollManager.lua` | Roll orchestration, overflow FIFO queue, timer tick, DRAGONTOAST_QUEUE_TOAST messaging |
 | `Display/HistoryFrame.lua` | Scrollable loot history, entry pool, class-colored winners, time-ago refresh |
 | `Listeners/LootListener_Retail.lua` | Retail: LOOT_OPENED + LOOT_READY with pendingAutoLoot |
 | `Listeners/LootListener_Classic.lua` | Classic: LOOT_OPENED for TBC/MoP/Cata |
@@ -85,7 +85,6 @@ All modules attach to `ns`:
 | `ns.MinimapIcon` | `Core/MinimapIcon.lua` |
 | `ns.Print` | `Core/Init.lua` (helper function) |
 | `ns.DebugPrint` | `Core/Init.lua` (helper function) |
-| `ns.hasDragonToast` | `Core/Init.lua` (boolean, set in OnEnable) |
 
 ---
 
@@ -107,23 +106,43 @@ All modules attach to `ns`:
 
 ## DragonToast Integration
 
-DragonLoot integrates with DragonToast (sibling addon) via AceEvent inter-addon messaging. Neither addon requires the other.
+DragonLoot integrates with DragonToast (sibling addon) via the generic DragonToast messaging API. Messages are fire-and-forget - no detection needed. Neither addon requires the other.
 
 ### Messages Sent by DragonLoot
 
+DragonLoot uses the generic DragonToast messaging API (fire-and-forget, no detection needed):
+
 | Message | Payload | When |
 |---------|---------|------|
-| `DRAGONLOOT_LOOT_OPENED` | none | Loot window opens |
-| `DRAGONLOOT_LOOT_CLOSED` | none | Loot window closes |
-| `DRAGONLOOT_ROLL_WON` | `{ itemLink, itemName, itemQuality, itemIcon, itemID, quantity, rollType, rollValue, winnerName, winnerClass, isSelf }` | A player wins a roll |
+| `DRAGONTOAST_SUPPRESS` | `"DragonLoot"` (source string) | Loot window opens |
+| `DRAGONTOAST_UNSUPPRESS` | `"DragonLoot"` (source string) | Loot window closes |
+| `DRAGONTOAST_QUEUE_TOAST` | toast data table (see below) | A player wins a roll |
+
+#### Roll Won Toast Data
+
+```lua
+{
+    itemLink = string,     -- full item hyperlink
+    itemName = string,     -- item name
+    itemQuality = number,  -- 0-7 quality enum
+    itemIcon = number,     -- icon texture ID
+    itemID = number,       -- parsed from itemLink
+    quantity = number,     -- stack count
+    isRollWin = true,      -- suppression bypass flag
+    isSelf = boolean,      -- true if current player won
+    looter = string,       -- winner's name
+    itemType = string,     -- e.g. "Need (87)" for display
+    timestamp = number,    -- GetTime()
+}
+```
 
 ### DragonToast Behavior
 
-- `DRAGONLOOT_LOOT_OPENED` sets a suppress flag; item loot toasts are suppressed while DragonLoot's loot window is open
-- `DRAGONLOOT_LOOT_CLOSED` clears the suppress flag
-- `DRAGONLOOT_ROLL_WON` triggers a celebration toast (with `isRollWin = true` in lootData)
+- `DRAGONTOAST_SUPPRESS` with source `"DragonLoot"` sets a suppress flag; item loot toasts are suppressed while DragonLoot's loot window is open
+- `DRAGONTOAST_UNSUPPRESS` with source `"DragonLoot"` clears the suppress flag
+- `DRAGONTOAST_QUEUE_TOAST` with `isRollWin = true` triggers a celebration toast
 - XP, honor, currency toasts are never suppressed
-- Bridge code lives in `DragonToast/Listeners/DragonLootBridge.lua`
+- DragonToast's `Listeners/MessageBridge.lua` handles backward compatibility for old message names (`DRAGONLOOT_LOOT_OPENED`, `DRAGONLOOT_LOOT_CLOSED`, `DRAGONLOOT_ROLL_WON`)
 
 ---
 
