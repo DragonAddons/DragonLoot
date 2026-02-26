@@ -808,6 +808,8 @@ function ns.LootFrame.ApplySettings()
                 local _, _, _, quality = GetNormalizedSlotInfo(slot.slotIndex)
                 if db.appearance.qualityBorder then
                     local r, g, b = GetQualityColor(quality)
+                    slot._qr, slot._qg, slot._qb = r, g, b
+                    slot._quality = quality
                     slot.iconBorder:SetColorTexture(r, g, b, 0.8)
                     slot.iconBorder:Show()
                 else
@@ -818,8 +820,7 @@ function ns.LootFrame.ApplySettings()
                 slot.subText:SetFont(fontPath, subFontSize, fontOutline)
                 -- Refresh row background and highlight
                 ApplySlotBackground(slot, quality)
-                local hr, hg, hb = GetQualityColor(quality)
-                slot.highlight:SetColorTexture(hr, hg, hb, 0.15)
+                slot.highlight:SetColorTexture(slot._qr or 1, slot._qg or 1, slot._qb or 1, 0.15)
             end
         end
     end
