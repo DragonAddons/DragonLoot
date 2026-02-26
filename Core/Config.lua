@@ -960,10 +960,23 @@ function ns.InitializeDB(addon)
     -- Migrate active profile
     MigrateProfile(addon.db)
 
-    -- Re-migrate on profile changes
-    addon.db.RegisterCallback(addon, "OnProfileChanged", function() MigrateProfile(addon.db) end)
-    addon.db.RegisterCallback(addon, "OnProfileCopied", function() MigrateProfile(addon.db) end)
-    addon.db.RegisterCallback(addon, "OnProfileReset", function() ResetToDefaults(addon.db.profile) end)
+    -- Re-migrate on profile changes and refresh UI
+    local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
+    addon.db.RegisterCallback(addon, "OnProfileChanged", function()
+        MigrateProfile(addon.db)
+        NotifyAppearanceChange()
+        AceConfigRegistry:NotifyChange(ADDON_NAME)
+    end)
+    addon.db.RegisterCallback(addon, "OnProfileCopied", function()
+        MigrateProfile(addon.db)
+        NotifyAppearanceChange()
+        AceConfigRegistry:NotifyChange(ADDON_NAME)
+    end)
+    addon.db.RegisterCallback(addon, "OnProfileReset", function()
+        ResetToDefaults(addon.db.profile)
+        NotifyAppearanceChange()
+        AceConfigRegistry:NotifyChange(ADDON_NAME)
+    end)
 
     -- Register options
     AceConfig:RegisterOptionsTable(ADDON_NAME, GetOptions)

@@ -26,16 +26,19 @@ local isLootOpen = false
 
 local function OnLootOpened(_, autoLoot)
     if isLootOpen then return end
-    isLootOpen = true
 
     local db = ns.Addon.db.profile
     if not db.lootWindow.enabled then return end
 
+    isLootOpen = true
     ns.SuppressBlizzardLootFrame()
     ns.LootFrame.Show(autoLoot)
 
-    -- Suppress DragonToast item toasts while loot window is open
-    ns.Addon:SendMessage("DRAGONTOAST_SUPPRESS", "DragonLoot")
+    -- Only suppress DragonToast when the loot frame is actually visible.
+    -- Auto-loot returns early from Show() without displaying UI.
+    if not autoLoot then
+        ns.Addon:SendMessage("DRAGONTOAST_SUPPRESS", "DragonLoot")
+    end
     ns.DebugPrint("LOOT_OPENED fired (Classic)")
 end
 
@@ -53,9 +56,14 @@ end
 local function OnLootClosed()
     if isLootOpen then
         isLootOpen = false
-        ns.LootFrame.Hide()
 
-        -- Resume DragonToast item toasts
+        -- pcall Hide so UNSUPPRESS always fires even if Hide errors
+        local ok, err = pcall(ns.LootFrame.Hide)
+        if not ok then
+            ns.DebugPrint("LootFrame.Hide error: " .. tostring(err))
+        end
+
+        -- Always resume DragonToast item toasts
         ns.Addon:SendMessage("DRAGONTOAST_UNSUPPRESS", "DragonLoot")
         ns.DebugPrint("LOOT_CLOSED fired (Classic)")
     end

@@ -86,7 +86,7 @@ local PASS_ICON = "Interface\\Buttons\\UI-GroupLoot-Pass-Up"
 -- Frame dimensions
 -------------------------------------------------------------------------------
 
-local FRAME_WIDTH = 280
+local FRAME_WIDTH = 328
 local FRAME_BASE_HEIGHT = 54
 local BUTTON_SIZE = 24
 local FRAME_SPACING = 4
@@ -170,9 +170,9 @@ local function ApplyLayoutOffsets(frame)
     frame.itemName:SetPoint("TOPLEFT", frame.iconFrame, "TOPRIGHT", 6, -1)
     frame.itemName:SetPoint("RIGHT", frame, "RIGHT", -(4 + borderSize), 0)
 
-    -- BoP indicator
+    -- BoP indicator - anchored below item name, clear of roll buttons
     frame.bindText:ClearAllPoints()
-    frame.bindText:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -(4 + borderSize), -(2 + borderSize))
+    frame.bindText:SetPoint("TOPLEFT", frame.itemName, "BOTTOMLEFT", 0, -1)
 
     -- Timer bar
     frame.timerBar:ClearAllPoints()
@@ -422,7 +422,7 @@ local function CreateRollFrame(index)
 
     -- BoP indicator
     frame.bindText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    frame.bindText:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -2)
+    frame.bindText:SetPoint("TOPLEFT", frame.itemName, "BOTTOMLEFT", 0, -1)
     frame.bindText:SetTextColor(1, 0.2, 0.2)
     frame.bindText:Hide()
 
@@ -811,10 +811,6 @@ end
 function ns.RollFrame.ApplySettings()
     if not anchorFrame then return end
     local db = ns.Addon.db.profile
-    if not db then return end
-    local rollFrameDb = db.rollFrame or {}
-    local appearance = db.appearance or {}
-
     if not db then return end
 
     local appearance = db.appearance or {}
