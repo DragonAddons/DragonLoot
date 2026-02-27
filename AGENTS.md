@@ -8,7 +8,7 @@ Project-specific guidelines for DragonLoot. See the parent `../AGENTS.md` for ge
 
 DragonLoot is a customizable loot addon that replaces the default Blizzard loot window, loot roll views, and provides a loot history frame.
 
-**Status**: Feature-complete (Phases 1-5, 8, 10). Loot window, roll frame, loot history, config wiring, edge case fixes, DragonToast integration, individual roll notifications, instance-type filtering, and appearance expansion (font outline, quality borders, background/border customization) are all implemented.
+**Status**: Feature-complete (Phases 1-5, 8, 10-11). Loot window, roll frame, loot history, config wiring, edge case fixes, DragonToast integration, individual roll notifications, instance-type filtering, appearance expansion (font outline, quality borders, background/border customization), and direct loot history tracking (CHAT_MSG_LOOT) are all implemented.
 
 **GitHub**: https://github.com/Xerrion/DragonLoot
 
@@ -57,6 +57,7 @@ Version-specific files are loaded via BigWigsMods packager comment directives (`
 | `Listeners/RollListener_Classic.lua` | Classic: same minus CANCEL_ALL_LOOT_ROLLS |
 | `Listeners/HistoryListener_Retail.lua` | Retail: encounter-based C_LootHistory with dedup |
 | `Listeners/HistoryListener_Classic.lua` | Classic: roll-item indexed C_LootHistory |
+| `Listeners/LootHistoryChat.lua` | CHAT_MSG_LOOT parser for direct loot tracking (all versions) |
 
 ### Namespace Pattern
 
@@ -81,6 +82,7 @@ All modules attach to `ns`:
 | `ns.LootListener` | `Listeners/LootListener_*.lua` |
 | `ns.RollListener` | `Listeners/RollListener_*.lua` |
 | `ns.HistoryListener` | `Listeners/HistoryListener_*.lua` |
+| `ns.LootHistoryChat` | `Listeners/LootHistoryChat.lua` |
 | `ns.ConfigWindow` | `Core/ConfigWindow.lua` |
 | `ns.MinimapIcon` | `Core/MinimapIcon.lua` |
 | `ns.Print` | `Core/Init.lua` (helper function) |
@@ -123,6 +125,17 @@ All modules attach to `ns`:
 | Key              | Type   | Default     | Description                     |
 |------------------|--------|-------------|---------------------------------|
 | timerBarTexture  | string | "Blizzard"  | LSM statusbar texture for timer |
+
+#### History Config (`db.profile.history`)
+
+| Key              | Type    | Default | Description                           |
+|------------------|---------|---------|---------------------------------------|
+| enabled          | boolean | true    | Enable loot history tracking          |
+| maxEntries       | number  | 50      | Maximum history entries to display    |
+| autoShow         | boolean | false   | Auto-show history on new loot         |
+| lock             | boolean | false   | Lock history frame position           |
+| trackDirectLoot  | boolean | true    | Track items picked up directly        |
+| minQuality       | number  | 2       | Minimum quality for direct loot (0-5) |
 
 ---
 
@@ -420,6 +433,22 @@ No automated test framework. Test manually in-game.
 12. Change history icon size - `/dl history` - verify history entries use the new icon size
 13. Verify changing one icon size does not affect the others
 
+#### Phase 11 - Direct Loot History Tracking (Manual Test Steps)
+
+1. Open `/dl config` -> History tab - verify new options: "Track Looted Items" toggle, "Minimum Quality" dropdown
+2. Verify "Minimum Quality" dropdown is disabled when "Track Looted Items" is off
+3. Enable "Track Looted Items", set minimum quality to Uncommon (default)
+4. Kill a mob and loot items - verify directly looted Uncommon+ items appear in history
+5. Verify directly looted items show "Looted" in gray text instead of roll type
+6. Verify winner name is class-colored correctly for looted items
+7. Verify Common/Poor items do NOT appear in history (below minimum quality)
+8. Change minimum quality to Rare - verify only Rare+ looted items are tracked
+9. Disable "Track Looted Items" - verify no more direct loot entries are added
+10. Verify rolled items continue to appear in history regardless of minimum quality setting
+11. Verify no duplicate entries for the same item looted by the same player within 2 seconds
+12. `/reload` and verify history entries persist (they should via existing history persistence)
+13. In a group: verify other players' loot is also tracked when visible via CHAT_MSG_LOOT
+
 ---
 
 ## Deferred Features
@@ -443,3 +472,5 @@ No automated test framework. Test manually in-game.
 11. **NOTIFICATION_STATE_MAP vs ROLL_STATE_MAP** - `ROLL_STATE_MAP` in HistoryListener_Retail maps Transmog->Greed (lossy) for history display. `ns.NOTIFICATION_STATE_MAP` in RollManager preserves Transmog as a distinct roll type for notifications
 12. **Classic LOOT_HISTORY_ROLL_CHANGED timing** - May fire before roll value is assigned; ProcessClassicRollResult skips non-Pass rolls with nil roll values and relies on a later re-fire with the value
 13. **Roll result dedup** - Both Retail and Classic listeners use `notifiedRollResults` tables to prevent duplicate notifications per player per drop; tables are wiped on history clear and shutdown
+14. **CHAT_MSG_LOOT GlobalStrings differ by version** - TBC self-loot patterns have trailing periods, Retail does not. Build patterns from actual GlobalString values at runtime, never hardcode
+15. **GetItemInfo nil on first call** - LootHistoryChat uses C_Timer.After(0.5) retry to update quality when GetItemInfo returns nil for uncached items

@@ -29,7 +29,7 @@ local defaults = {
             enabled = true,
             scale = 1.0,
             lock = false,
-            width = 220,
+            width = 250,
             height = 300,
         },
 
@@ -46,6 +46,8 @@ local defaults = {
             maxEntries = 100,
             autoShow = false,
             lock = false,
+            trackDirectLoot = true,
+            minQuality = 2,  -- Uncommon
         },
 
         appearance = {
@@ -56,6 +58,7 @@ local defaults = {
             rollIconSize = 36,
             historyIconSize = 24,
             qualityBorder = true,
+            slotBackground = "gradient",
             backgroundColor = { r = 0.05, g = 0.05, b = 0.05 },
             backgroundAlpha = 0.9,
             backgroundTexture = "Solid",
@@ -595,6 +598,37 @@ local function BuildHistoryArgs(db)
             get = function() return db.history.lock end,
             set = function(_, val) db.history.lock = val end,
         },
+        headerDirectLoot = {
+            name = "Direct Loot Tracking",
+            type = "header",
+            order = 10,
+        },
+        trackDirectLoot = {
+            name = "Track Looted Items",
+            desc = "Record items picked up directly (not just rolled items) in the loot history.",
+            type = "toggle",
+            order = 11,
+            width = "full",
+            get = function() return db.history.trackDirectLoot end,
+            set = function(_, val) db.history.trackDirectLoot = val end,
+        },
+        minQuality = {
+            name = "Minimum Quality",
+            desc = "Only track directly looted items at or above this quality. Rolled items are always tracked.",
+            type = "select",
+            order = 12,
+            values = {
+                [0] = ITEM_QUALITY_COLORS[0].hex .. "Poor|r",
+                [1] = ITEM_QUALITY_COLORS[1].hex .. "Common|r",
+                [2] = ITEM_QUALITY_COLORS[2].hex .. "Uncommon|r",
+                [3] = ITEM_QUALITY_COLORS[3].hex .. "Rare|r",
+                [4] = ITEM_QUALITY_COLORS[4].hex .. "Epic|r",
+                [5] = ITEM_QUALITY_COLORS[5].hex .. "Legendary|r",
+            },
+            get = function() return db.history.minQuality end,
+            set = function(_, val) db.history.minQuality = val end,
+            disabled = function() return not db.history.trackDirectLoot end,
+        },
     }
 end
 
@@ -717,6 +751,23 @@ local function BuildAppearanceArgs(db)
             get = function() return db.appearance.qualityBorder end,
             set = function(_, val)
                 db.appearance.qualityBorder = val
+                NotifyAppearanceChange()
+            end,
+        },
+        slotBackground = {
+            name = "Slot Background Style",
+            desc = "Style of the quality-tinted background behind each loot slot.",
+            type = "select",
+            order = 15,
+            values = {
+                gradient = "Gradient",
+                ["flat"] = "Flat Tint",
+                stripe = "Accent Stripe",
+                none = "None",
+            },
+            get = function() return db.appearance.slotBackground end,
+            set = function(_, val)
+                db.appearance.slotBackground = val
                 NotifyAppearanceChange()
             end,
         },

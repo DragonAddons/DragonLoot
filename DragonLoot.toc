@@ -31,6 +31,9 @@ Display\RollAnimations.lua
 Display\RollManager.lua
 Display\HistoryFrame.lua
 
+# Listeners (shared)
+Listeners\LootHistoryChat.lua
+
 # Version-specific listeners (Classic loads as default, Retail overrides via packager)
 Listeners\LootListener_Classic.lua
 Listeners\RollListener_Classic.lua

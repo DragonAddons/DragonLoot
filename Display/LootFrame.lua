@@ -23,6 +23,8 @@ local IsFishingLoot = IsFishingLoot
 local ITEM_QUALITY_COLORS = ITEM_QUALITY_COLORS
 local STANDARD_TEXT_FONT = STANDARD_TEXT_FONT
 local UNKNOWN = UNKNOWN
+local GetLootSlotLink = GetLootSlotLink
+local CreateColor = CreateColor
 
 local LSM = LibStub("LibSharedMedia-3.0")
 
@@ -39,6 +41,21 @@ local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 local LOOT_SLOT_ITEM = 1
 local LOOT_SLOT_MONEY = 2
 local LOOT_SLOT_CURRENCY = 3
+
+local BIND_LABELS = {
+    [1] = "BoP",
+    [2] = "BoE",
+    [3] = "BoU",
+    [4] = "Quest",
+}
+
+-------------------------------------------------------------------------------
+-- Layout constants
+-------------------------------------------------------------------------------
+
+local TITLE_BAR_HEIGHT = 24
+local SLOT_SPACING = 2
+local PADDING = 4
 
 -------------------------------------------------------------------------------
 -- Slot frame pool
@@ -90,6 +107,78 @@ local function GetQualityColor(quality)
         return qc.r, qc.g, qc.b
     end
     return 1, 1, 1
+end
+
+-------------------------------------------------------------------------------
+-- Item detail helpers
+-------------------------------------------------------------------------------
+
+local function GetItemDetails(slotIndex)
+    local lootType = GetLootSlotType(slotIndex)
+    if lootType ~= LOOT_SLOT_ITEM then return nil, nil, nil end
+
+    local itemLink = GetLootSlotLink(slotIndex)
+    if not itemLink then return nil, nil, nil end
+
+    local _, _, _, itemLevel, _, _, itemSubType, _,
+          _, _, _, _, _, bindType = C_Item.GetItemInfo(itemLink)
+
+    local bindText = bindType and BIND_LABELS[bindType] or nil
+    return itemLevel, bindText, itemSubType
+end
+
+local function ApplySlotBackground(slot, quality)
+    local style = ns.Addon.db.profile.appearance.slotBackground or "gradient"
+
+    -- Only show quality-tinted backgrounds for Rare+ items (quality >= 3)
+    if not quality or quality < 3 or style == "none" then
+        slot.rowBg:Hide()
+        slot.accentStripe:Hide()
+        return
+    end
+
+    local r, g, b = GetQualityColor(quality)
+
+    if style == "gradient" then
+        slot.rowBg:SetColorTexture(1, 1, 1)
+        slot.rowBg:SetGradient("HORIZONTAL",
+            CreateColor(r, g, b, 0.4),
+            CreateColor(r, g, b, 0.1))
+        slot.rowBg:Show()
+        slot.accentStripe:Hide()
+    elseif style == "flat" then
+        slot.rowBg:SetColorTexture(r, g, b, 0.08)
+        slot.rowBg:Show()
+        slot.accentStripe:Hide()
+    elseif style == "stripe" then
+        slot.rowBg:Hide()
+        slot.accentStripe:SetColorTexture(r, g, b, 0.6)
+        slot.accentStripe:Show()
+    end
+end
+
+local function BuildSubText(slotIndex, lootType)
+    if lootType == LOOT_SLOT_CURRENCY then
+        return "Currency"
+    elseif lootType == LOOT_SLOT_MONEY then
+        return "Money"
+    elseif lootType == LOOT_SLOT_ITEM then
+        local itemLevel, bindText, itemSubType = GetItemDetails(slotIndex)
+        local parts = {}
+        if itemLevel and itemLevel > 0 then
+            parts[#parts + 1] = "iLvl " .. itemLevel
+        end
+        if bindText then
+            parts[#parts + 1] = bindText
+        end
+        if itemSubType then
+            parts[#parts + 1] = itemSubType
+        end
+        if #parts > 0 then
+            return table.concat(parts, "  \194\183  ")
+        end
+    end
+    return nil
 end
 
 -------------------------------------------------------------------------------
@@ -153,6 +242,14 @@ local function ApplyLayoutOffsets(frame)
     -- Fishing hint text
     frame.fishingText:ClearAllPoints()
     frame.fishingText:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 8 + borderSize, 4 + borderSize)
+
+    -- Title separator
+    if frame.titleSeparator then
+        frame.titleSeparator:ClearAllPoints()
+        frame.titleSeparator:SetPoint("TOPLEFT", frame, "TOPLEFT", 6 + borderSize, -(TITLE_BAR_HEIGHT + borderSize))
+        frame.titleSeparator:SetPoint("TOPRIGHT", frame, "TOPRIGHT",
+            -(6 + borderSize), -(TITLE_BAR_HEIGHT + borderSize))
+    end
 end
 
 -------------------------------------------------------------------------------
@@ -193,44 +290,55 @@ local function OnSlotClick(self)
 end
 
 local function OnSlotEnter(self)
-    if self.highlight then
-        self.highlight:Show()
-    end
+    -- Tooltip
     if self.slotIndex then
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip:SetLootItem(self.slotIndex)
         GameTooltip:Show()
     end
+
+    -- Visual hover effects
+    local r = self._qr or 1
+    local g = self._qg or 1
+    local b = self._qb or 1
+
+    -- Brighten icon border
+    if self.iconBorder:IsShown() then
+        self.iconBorder:SetColorTexture(r, g, b, 1.0)
+    end
+
+    -- Intensify icon glow
+    if self.iconGlow:IsShown() then
+        self.iconGlow:SetAlpha(0.9)
+    end
+
+    -- Brighten item name
+    self.itemName:SetTextColor(
+        math.min(r + 0.15, 1),
+        math.min(g + 0.15, 1),
+        math.min(b + 0.15, 1))
 end
 
 local function OnSlotLeave(self)
-    if self.highlight then
-        self.highlight:Hide()
-    end
     GameTooltip:Hide()
-end
 
--------------------------------------------------------------------------------
--- Slot type indicator and quest item highlight helper
--------------------------------------------------------------------------------
+    -- Restore visual state
+    local r = self._qr or 1
+    local g = self._qg or 1
+    local b = self._qb or 1
 
-local function ApplySlotTypeAndQuest(slot, slotIndex, isQuestItem)
-    local lootType = GetLootSlotType(slotIndex)
-    if lootType == LOOT_SLOT_CURRENCY then
-        slot.slotType:SetText("Currency")
-        slot.slotType:Show()
-    elseif lootType == LOOT_SLOT_MONEY then
-        slot.slotType:SetText("Money")
-        slot.slotType:Show()
-    else
-        slot.slotType:Hide()
+    -- Restore icon border alpha
+    if self.iconBorder:IsShown() then
+        self.iconBorder:SetColorTexture(r, g, b, 0.8)
     end
 
-    if isQuestItem then
-        slot.iconBorder:SetColorTexture(1, 0.82, 0, 0.9)
-        slot.iconBorder:Show()
+    -- Restore glow alpha
+    if self.iconGlow:IsShown() then
+        self.iconGlow:SetAlpha(0.6)
     end
-    -- Don't hide for non-quest items - let PopulateSlot handle quality border
+
+    -- Restore item name color
+    self.itemName:SetTextColor(r, g, b)
 end
 
 -------------------------------------------------------------------------------
@@ -242,47 +350,74 @@ local function CreateSlotFrame()
     local frameName = "DragonLootSlot" .. slotCount
 
     local slot = CreateFrame("Button", frameName, containerFrame)
-    slot:SetHeight(40)
+    slot:SetHeight(44)
     slot:EnableMouse(true)
     slot:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
-    -- Icon
-    slot.icon = slot:CreateTexture(nil, "ARTWORK")
-    slot.icon:SetDrawLayer("ARTWORK", 0)
-    slot.icon:SetSize(36, 36)
-    slot.icon:SetPoint("LEFT", slot, "LEFT", 4, 0)
-    slot.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    -- Row background (quality-tinted, configurable style)
+    slot.rowBg = slot:CreateTexture(nil, "BACKGROUND")
+    slot.rowBg:SetAllPoints()
+    slot.rowBg:Hide()
 
-    -- Icon border (drawn behind icon)
-    slot.iconBorder = slot:CreateTexture(nil, "BORDER")
-    slot.iconBorder:SetPoint("TOPLEFT", slot.icon, "TOPLEFT", -1, 1)
-    slot.iconBorder:SetPoint("BOTTOMRIGHT", slot.icon, "BOTTOMRIGHT", 1, -1)
+    -- Accent stripe (left edge, for "stripe" mode)
+    slot.accentStripe = slot:CreateTexture(nil, "BACKGROUND", nil, 1)
+    slot.accentStripe:SetWidth(3)
+    slot.accentStripe:SetPoint("TOPLEFT", slot, "TOPLEFT", 0, 0)
+    slot.accentStripe:SetPoint("BOTTOMLEFT", slot, "BOTTOMLEFT", 0, 0)
+    slot.accentStripe:Hide()
+
+    -- Icon container (child frame renders above parent's HIGHLIGHT layer)
+    slot.iconFrame = CreateFrame("Frame", nil, slot)
+    slot.iconFrame:SetSize(36, 36)
+    slot.iconFrame:SetPoint("LEFT", slot, "LEFT", 4, 0)
+    slot.iconFrame:SetFrameLevel(slot:GetFrameLevel() + 2)
+    slot.iconFrame:EnableMouse(false)
+
+    -- Icon glow (on parent slot, behind iconFrame, ADD blend for visible halo)
+    slot.iconGlow = slot:CreateTexture(nil, "ARTWORK", nil, 0)
+    slot.iconGlow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+    slot.iconGlow:SetBlendMode("ADD")
+    slot.iconGlow:SetAlpha(0.6)
+    slot.iconGlow:Hide()
+
+    -- Icon border (quality-colored frame, draws UNDER icon via sublevel)
+    slot.iconBorder = slot.iconFrame:CreateTexture(nil, "ARTWORK")
+    slot.iconBorder:SetDrawLayer("ARTWORK", 0)
+    slot.iconBorder:SetPoint("TOPLEFT", slot.iconFrame, "TOPLEFT", -2, 2)
+    slot.iconBorder:SetPoint("BOTTOMRIGHT", slot.iconFrame, "BOTTOMRIGHT", 2, -2)
     slot.iconBorder:SetColorTexture(0.3, 0.3, 0.3, 0.8)
 
+    -- Icon (draws ON TOP of border at sublevel 1)
+    slot.icon = slot.iconFrame:CreateTexture(nil, "ARTWORK")
+    slot.icon:SetDrawLayer("ARTWORK", 1)
+    slot.icon:SetAllPoints(slot.iconFrame)
+    slot.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+
     -- Quantity badge
-    slot.quantity = slot:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    slot.quantity:SetPoint("BOTTOMRIGHT", slot.icon, "BOTTOMRIGHT", 2, -2)
+    slot.quantity = slot.iconFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    slot.quantity:SetPoint("BOTTOMRIGHT", slot.iconFrame, "BOTTOMRIGHT", 2, -2)
     slot.quantity:SetJustifyH("RIGHT")
     slot.quantity:SetTextColor(1, 1, 1)
 
-    -- Item name
+    -- Item name (top-aligned to leave room for sub-text)
     slot.itemName = slot:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    slot.itemName:SetPoint("LEFT", slot.icon, "RIGHT", 6, 0)
+    slot.itemName:SetPoint("TOPLEFT", slot.iconFrame, "TOPRIGHT", 6, -2)
     slot.itemName:SetPoint("RIGHT", slot, "RIGHT", -4, 0)
     slot.itemName:SetJustifyH("LEFT")
     slot.itemName:SetWordWrap(false)
 
-    -- Slot type indicator (small text beneath name for currency/money)
-    slot.slotType = slot:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    slot.slotType:SetPoint("TOPLEFT", slot.itemName, "BOTTOMLEFT", 0, -1)
-    slot.slotType:SetJustifyH("LEFT")
-    slot.slotType:SetTextColor(0.6, 0.6, 0.6)
+    -- Sub-text (iLvl, bind type, item type / or Currency / Money)
+    slot.subText = slot:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    slot.subText:SetPoint("TOPLEFT", slot.itemName, "BOTTOMLEFT", 0, -1)
+    slot.subText:SetPoint("RIGHT", slot, "RIGHT", -4, 0)
+    slot.subText:SetJustifyH("LEFT")
+    slot.subText:SetWordWrap(false)
+    slot.subText:SetTextColor(0.6, 0.6, 0.6)
 
-    -- Hover highlight (rendered below the icon via ARTWORK sublevel -1)
-    slot.highlight = slot:CreateTexture(nil, "ARTWORK", nil, -1)
+    -- Hover highlight (auto-shows on mouse enter via HIGHLIGHT layer)
+    slot.highlight = slot:CreateTexture(nil, "HIGHLIGHT")
     slot.highlight:SetAllPoints()
     slot.highlight:SetColorTexture(1, 1, 1, 0.15)
-    slot.highlight:Hide()
 
     -- Interaction scripts
     slot:SetScript("OnClick", OnSlotClick)
@@ -310,7 +445,9 @@ local function ReleaseSlot(slot)
     slot._isPooled = true
 
     slot.iconBorder:Hide()
-    slot.highlight:Hide()
+    slot.iconGlow:Hide()
+    slot.rowBg:Hide()
+    slot.accentStripe:Hide()
     slot:Hide()
     slot:ClearAllPoints()
     slot.slotIndex = nil
@@ -320,7 +457,11 @@ local function ReleaseSlot(slot)
     slot.icon:SetAlpha(1)
     slot.itemName:SetText("")
     slot.quantity:Hide()
-    slot.slotType:SetText("")
+    slot.subText:SetText("")
+    slot.subText:Hide()
+    slot.highlight:SetColorTexture(1, 1, 1, 0.15)
+    slot._qr, slot._qg, slot._qb = nil, nil, nil
+    slot._quality = nil
 
     -- Restore real interaction scripts (test mode may have overridden them)
     slot:SetScript("OnClick", OnSlotClick)
@@ -354,13 +495,17 @@ local function PopulateSlot(slot, slotIndex)
     local iconSize = db.appearance.lootIconSize or 36
     local fontPath, fontSize, fontOutline = GetFont()
 
-    -- Icon - reset all state to ensure proper rendering
+    -- Icon
     slot.icon:SetTexture(icon)
-    slot.icon:SetSize(iconSize, iconSize)
+    slot.iconFrame:SetSize(iconSize, iconSize)
     slot.icon:SetDesaturated(false)
 
-    -- Quality border color - always set but respect qualityBorder setting
+    -- Quality color
     local r, g, b = GetQualityColor(quality)
+    slot._qr, slot._qg, slot._qb = r, g, b
+    slot._quality = quality
+
+    -- Quality border
     if db.appearance.qualityBorder then
         slot.iconBorder:SetColorTexture(r, g, b, 0.8)
         slot.iconBorder:Show()
@@ -368,13 +513,27 @@ local function PopulateSlot(slot, slotIndex)
         slot.iconBorder:Hide()
     end
 
+    -- Quest item override for border
+    if isQuestItem then
+        slot.iconBorder:SetColorTexture(1, 0.82, 0, 0.9)
+        slot.iconBorder:Show()
+    end
+
+    -- Icon glow for Rare+ items (quality >= 3)
+    if quality and quality >= 3 then
+        slot.iconGlow:SetVertexColor(r, g, b, 0.6)
+        slot.iconGlow:SetSize(iconSize + 25, iconSize + 25)
+        slot.iconGlow:ClearAllPoints()
+        slot.iconGlow:SetPoint("CENTER", slot.iconFrame, "CENTER", 0, 0)
+        slot.iconGlow:Show()
+    else
+        slot.iconGlow:Hide()
+    end
+
     -- Item name
     slot.itemName:SetFont(fontPath, fontSize, fontOutline)
     slot.itemName:SetText(name or UNKNOWN)
     slot.itemName:SetTextColor(r, g, b)
-
-    -- Quality-tinted hover highlight
-    slot.highlight:SetColorTexture(r, g, b, 0.15)
 
     -- Quantity badge
     if quantity and quantity > 1 then
@@ -384,11 +543,27 @@ local function PopulateSlot(slot, slotIndex)
         slot.quantity:Hide()
     end
 
-    -- Slot type indicator and quest highlight
-    ApplySlotTypeAndQuest(slot, slotIndex, isQuestItem)
+    -- Sub-text (item details or slot type)
+    local lootType = GetLootSlotType(slotIndex)
+    local subTextStr = BuildSubText(slotIndex, lootType)
+    if subTextStr then
+        local subFontSize = math.max(fontSize - 2, 8)
+        slot.subText:SetFont(fontPath, subFontSize, fontOutline)
+        slot.subText:SetText(subTextStr)
+        slot.subText:SetTextColor(0.6, 0.6, 0.6)
+        slot.subText:Show()
+    else
+        slot.subText:Hide()
+    end
 
-    -- Adjust slot height to icon size
-    slot:SetHeight(iconSize + 4)
+    -- Row background (quality-tinted, configurable)
+    ApplySlotBackground(slot, quality)
+
+    -- Quality-tinted hover highlight
+    slot.highlight:SetColorTexture(r, g, b, 0.15)
+
+    -- Slot height
+    slot:SetHeight(iconSize + 8)
     slot:Show()
 end
 
@@ -463,6 +638,11 @@ local function CreateContainerFrame()
     frame.fishingText:SetTextColor(0.5, 0.5, 0.5)
     frame.fishingText:Hide()
 
+    -- Title separator
+    frame.titleSeparator = frame:CreateTexture(nil, "ARTWORK")
+    frame.titleSeparator:SetHeight(1)
+    frame.titleSeparator:SetColorTexture(0.6, 0.5, 0.2, 0.4)
+
     -- Offset child elements to account for border thickness
     ApplyLayoutOffsets(frame)
 
@@ -473,16 +653,12 @@ end
 -- Layout slots inside container
 -------------------------------------------------------------------------------
 
-local TITLE_BAR_HEIGHT = 22
-local SLOT_SPACING = 2
-local PADDING = 4
-
 local function LayoutSlots()
     if not containerFrame then return end
     local db = ns.Addon.db.profile
     local iconSize = db.appearance.lootIconSize or 36
     local borderSize = db.appearance.borderSize or 1
-    local slotHeight = iconSize + 4
+    local slotHeight = iconSize + 8
     local yOffset = -(TITLE_BAR_HEIGHT + PADDING + borderSize)
 
     for i = 1, #activeSlots do
@@ -615,7 +791,7 @@ function ns.LootFrame.ApplySettings()
     if not containerFrame then return end
     local db = ns.Addon.db.profile
 
-    containerFrame:SetSize(db.lootWindow.width or 220, db.lootWindow.height or 300)
+    containerFrame:SetSize(db.lootWindow.width or 250, db.lootWindow.height or 300)
     containerFrame:SetScale(db.lootWindow.scale or 1.0)
 
     -- Update backdrop
@@ -637,11 +813,19 @@ function ns.LootFrame.ApplySettings()
                 local _, _, _, quality = GetNormalizedSlotInfo(slot.slotIndex)
                 if db.appearance.qualityBorder then
                     local r, g, b = GetQualityColor(quality)
+                    slot._qr, slot._qg, slot._qb = r, g, b
+                    slot._quality = quality
                     slot.iconBorder:SetColorTexture(r, g, b, 0.8)
                     slot.iconBorder:Show()
                 else
                     slot.iconBorder:Hide()
                 end
+                -- Update sub-text font
+                local subFontSize = math.max(fontSize - 2, 8)
+                slot.subText:SetFont(fontPath, subFontSize, fontOutline)
+                -- Refresh row background and highlight
+                ApplySlotBackground(slot, quality)
+                slot.highlight:SetColorTexture(slot._qr or 1, slot._qg or 1, slot._qb or 1, 0.15)
             end
         end
     end
@@ -675,22 +859,27 @@ local TEST_ITEMS = {
     {
         icon = 134762, name = "Super Mana Potion", quantity = 3, quality = 1,
         slotType = LOOT_SLOT_ITEM, isQuestItem = false,
+        itemLevel = 0, bindType = 0, itemSubType = "Potion",
     },
     {
         icon = 132608, name = "Bog Walker's Bands", quantity = 1, quality = 2,
         slotType = LOOT_SLOT_ITEM, isQuestItem = false,
+        itemLevel = 115, bindType = 2, itemSubType = "Leather",
     },
     {
         icon = 132447, name = "Gorehowl", quantity = 1, quality = 4,
         slotType = LOOT_SLOT_ITEM, isQuestItem = false,
+        itemLevel = 226, bindType = 1, itemSubType = "Swords",
     },
     {
         icon = 133784, name = "15 Gold 32 Silver", quantity = 1, quality = 1,
         slotType = LOOT_SLOT_MONEY, isQuestItem = false,
+        itemLevel = 0, bindType = 0, itemSubType = nil,
     },
     {
-        icon = 132798, name = "Cenarion Spirits", quantity = 1, quality = 1,
+        icon = 132798, name = "Cenarion Spirits", quantity = 1, quality = 3,
         slotType = LOOT_SLOT_ITEM, isQuestItem = true,
+        itemLevel = 200, bindType = 1, itemSubType = "Quest",
     },
 }
 
@@ -701,13 +890,17 @@ local function PopulateTestSlot(slot, testData, index)
     local iconSize = db.appearance.lootIconSize or 36
     local fontPath, fontSize, fontOutline = GetFont()
 
+    -- Icon
     slot.icon:SetTexture(testData.icon)
-    slot.icon:SetSize(iconSize, iconSize)
+    slot.iconFrame:SetSize(iconSize, iconSize)
     slot.icon:SetDesaturated(false)
-    slot.icon:SetVertexColor(1, 1, 1)  -- Reset any vertex color tinting
-    slot.icon:SetAlpha(1)  -- Ensure full opacity
+    slot.icon:SetVertexColor(1, 1, 1)
+    slot.icon:SetAlpha(1)
 
+    -- Quality color
     local r, g, b = GetQualityColor(testData.quality)
+    slot._qr, slot._qg, slot._qb = r, g, b
+    slot._quality = testData.quality
 
     -- Quality border
     if db.appearance.qualityBorder then
@@ -717,6 +910,24 @@ local function PopulateTestSlot(slot, testData, index)
         slot.iconBorder:Hide()
     end
 
+    -- Quest item override
+    if testData.isQuestItem then
+        slot.iconBorder:SetColorTexture(1, 0.82, 0, 0.9)
+        slot.iconBorder:Show()
+    end
+
+    -- Icon glow for Rare+ items
+    if testData.quality and testData.quality >= 3 then
+        slot.iconGlow:SetVertexColor(r, g, b, 0.6)
+        slot.iconGlow:SetSize(iconSize + 25, iconSize + 25)
+        slot.iconGlow:ClearAllPoints()
+        slot.iconGlow:SetPoint("CENTER", slot.iconFrame, "CENTER", 0, 0)
+        slot.iconGlow:Show()
+    else
+        slot.iconGlow:Hide()
+    end
+
+    -- Item name
     slot.itemName:SetFont(fontPath, fontSize, fontOutline)
     slot.itemName:SetText(testData.name)
     slot.itemName:SetTextColor(r, g, b)
@@ -724,35 +935,90 @@ local function PopulateTestSlot(slot, testData, index)
     -- Quality-tinted hover highlight
     slot.highlight:SetColorTexture(r, g, b, 0.15)
 
-    if testData.quantity > 1 then
+    -- Quantity
+    if testData.quantity and testData.quantity > 1 then
         slot.quantity:SetText(testData.quantity)
         slot.quantity:Show()
     else
         slot.quantity:Hide()
     end
 
+    -- Sub-text
+    local subTextStr
     if testData.slotType == LOOT_SLOT_CURRENCY then
-        slot.slotType:SetText("Currency")
-        slot.slotType:Show()
+        subTextStr = "Currency"
     elseif testData.slotType == LOOT_SLOT_MONEY then
-        slot.slotType:SetText("Money")
-        slot.slotType:Show()
+        subTextStr = "Money"
+    elseif testData.slotType == LOOT_SLOT_ITEM then
+        local parts = {}
+        if testData.itemLevel and testData.itemLevel > 0 then
+            parts[#parts + 1] = "iLvl " .. testData.itemLevel
+        end
+        local bindText = testData.bindType and BIND_LABELS[testData.bindType] or nil
+        if bindText then
+            parts[#parts + 1] = bindText
+        end
+        if testData.itemSubType then
+            parts[#parts + 1] = testData.itemSubType
+        end
+        if #parts > 0 then
+            subTextStr = table.concat(parts, "  \194\183  ")
+        end
+    end
+
+    if subTextStr then
+        local subFontSize = math.max(fontSize - 2, 8)
+        slot.subText:SetFont(fontPath, subFontSize, fontOutline)
+        slot.subText:SetText(subTextStr)
+        slot.subText:SetTextColor(0.6, 0.6, 0.6)
+        slot.subText:Show()
     else
-        slot.slotType:Hide()
+        slot.subText:Hide()
     end
 
-    if testData.isQuestItem then
-        slot.iconBorder:SetColorTexture(1, 0.82, 0, 0.9)
-    end
+    -- Row background
+    ApplySlotBackground(slot, testData.quality)
 
-    slot:SetHeight(iconSize + 4)
+    -- Slot height
+    slot:SetHeight(iconSize + 8)
 
-    -- Disable real loot interaction for test slots
+    -- Test slot interaction (no real loot)
     slot:SetScript("OnClick", function()
         ns.Print("Test slot clicked: " .. testData.name)
     end)
-    slot:SetScript("OnEnter", nil)
-    slot:SetScript("OnLeave", nil)
+    slot:SetScript("OnEnter", function(self)
+        -- Tooltip
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(testData.name, r, g, b)
+        if subTextStr then
+            GameTooltip:AddLine(subTextStr, 0.6, 0.6, 0.6)
+        end
+        GameTooltip:Show()
+
+        -- Visual hover effects
+        if self.iconBorder:IsShown() then
+            self.iconBorder:SetColorTexture(r, g, b, 1.0)
+        end
+        if self.iconGlow:IsShown() then
+            self.iconGlow:SetAlpha(0.9)
+        end
+        self.itemName:SetTextColor(
+            math.min(r + 0.15, 1),
+            math.min(g + 0.15, 1),
+            math.min(b + 0.15, 1))
+    end)
+    slot:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+
+        -- Restore visual state
+        if self.iconBorder:IsShown() then
+            self.iconBorder:SetColorTexture(r, g, b, 0.8)
+        end
+        if self.iconGlow:IsShown() then
+            self.iconGlow:SetAlpha(0.6)
+        end
+        self.itemName:SetTextColor(r, g, b)
+    end)
 
     slot:Show()
 end
