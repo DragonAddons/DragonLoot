@@ -355,11 +355,17 @@ local function PopulateEntry(entry, data)
 
     -- Roll info
     entry.rollInfo:SetFont(fontPath, fontSize - 2, fontOutline)
-    local rollText = GetRollTypeText(data.rollType)
-    if data.roll then
-        rollText = rollText .. " " .. data.roll
+    if data.isDirectLoot then
+        entry.rollInfo:SetText("Looted")
+        entry.rollInfo:SetTextColor(0.6, 0.6, 0.6)
+    else
+        local rollText = GetRollTypeText(data.rollType)
+        if data.roll then
+            rollText = rollText .. " " .. data.roll
+        end
+        entry.rollInfo:SetText(rollText)
+        entry.rollInfo:SetTextColor(0.8, 0.8, 0.8)
     end
-    entry.rollInfo:SetText(rollText)
 
     -- Time
     entry.timeText:SetFont(fontPath, fontSize - 2, fontOutline)

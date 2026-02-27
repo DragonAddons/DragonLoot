@@ -46,6 +46,8 @@ local defaults = {
             maxEntries = 100,
             autoShow = false,
             lock = false,
+            trackDirectLoot = true,
+            minQuality = 2,  -- Uncommon
         },
 
         appearance = {
@@ -595,6 +597,37 @@ local function BuildHistoryArgs(db)
             order = 5,
             get = function() return db.history.lock end,
             set = function(_, val) db.history.lock = val end,
+        },
+        headerDirectLoot = {
+            name = "Direct Loot Tracking",
+            type = "header",
+            order = 10,
+        },
+        trackDirectLoot = {
+            name = "Track Looted Items",
+            desc = "Record items picked up directly (not just rolled items) in the loot history.",
+            type = "toggle",
+            order = 11,
+            width = "full",
+            get = function() return db.history.trackDirectLoot end,
+            set = function(_, val) db.history.trackDirectLoot = val end,
+        },
+        minQuality = {
+            name = "Minimum Quality",
+            desc = "Only track directly looted items at or above this quality. Rolled items are always tracked.",
+            type = "select",
+            order = 12,
+            values = {
+                [0] = ITEM_QUALITY_COLORS[0].hex .. "Poor|r",
+                [1] = ITEM_QUALITY_COLORS[1].hex .. "Common|r",
+                [2] = ITEM_QUALITY_COLORS[2].hex .. "Uncommon|r",
+                [3] = ITEM_QUALITY_COLORS[3].hex .. "Rare|r",
+                [4] = ITEM_QUALITY_COLORS[4].hex .. "Epic|r",
+                [5] = ITEM_QUALITY_COLORS[5].hex .. "Legendary|r",
+            },
+            get = function() return db.history.minQuality end,
+            set = function(_, val) db.history.minQuality = val end,
+            disabled = function() return not db.history.trackDirectLoot end,
         },
     }
 end

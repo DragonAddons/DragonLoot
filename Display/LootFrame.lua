@@ -129,13 +129,21 @@ end
 
 local function ApplySlotBackground(slot, quality)
     local style = ns.Addon.db.profile.appearance.slotBackground or "gradient"
+
+    -- Only show quality-tinted backgrounds for Rare+ items (quality >= 3)
+    if not quality or quality < 3 or style == "none" then
+        slot.rowBg:Hide()
+        slot.accentStripe:Hide()
+        return
+    end
+
     local r, g, b = GetQualityColor(quality)
 
     if style == "gradient" then
         slot.rowBg:SetColorTexture(1, 1, 1)
         slot.rowBg:SetGradient("HORIZONTAL",
-            CreateColor(r, g, b, 0.15),
-            CreateColor(r, g, b, 0))
+            CreateColor(r, g, b, 0.4),
+            CreateColor(r, g, b, 0.1))
         slot.rowBg:Show()
         slot.accentStripe:Hide()
     elseif style == "flat" then
@@ -146,9 +154,6 @@ local function ApplySlotBackground(slot, quality)
         slot.rowBg:Hide()
         slot.accentStripe:SetColorTexture(r, g, b, 0.6)
         slot.accentStripe:Show()
-    else -- "none"
-        slot.rowBg:Hide()
-        slot.accentStripe:Hide()
     end
 end
 
@@ -304,7 +309,7 @@ local function OnSlotEnter(self)
 
     -- Intensify icon glow
     if self.iconGlow:IsShown() then
-        self.iconGlow:SetAlpha(0.8)
+        self.iconGlow:SetAlpha(0.9)
     end
 
     -- Brighten item name
@@ -329,7 +334,7 @@ local function OnSlotLeave(self)
 
     -- Restore glow alpha
     if self.iconGlow:IsShown() then
-        self.iconGlow:SetAlpha(0.5)
+        self.iconGlow:SetAlpha(0.6)
     end
 
     -- Restore item name color
@@ -368,18 +373,18 @@ local function CreateSlotFrame()
     slot.iconFrame:SetFrameLevel(slot:GetFrameLevel() + 2)
     slot.iconFrame:EnableMouse(false)
 
-    -- Icon glow (behind icon, ADD blend for Rare+ items)
-    slot.iconGlow = slot.iconFrame:CreateTexture(nil, "BACKGROUND")
+    -- Icon glow (on parent slot, behind iconFrame, ADD blend for visible halo)
+    slot.iconGlow = slot:CreateTexture(nil, "ARTWORK", nil, 0)
     slot.iconGlow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
     slot.iconGlow:SetBlendMode("ADD")
-    slot.iconGlow:SetAlpha(0.5)
+    slot.iconGlow:SetAlpha(0.6)
     slot.iconGlow:Hide()
 
     -- Icon border (quality-colored frame, draws UNDER icon via sublevel)
     slot.iconBorder = slot.iconFrame:CreateTexture(nil, "ARTWORK")
     slot.iconBorder:SetDrawLayer("ARTWORK", 0)
-    slot.iconBorder:SetPoint("TOPLEFT", slot.iconFrame, "TOPLEFT", -1, 1)
-    slot.iconBorder:SetPoint("BOTTOMRIGHT", slot.iconFrame, "BOTTOMRIGHT", 1, -1)
+    slot.iconBorder:SetPoint("TOPLEFT", slot.iconFrame, "TOPLEFT", -2, 2)
+    slot.iconBorder:SetPoint("BOTTOMRIGHT", slot.iconFrame, "BOTTOMRIGHT", 2, -2)
     slot.iconBorder:SetColorTexture(0.3, 0.3, 0.3, 0.8)
 
     -- Icon (draws ON TOP of border at sublevel 1)
@@ -516,8 +521,8 @@ local function PopulateSlot(slot, slotIndex)
 
     -- Icon glow for Rare+ items (quality >= 3)
     if quality and quality >= 3 then
-        slot.iconGlow:SetVertexColor(r, g, b, 0.5)
-        slot.iconGlow:SetSize(iconSize + 14, iconSize + 14)
+        slot.iconGlow:SetVertexColor(r, g, b, 0.6)
+        slot.iconGlow:SetSize(iconSize + 25, iconSize + 25)
         slot.iconGlow:ClearAllPoints()
         slot.iconGlow:SetPoint("CENTER", slot.iconFrame, "CENTER", 0, 0)
         slot.iconGlow:Show()
@@ -913,8 +918,8 @@ local function PopulateTestSlot(slot, testData, index)
 
     -- Icon glow for Rare+ items
     if testData.quality and testData.quality >= 3 then
-        slot.iconGlow:SetVertexColor(r, g, b, 0.5)
-        slot.iconGlow:SetSize(iconSize + 14, iconSize + 14)
+        slot.iconGlow:SetVertexColor(r, g, b, 0.6)
+        slot.iconGlow:SetSize(iconSize + 25, iconSize + 25)
         slot.iconGlow:ClearAllPoints()
         slot.iconGlow:SetPoint("CENTER", slot.iconFrame, "CENTER", 0, 0)
         slot.iconGlow:Show()
@@ -995,7 +1000,7 @@ local function PopulateTestSlot(slot, testData, index)
             self.iconBorder:SetColorTexture(r, g, b, 1.0)
         end
         if self.iconGlow:IsShown() then
-            self.iconGlow:SetAlpha(0.8)
+            self.iconGlow:SetAlpha(0.9)
         end
         self.itemName:SetTextColor(
             math.min(r + 0.15, 1),
@@ -1010,7 +1015,7 @@ local function PopulateTestSlot(slot, testData, index)
             self.iconBorder:SetColorTexture(r, g, b, 0.8)
         end
         if self.iconGlow:IsShown() then
-            self.iconGlow:SetAlpha(0.5)
+            self.iconGlow:SetAlpha(0.6)
         end
         self.itemName:SetTextColor(r, g, b)
     end)
