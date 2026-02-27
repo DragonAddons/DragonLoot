@@ -1,6 +1,6 @@
 <div align="center">
 
-![Dragon Loot Logo](https://raw.githubusercontent.com/Xerrion/DragonLoot/refs/heads/main/assets/dragon-loot-logo.webp)
+![Dragon Loot Logo](https://raw.githubusercontent.com/Xerrion/DragonLoot/refs/heads/main/assets/dragon-loot.png)
 
 # Dragon Loot
 

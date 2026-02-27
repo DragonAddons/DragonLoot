@@ -11,11 +11,14 @@ externals:
   Libs/LibAnimate: https://github.com/Xerrion/LibAnimate
 
 ignore:
-  - .github
-  - .gitignore
+  - ".git*"
   - .luacheckrc
   - .release
+  - scripts
   - "*.md"
   - "*.png"
   - release-please-config.json
   - .release-please-manifest.json
+  - spec/
+  - scripts/
+  - "Assets/*logo*"
