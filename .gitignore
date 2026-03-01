@@ -1,7 +1,11 @@
 .env
 .release/
+
+# Windows
 nul
 
-# Libs managed by .pkgmeta externals (submodules Ace3 and LibAnimate are tracked separately)
+# Libs - track only embeds.xml and submodule directories
 Libs/*
+!Libs/Ace3
+!Libs/LibAnimate
 !Libs/embeds.xml
