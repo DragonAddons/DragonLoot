@@ -262,9 +262,18 @@ DragonLoot embeds Ace3 via `Libs/embeds.xml`. The full Ace3 library set is avail
 
 | File | Trigger | Purpose |
 |------|---------|---------|
-| `lint.yml` | `pull_request_target` to main | Luacheck (uses `pull_request_target` so it runs on release-please bot PRs) |
-| `release-pr.yml` | `push` to main | release-please creates/updates a Release PR with version bump and changelog |
+| `lint.yml` | `pull_request_target` to master | Luacheck (uses `pull_request_target` so it runs on release-please bot PRs) |
+| `release-pr.yml` | `push` to master | release-please creates/updates a Release PR with version bump and changelog |
 | `release.yml` | tag push or `workflow_dispatch` | BigWigsMods packager builds and uploads to CurseForge, Wago, and GitHub Releases |
+
+### Branch Protection
+
+- PRs required to merge into `master`
+- Luacheck status check must pass
+- Branches must be up to date before merging
+- No force pushes to `master`
+- Squash merge only
+- Auto-delete head branches after merge
 
 ### Secrets
 
@@ -454,6 +463,41 @@ No automated test framework. Test manually in-game.
 ## Deferred Features
 
 - **Auto-loot with blacklist/whitelist filtering** - requires custom UI (not AceConfig), planned for future phase
+
+---
+
+## GitHub Project Board
+
+DragonLoot uses the **DragonAddons** org-level GitHub project board (#2) for issue tracking and sprint planning.
+
+### Board Columns
+
+| Column | Purpose |
+|--------|---------|
+| To triage | New issues awaiting review |
+| Backlog | Accepted but not yet scheduled |
+| Ready | Prioritised and ready to pick up |
+| In progress | Actively being worked on |
+| In review | PR submitted, awaiting review |
+| Done | Merged / released |
+
+### Custom Fields
+
+| Field | Values / Type |
+|-------|---------------|
+| Priority | P0 (critical), P1 (important), P2 (nice-to-have) |
+| Size | XS, S, M, L, XL |
+| Estimate | Story points (number) |
+| Start date | Date |
+| Target date | Date |
+
+### Workflow
+
+1. **Triage** - New issues land in *To triage*. Assign Priority and Size.
+2. **Plan** - Move to *Backlog* or *Ready* depending on urgency.
+3. **Start** - Move to *In progress*, create a feature branch, add a comment.
+4. **Review** - Open PR, move to *In review*, link the issue.
+5. **Ship** - Squash-merge, auto-move to *Done* on close.
 
 ---
 
