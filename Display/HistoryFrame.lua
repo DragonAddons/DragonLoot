@@ -30,10 +30,16 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local FRAME_WIDTH = 350
 local FRAME_HEIGHT = 400
 local TITLE_BAR_HEIGHT = 24
-local ENTRY_SPACING = 2
-local PADDING = 6
 local SCROLL_STEP = 3
 local SCROLLBAR_WIDTH = 14
+
+local function GetEntrySpacing()
+    return ns.Addon.db.profile.history.entrySpacing or 2
+end
+
+local function GetContentPadding()
+    return ns.Addon.db.profile.history.contentPadding or 6
+end
 
 -------------------------------------------------------------------------------
 -- Frame references
@@ -120,6 +126,7 @@ end
 
 local function ApplyLayoutOffsets(frame)
     local borderSize = ns.Addon.db.profile.appearance.borderSize or 1
+    local padding = GetContentPadding()
 
     -- Title bar spans across the top, inset by border
     local titleBar = frame.titleBar
@@ -131,16 +138,16 @@ local function ApplyLayoutOffsets(frame)
     if scrollFrame then
         scrollFrame:ClearAllPoints()
         scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT",
-            PADDING + borderSize, -(TITLE_BAR_HEIGHT + PADDING + borderSize))
+            padding + borderSize, -(TITLE_BAR_HEIGHT + padding + borderSize))
         scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
-            -(PADDING + SCROLLBAR_WIDTH + 2 + borderSize), PADDING + borderSize)
+            -(padding + SCROLLBAR_WIDTH + 2 + borderSize), padding + borderSize)
     end
     if scrollBar then
         scrollBar:ClearAllPoints()
         scrollBar:SetPoint("TOPRIGHT", frame, "TOPRIGHT",
-            -(PADDING + borderSize), -(TITLE_BAR_HEIGHT + PADDING + borderSize))
+            -(padding + borderSize), -(TITLE_BAR_HEIGHT + padding + borderSize))
         scrollBar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
-            -(PADDING + borderSize), PADDING + borderSize)
+            -(padding + borderSize), padding + borderSize)
     end
 end
 
@@ -408,6 +415,7 @@ local function RefreshHistory()
     ReleaseAllEntries()
 
     local entryHeight = GetEntryHeight()
+    local entrySpacing = GetEntrySpacing()
     local yOffset = 0
     for i, data in ipairs(ns.historyData) do
         local entry = AcquireEntry()
@@ -416,11 +424,11 @@ local function RefreshHistory()
         entry:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, -yOffset)
         entry:SetPoint("RIGHT", scrollChild, "RIGHT", 0, 0)
         activeEntries[i] = entry
-        yOffset = yOffset + entryHeight + ENTRY_SPACING
+        yOffset = yOffset + entryHeight + entrySpacing
     end
 
     -- Resize scroll child to fit all entries
-    local totalHeight = #ns.historyData * (entryHeight + ENTRY_SPACING)
+    local totalHeight = #ns.historyData * (entryHeight + entrySpacing)
     if totalHeight < 1 then totalHeight = 1 end
     scrollChild:SetHeight(totalHeight)
 
@@ -522,22 +530,24 @@ local function OnScrollBarValueChanged(self, value)
 end
 
 local function CreateScrollComponents(parent)
+    local padding = GetContentPadding()
+
     -- Scroll frame (clip region)
     local sf = CreateFrame("ScrollFrame", "DragonLootHistoryScroll", parent)
-    sf:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING, -(TITLE_BAR_HEIGHT + PADDING))
-    sf:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -(PADDING + SCROLLBAR_WIDTH + 2), PADDING)
+    sf:SetPoint("TOPLEFT", parent, "TOPLEFT", padding, -(TITLE_BAR_HEIGHT + padding))
+    sf:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -(padding + SCROLLBAR_WIDTH + 2), padding)
 
     -- Scroll child
     local child = CreateFrame("Frame", nil, sf)
-    child:SetWidth(sf:GetWidth() or (FRAME_WIDTH - PADDING * 2 - SCROLLBAR_WIDTH - 2))
+    child:SetWidth(sf:GetWidth() or (FRAME_WIDTH - padding * 2 - SCROLLBAR_WIDTH - 2))
     child:SetHeight(1)
     sf:SetScrollChild(child)
 
     -- Scroll bar
     local bar = CreateFrame("Slider", "DragonLootHistoryScrollBar", parent, "BackdropTemplate")
     bar:SetWidth(SCROLLBAR_WIDTH)
-    bar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING, -(TITLE_BAR_HEIGHT + PADDING))
-    bar:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -PADDING, PADDING)
+    bar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -padding, -(TITLE_BAR_HEIGHT + padding))
+    bar:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -padding, padding)
     bar:SetOrientation("VERTICAL")
     bar:SetMinMaxValues(0, 0)
     bar:SetValue(0)

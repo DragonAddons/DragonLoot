@@ -54,8 +54,14 @@ local BIND_LABELS = {
 -------------------------------------------------------------------------------
 
 local TITLE_BAR_HEIGHT = 24
-local SLOT_SPACING = 2
-local PADDING = 4
+
+local function GetSlotSpacing()
+    return ns.Addon.db.profile.lootWindow.slotSpacing or 2
+end
+
+local function GetContentPadding()
+    return ns.Addon.db.profile.lootWindow.contentPadding or 4
+end
 
 -------------------------------------------------------------------------------
 -- Slot frame pool
@@ -658,20 +664,22 @@ local function LayoutSlots()
     local db = ns.Addon.db.profile
     local iconSize = db.appearance.lootIconSize or 36
     local borderSize = db.appearance.borderSize or 1
+    local padding = GetContentPadding()
+    local slotSpacing = GetSlotSpacing()
     local slotHeight = iconSize + 8
-    local yOffset = -(TITLE_BAR_HEIGHT + PADDING + borderSize)
+    local yOffset = -(TITLE_BAR_HEIGHT + padding + borderSize)
 
     for i = 1, #activeSlots do
         local slot = activeSlots[i]
         slot:ClearAllPoints()
-        slot:SetPoint("TOPLEFT", containerFrame, "TOPLEFT", PADDING + borderSize, yOffset)
-        slot:SetPoint("RIGHT", containerFrame, "RIGHT", -(PADDING + borderSize), 0)
-        yOffset = yOffset - slotHeight - SLOT_SPACING
+        slot:SetPoint("TOPLEFT", containerFrame, "TOPLEFT", padding + borderSize, yOffset)
+        slot:SetPoint("RIGHT", containerFrame, "RIGHT", -(padding + borderSize), 0)
+        yOffset = yOffset - slotHeight - slotSpacing
     end
 
     -- Auto-resize container height to fit slots
-    local totalHeight = TITLE_BAR_HEIGHT + PADDING
-        + (#activeSlots * (slotHeight + SLOT_SPACING)) + PADDING + (borderSize * 2)
+    local totalHeight = TITLE_BAR_HEIGHT + padding
+        + (#activeSlots * (slotHeight + slotSpacing)) + padding + (borderSize * 2)
     local minHeight = db.lootWindow.height or 300
     if totalHeight < minHeight then totalHeight = minHeight end
     containerFrame:SetHeight(totalHeight)

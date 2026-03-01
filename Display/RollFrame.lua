@@ -86,10 +86,7 @@ local PASS_ICON = "Interface\\Buttons\\UI-GroupLoot-Pass-Up"
 -- Frame dimensions
 -------------------------------------------------------------------------------
 
-local FRAME_WIDTH = 328
-local FRAME_BASE_HEIGHT = 54
-local BUTTON_SIZE = 24
-local FRAME_SPACING = 4
+local FRAME_BASE_HEIGHT = 68
 local MAX_VISIBLE_ROLLS = 4
 
 -------------------------------------------------------------------------------
@@ -156,34 +153,66 @@ local function ApplyBackdrop(frame)
     frame:SetBackdropBorderColor(border.r, border.g, border.b, 0.8)
 end
 
+local function GetFrameWidth()
+    return ns.Addon.db.profile.rollFrame.frameWidth or 328
+end
+
+local function GetContentPadding()
+    return ns.Addon.db.profile.rollFrame.contentPadding or 4
+end
+
+local function GetButtonSize()
+    return ns.Addon.db.profile.rollFrame.buttonSize or 24
+end
+
+local function GetButtonSpacing()
+    return ns.Addon.db.profile.rollFrame.buttonSpacing or 4
+end
+
+local function GetFrameSpacing()
+    return ns.Addon.db.profile.rollFrame.frameSpacing or 4
+end
+
+local function GetRowSpacing()
+    return ns.Addon.db.profile.rollFrame.rowSpacing or 4
+end
+
+local function GetTimerBarSpacing()
+    return ns.Addon.db.profile.rollFrame.timerBarSpacing or 4
+end
+
 local function ApplyLayoutOffsets(frame)
     local db = ns.Addon.db.profile
     local borderSize = db.appearance.borderSize or 1
     local iconSize = db.appearance.rollIconSize or 36
+    local padding = GetContentPadding()
+    local rowSpacing = GetRowSpacing()
+    local timerBarSpacing = GetTimerBarSpacing()
 
-    -- Icon position
+    -- Icon position (vertically centered on left)
     frame.iconFrame:ClearAllPoints()
-    frame.iconFrame:SetPoint("LEFT", frame, "LEFT", 4 + borderSize, 0)
+    frame.iconFrame:SetPoint("LEFT", frame, "LEFT", padding + borderSize, 0)
 
-    -- Item name - follows icon, but right edge needs border offset
+    -- Item name - anchored to frame top (independent of icon vertical centering)
     frame.itemName:ClearAllPoints()
-    frame.itemName:SetPoint("TOPLEFT", frame.iconFrame, "TOPRIGHT", 6, -1)
-    frame.itemName:SetPoint("RIGHT", frame, "RIGHT", -(4 + borderSize), 0)
+    frame.itemName:SetPoint("TOPLEFT", frame, "TOPLEFT",
+        iconSize + padding + 6 + borderSize, -(padding + borderSize))
+    frame.itemName:SetPoint("RIGHT", frame, "RIGHT", -(padding + borderSize), 0)
 
-    -- BoP indicator - anchored below item name, clear of roll buttons
+    -- BoP indicator - Row 2 left side, below item name with rowSpacing gap
     frame.bindText:ClearAllPoints()
-    frame.bindText:SetPoint("TOPLEFT", frame.itemName, "BOTTOMLEFT", 0, -1)
+    frame.bindText:SetPoint("TOPLEFT", frame.itemName, "BOTTOMLEFT", 0, -rowSpacing)
 
-    -- Timer bar
+    -- Timer bar - Row 3 at bottom with timerBarSpacing
     frame.timerBar:ClearAllPoints()
-    frame.timerBar:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", iconSize + 10 + borderSize,
-        4 + borderSize)
-    frame.timerBar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -(6 + borderSize),
-        4 + borderSize)
+    frame.timerBar:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT",
+        iconSize + padding + 6 + borderSize, timerBarSpacing + borderSize)
+    frame.timerBar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
+        -(padding + 2 + borderSize), timerBarSpacing + borderSize)
 
-    -- Roll buttons - only reposition the rightmost (pass); others chain from it
+    -- Pass button - Row 2 right side, below item name with rowSpacing gap
     frame.passButton:ClearAllPoints()
-    frame.passButton:SetPoint("RIGHT", frame, "RIGHT", -(6 + borderSize), 6)
+    frame.passButton:SetPoint("TOPRIGHT", frame.itemName, "BOTTOMRIGHT", 0, -rowSpacing)
 end
 
 -------------------------------------------------------------------------------
@@ -344,7 +373,7 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateRollButton(parent, texture, rollType, size)
-    local btnSize = size or BUTTON_SIZE
+    local btnSize = size or GetButtonSize()
     local btn = CreateFrame("Button", nil, parent)
     btn:SetSize(btnSize, btnSize)
     btn.rollType = rollType
@@ -377,8 +406,10 @@ local function CreateTimerBar(parent)
     local bar = CreateFrame("StatusBar", nil, parent)
     bar:SetHeight(barHeight)
     local iconSize = GetRollIconSize()
-    bar:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", iconSize + 10, 4)
-    bar:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 4)
+    local padding = GetContentPadding()
+    local timerBarSpacing = GetTimerBarSpacing()
+    bar:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", iconSize + padding + 6, timerBarSpacing)
+    bar:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -(padding + 2), timerBarSpacing)
     bar:SetStatusBarTexture(barTexture)
     bar:SetMinMaxValues(0, 1)
     bar:SetValue(1)
@@ -404,7 +435,7 @@ local function CreateRollFrame(index)
     local frameName = "DragonLootRoll" .. rollFrameCount
 
     local frame = CreateFrame("Frame", frameName, anchorFrame, "BackdropTemplate")
-    frame:SetSize(FRAME_WIDTH, FRAME_BASE_HEIGHT)
+    frame:SetSize(GetFrameWidth(), FRAME_BASE_HEIGHT)
     ApplyBackdrop(frame)
     frame:SetFrameStrata("HIGH")
     frame:SetFrameLevel(110)
@@ -415,7 +446,7 @@ local function CreateRollFrame(index)
 
     -- Item name
     frame.itemName = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    frame.itemName:SetPoint("TOPLEFT", frame.iconFrame, "TOPRIGHT", 6, -1)
+    frame.itemName:SetPoint("TOPLEFT", frame, "TOPLEFT", 42, -(5))
     frame.itemName:SetPoint("RIGHT", frame, "RIGHT", -4, 0)
     frame.itemName:SetJustifyH("LEFT")
     frame.itemName:SetWordWrap(false)
@@ -431,24 +462,24 @@ local function CreateRollFrame(index)
 
     -- Roll buttons (anchored right-to-left above timer bar)
     frame.passButton = CreateRollButton(frame, PASS_ICON, ROLL_PASS)
-    frame.passButton:SetPoint("RIGHT", frame, "RIGHT", -6, 6)
+    frame.passButton:SetPoint("TOPRIGHT", frame.itemName, "BOTTOMRIGHT", 0, -4)
 
     frame.disenchantButton = CreateRollButton(frame, DE_ICON, ROLL_DISENCHANT)
-    frame.disenchantButton:SetPoint("RIGHT", frame.passButton, "LEFT", -4, 0)
+    frame.disenchantButton:SetPoint("RIGHT", frame.passButton, "LEFT", -GetButtonSpacing(), 0)
 
     frame.greedButton = CreateRollButton(frame, GREED_ICON, ROLL_GREED)
-    frame.greedButton:SetPoint("RIGHT", frame.disenchantButton, "LEFT", -4, 0)
+    frame.greedButton:SetPoint("RIGHT", frame.disenchantButton, "LEFT", -GetButtonSpacing(), 0)
 
     frame.needButton = CreateRollButton(frame, NEED_ICON, ROLL_NEED)
-    frame.needButton:SetPoint("RIGHT", frame.greedButton, "LEFT", -4, 0)
+    frame.needButton:SetPoint("RIGHT", frame.greedButton, "LEFT", -GetButtonSpacing(), 0)
 
     -- Transmog button - only functional on Retail where canTransmog is returned
-    frame.transmogButton = CreateRollButton(frame, nil, ROLL_TRANSMOG, BUTTON_SIZE)
+    frame.transmogButton = CreateRollButton(frame, nil, ROLL_TRANSMOG, GetButtonSize())
     local success = pcall(function() frame.transmogButton.icon:SetAtlas("transmog-icon-small") end)
     if not success then
         frame.transmogButton.icon:SetTexture("Interface\\ICONS\\INV_Enchant_Disenchant")
     end
-    frame.transmogButton:SetPoint("RIGHT", frame.needButton, "LEFT", -4, 0)
+    frame.transmogButton:SetPoint("RIGHT", frame.needButton, "LEFT", -GetButtonSpacing(), 0)
     frame.transmogButton:Hide()
 
     frame.frameIndex = index
@@ -569,7 +600,7 @@ local function LayoutRollFrames()
         if frame and frame:IsShown() then
             frame:ClearAllPoints()
             frame:SetPoint("TOPLEFT", anchorFrame, "TOPLEFT", 0, -yOffset)
-            yOffset = yOffset + frame:GetHeight() + FRAME_SPACING
+            yOffset = yOffset + frame:GetHeight() + GetFrameSpacing()
         end
     end
 end
@@ -605,7 +636,7 @@ end
 
 local function CreateAnchorFrame()
     local frame = CreateFrame("Frame", "DragonLootRollAnchor", UIParent)
-    frame:SetSize(FRAME_WIDTH, 1)
+    frame:SetSize(GetFrameWidth(), 1)
     frame:SetClampedToScreen(true)
 
     frame:EnableMouse(true)
@@ -817,6 +848,7 @@ function ns.RollFrame.ApplySettings()
     local rollFrame = db.rollFrame or {}
 
     anchorFrame:SetScale(rollFrame.scale or 1.0)
+    anchorFrame:SetWidth(GetFrameWidth())
 
     local barHeight = rollFrame.timerBarHeight or 12
     local barTexture = LSM:Fetch("statusbar", rollFrame.timerBarTexture)
@@ -830,8 +862,21 @@ function ns.RollFrame.ApplySettings()
             -- Update backdrop
             ApplyBackdrop(frame)
 
+            -- Update frame width
+            frame:SetWidth(GetFrameWidth())
+
             -- Update icon size
             frame.iconFrame:SetSize(iconSize, iconSize)
+
+            -- Update button sizes
+            local btnSize = GetButtonSize()
+            frame.passButton:SetSize(btnSize, btnSize)
+            frame.disenchantButton:SetSize(btnSize, btnSize)
+            frame.greedButton:SetSize(btnSize, btnSize)
+            frame.needButton:SetSize(btnSize, btnSize)
+            if frame.transmogButton then
+                frame.transmogButton:SetSize(btnSize, btnSize)
+            end
 
             -- Adjust frame height based on icon size
             frame:SetHeight(math.max(FRAME_BASE_HEIGHT, iconSize + 18))
