@@ -8,13 +8,13 @@
         { "type": "feat", "section": "🚀 Features" },
         { "type": "fix", "section": "🐛 Bug Fixes" },
         { "type": "refactor", "section": "🚜 Refactor" },
-        { "type": "doc", "section": "📚 Documentation" },
-        { "type": "docs", "section": "📚 Documentation" },
+        { "type": "doc", "section": "📚 Documentation", "hidden": true },
+        { "type": "docs", "section": "📚 Documentation", "hidden": true },
         { "type": "perf", "section": "⚡ Performance" },
         { "type": "style", "section": "🎨 Styling" },
         { "type": "test", "section": "🧪 Testing" },
-        { "type": "ci", "section": "⚙️ Miscellaneous Tasks" },
-        { "type": "chore", "section": "⚙️ Miscellaneous Tasks" }
+        { "type": "ci", "section": "⚙️ Miscellaneous Tasks", "hidden": true },
+        { "type": "chore", "section": "⚙️ Miscellaneous Tasks", "hidden": true }
       ]
     }
   }

@@ -262,8 +262,8 @@ DragonLoot embeds Ace3 via `Libs/embeds.xml`. The full Ace3 library set is avail
 
 | File | Trigger | Purpose |
 |------|---------|---------|
-| `lint.yml` | `pull_request_target` to master | Luacheck (uses `pull_request_target` so it runs on release-please bot PRs) |
-| `release-pr.yml` | `push` to master | release-please creates/updates a Release PR with version bump and changelog |
+| `lint.yml` | `pull_request_target` to main | Luacheck (uses `pull_request_target` so it runs on release-please bot PRs) |
+| `release-pr.yml` | `push` to main | release-please creates/updates a Release PR with version bump and changelog |
 | `release.yml` | tag push or `workflow_dispatch` | BigWigsMods packager builds and uploads to CurseForge, Wago, and GitHub Releases |
 
 ### Secrets
