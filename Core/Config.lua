@@ -31,6 +31,8 @@ local defaults = {
             lock = false,
             width = 250,
             height = 300,
+            slotSpacing = 2,
+            contentPadding = 4,
         },
 
         rollFrame = {
@@ -39,6 +41,13 @@ local defaults = {
             lock = false,
             timerBarHeight = 12,
             timerBarTexture = "Blizzard",
+            frameWidth = 328,
+            rowSpacing = 4,
+            timerBarSpacing = 4,
+            contentPadding = 4,
+            buttonSize = 24,
+            buttonSpacing = 4,
+            frameSpacing = 4,
         },
 
         history = {
@@ -48,6 +57,8 @@ local defaults = {
             lock = false,
             trackDirectLoot = true,
             minQuality = 2,  -- Uncommon
+            entrySpacing = 2,
+            contentPadding = 6,
         },
 
         appearance = {
@@ -344,6 +355,39 @@ local function BuildLootWindowOptions(db)
     for k, v in pairs(sizeArgs) do
         args[k] = v
     end
+    args.headerLayout = {
+        name = "Layout",
+        type = "header",
+        order = 7,
+    }
+    args.slotSpacing = {
+        name = "Slot Spacing",
+        desc = "Vertical gap between loot slots in pixels.",
+        type = "range",
+        order = 8,
+        min = 0, max = 12, step = 1,
+        get = function() return db.lootWindow.slotSpacing end,
+        set = function(_, val)
+            db.lootWindow.slotSpacing = val
+            if ns.LootFrame.ApplySettings then
+                ns.LootFrame.ApplySettings()
+            end
+        end,
+    }
+    args.contentPaddingLoot = {
+        name = "Content Padding",
+        desc = "Inner padding between the frame edge and loot slots.",
+        type = "range",
+        order = 9,
+        min = 0, max = 12, step = 1,
+        get = function() return db.lootWindow.contentPadding end,
+        set = function(_, val)
+            db.lootWindow.contentPadding = val
+            if ns.LootFrame.ApplySettings then
+                ns.LootFrame.ApplySettings()
+            end
+        end,
+    }
     return {
         name = "Loot Window",
         type = "group",
@@ -433,6 +477,109 @@ local function BuildLootRollOptions(db)
         set = function(_, val)
             db.rollFrame.timerBarTexture = val
             NotifyAppearanceChange()
+        end,
+    }
+    args.headerLayout = {
+        name = "Layout",
+        type = "header",
+        order = 7,
+    }
+    args.frameWidth = {
+        name = "Frame Width",
+        desc = "Width of each roll frame in pixels.",
+        type = "range",
+        order = 7.1,
+        min = 200, max = 500, step = 1,
+        get = function() return db.rollFrame.frameWidth end,
+        set = function(_, val)
+            db.rollFrame.frameWidth = val
+            if ns.RollManager.ApplySettings then
+                ns.RollManager.ApplySettings()
+            end
+        end,
+    }
+    args.rowSpacing = {
+        name = "Row Spacing",
+        desc = "Gap between the item name row and the buttons row.",
+        type = "range",
+        order = 7.2,
+        min = 0, max = 16, step = 1,
+        get = function() return db.rollFrame.rowSpacing end,
+        set = function(_, val)
+            db.rollFrame.rowSpacing = val
+            if ns.RollManager.ApplySettings then
+                ns.RollManager.ApplySettings()
+            end
+        end,
+    }
+    args.timerBarSpacing = {
+        name = "Timer Bar Spacing",
+        desc = "Gap above the timer bar from the bottom of the frame.",
+        type = "range",
+        order = 7.3,
+        min = 0, max = 16, step = 1,
+        get = function() return db.rollFrame.timerBarSpacing end,
+        set = function(_, val)
+            db.rollFrame.timerBarSpacing = val
+            if ns.RollManager.ApplySettings then
+                ns.RollManager.ApplySettings()
+            end
+        end,
+    }
+    args.contentPaddingRoll = {
+        name = "Content Padding",
+        desc = "Inner padding around all roll frame content.",
+        type = "range",
+        order = 7.4,
+        min = 0, max = 12, step = 1,
+        get = function() return db.rollFrame.contentPadding end,
+        set = function(_, val)
+            db.rollFrame.contentPadding = val
+            if ns.RollManager.ApplySettings then
+                ns.RollManager.ApplySettings()
+            end
+        end,
+    }
+    args.buttonSize = {
+        name = "Button Size",
+        desc = "Size of Need/Greed/DE/Pass action buttons.",
+        type = "range",
+        order = 7.5,
+        min = 16, max = 36, step = 1,
+        get = function() return db.rollFrame.buttonSize end,
+        set = function(_, val)
+            db.rollFrame.buttonSize = val
+            if ns.RollManager.ApplySettings then
+                ns.RollManager.ApplySettings()
+            end
+        end,
+    }
+    args.buttonSpacing = {
+        name = "Button Spacing",
+        desc = "Gap between adjacent roll buttons.",
+        type = "range",
+        order = 7.6,
+        min = 0, max = 12, step = 1,
+        get = function() return db.rollFrame.buttonSpacing end,
+        set = function(_, val)
+            db.rollFrame.buttonSpacing = val
+            if ns.RollManager.ApplySettings then
+                ns.RollManager.ApplySettings()
+            end
+        end,
+    }
+    args.frameSpacing = {
+        name = "Frame Spacing",
+        desc = "Vertical gap between stacked roll frames.",
+        type = "range",
+        order = 7.7,
+        min = 0, max = 16, step = 1,
+        get = function() return db.rollFrame.frameSpacing end,
+        set = function(_, val)
+            db.rollFrame.frameSpacing = val
+            if ns.RollManager.ApplySettings then
+                ns.RollManager.ApplySettings()
+            end
         end,
     }
     args.headerRollWon = {
@@ -633,11 +780,45 @@ local function BuildHistoryArgs(db)
 end
 
 local function BuildHistoryOptions(db)
+    local args = BuildHistoryArgs(db)
+    args.headerLayout = {
+        name = "Layout",
+        type = "header",
+        order = 20,
+    }
+    args.entrySpacing = {
+        name = "Entry Spacing",
+        desc = "Vertical gap between history entries in pixels.",
+        type = "range",
+        order = 21,
+        min = 0, max = 12, step = 1,
+        get = function() return db.history.entrySpacing end,
+        set = function(_, val)
+            db.history.entrySpacing = val
+            if ns.HistoryFrame.ApplySettings then
+                ns.HistoryFrame.ApplySettings()
+            end
+        end,
+    }
+    args.contentPaddingHistory = {
+        name = "Content Padding",
+        desc = "Inner padding between the frame edge and scroll content.",
+        type = "range",
+        order = 22,
+        min = 0, max = 12, step = 1,
+        get = function() return db.history.contentPadding end,
+        set = function(_, val)
+            db.history.contentPadding = val
+            if ns.HistoryFrame.ApplySettings then
+                ns.HistoryFrame.ApplySettings()
+            end
+        end,
+    }
     return {
         name = "History",
         type = "group",
         order = 4,
-        args = BuildHistoryArgs(db),
+        args = args,
     }
 end
 
