@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/DragonAddons/DragonLoot/compare/0.2.2...0.3.0) (2026-03-01)
+
+
+### 🚀 Features
+
+* align repo setup with DragonToast ([#34](https://github.com/DragonAddons/DragonLoot/issues/34), [#35](https://github.com/DragonAddons/DragonLoot/issues/35), [#36](https://github.com/DragonAddons/DragonLoot/issues/36), [#37](https://github.com/DragonAddons/DragonLoot/issues/37)) ([#38](https://github.com/DragonAddons/DragonLoot/issues/38)) ([8729c30](https://github.com/DragonAddons/DragonLoot/commit/8729c302e3002003eda6f150e39bfade01d88e1d))
+
 ## [0.2.2](https://github.com/DragonAddons/DragonLoot/compare/0.2.1...0.2.2) (2026-02-27)
 
 
