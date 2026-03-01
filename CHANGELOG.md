@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/DragonAddons/DragonLoot/compare/0.3.0...0.4.0) (2026-03-01)
+
+
+### 🚀 Features
+
+* restructure roll frame to 3-row layout and expose layout config ([#39](https://github.com/DragonAddons/DragonLoot/issues/39)) ([0eadc71](https://github.com/DragonAddons/DragonLoot/commit/0eadc7198b116ca4913fa4a6d26d698a7eeddf5a))
+
 ## [0.3.0](https://github.com/DragonAddons/DragonLoot/compare/0.2.2...0.3.0) (2026-03-01)
 
 
