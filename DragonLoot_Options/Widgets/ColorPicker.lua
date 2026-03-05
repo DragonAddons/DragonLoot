@@ -94,7 +94,10 @@ local function BuildCallbacks(opts, swatch, prevColor)
     local cancelFunc = function(prev)
         local pR, pG, pB, pA
         if prev and type(prev) == "table" then
-            pR, pG, pB, pA = prev[1], prev[2], prev[3], prev[4]
+            pR = prev.r or prev[1]
+            pG = prev.g or prev[2]
+            pB = prev.b or prev[3]
+            pA = prev.a or prev[4]
         else
             pR, pG, pB, pA = prevColor[1], prevColor[2], prevColor[3], prevColor[4]
         end
