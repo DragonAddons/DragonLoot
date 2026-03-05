@@ -48,7 +48,7 @@ end
 -------------------------------------------------------------------------------
 
 local function GetEntranceValues()
-    local lib = LibStub("LibAnimate-1.0", true)
+    local lib = LibStub("LibAnimate", true)
     if not lib then return {} end
     local names = lib:GetEntranceAnimations()
     local values = { { value = "none", text = "None" } }
@@ -59,7 +59,7 @@ local function GetEntranceValues()
 end
 
 local function GetExitValues()
-    local lib = LibStub("LibAnimate-1.0", true)
+    local lib = LibStub("LibAnimate", true)
     if not lib then return {} end
     local names = lib:GetExitAnimations()
     local values = { { value = "none", text = "None" } }
