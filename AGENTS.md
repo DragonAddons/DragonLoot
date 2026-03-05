@@ -466,11 +466,118 @@ No automated test framework. Test manually in-game.
 
 ---
 
-## GitHub Project Board
+## Code Style
+
+### Formatting
+- Indent with **4 spaces**, no tabs
+- Max line length **120** unless the addon `.luacheckrc` disables it
+- Spaces around operators: `local x = 1 + 2`
+- No trailing whitespace
+- Use plain hyphens (`-`), **never** em or en dashes
+
+### File Header
+Every Lua file starts with:
+
+```lua
+-------------------------------------------------------------------------------
+-- FileName.lua
+-- Brief description
+--
+-- Supported versions: Retail, MoP Classic, TBC Anniversary, Cata, Classic
+-------------------------------------------------------------------------------
+```
+
+### Imports and Scoping
+- Use the shared namespace: `local ADDON_NAME, ns = ...`
+- Cache WoW API and Lua globals used more than once as locals at the top of the file
+- Keep addon logic in locals; only SavedVariables and `SLASH_*` are global
+- Use `LibStub` for Ace3 or other embedded libs; never global `require`
+
+```lua
+local ADDON_NAME, ns = ...
+local CreateFrame = CreateFrame
+local GetTime = GetTime
+local LSM = LibStub("LibSharedMedia-3.0")
+```
+
+### Naming
+
+| Element | Convention | Example |
+|---------|------------|---------|
+| Files | PascalCase | `MyAddon_Core.lua` |
+| SavedVariables | PascalCase | `MyAddonDB` |
+| Local variables | camelCase | `local currentState` |
+| Functions (public or local) | PascalCase | `local function UpdateState()` |
+| Constants | UPPER_SNAKE | `local MAX_RETRIES = 5` |
+| Slash commands | UPPER_SNAKE | `SLASH_MYADDON1` |
+| Color codes | UPPER_SNAKE | `local COLOR_RED = "\|cffff0000"` |
+| Unused args | underscore prefix | `local _unused` |
+
+### Types
+- Default to plain Lua 5.1 with no annotations
+- Only add LuaLS annotations when the file already uses them or for public library APIs
+- Keep annotations minimal and accurate; do not introduce new tooling
+
+### Functions and Structure
+- Keep functions under 50 lines; extract helpers when longer
+- Prefer early returns over deep nesting
+- Prefer composition over inheritance
+- Keep logic separated by layer when possible: Core (WoW API), Engine (pure Lua),
+  Data (tables), Presentation (UI)
+
+### Error Handling
+- Use defensive nil checks for optional APIs
+- For version differences, prefer `or` fallbacks over runtime version checks
+- Use `pcall` for user callbacks or APIs that may be missing in some versions
+- Use `error(msg, 2)` for public library input validation (reports at caller site)
+
+---
+
+## GitHub Workflow
+
+### Issues
+Create issues using the repo's issue templates (`.github/ISSUE_TEMPLATE/`):
+- **Bug reports**: Use `bug-report.yml` template. Title prefix: `[Bug]: `
+- **Feature requests**: Use `feature-request.yml` template. Title prefix: `[Feature]: `
+
+Create via CLI:
+```bash
+gh issue create --repo <ORG>/<REPO> --label "bug" --title "[Bug]: <title>" --body "<body matching template fields>"
+gh issue create --repo <ORG>/<REPO> --label "enhancement" --title "[Feature]: <title>" --body "<body matching template fields>"
+```
+
+### Branches
+Use conventional branch prefixes:
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `feat/` | New feature | `feat/87-mail-toasts` |
+| `fix/` | Bug fix | `fix/99-anchor-zorder` |
+| `refactor/` | Code improvement | `refactor/96-listener-utils` |
+
+Include the issue number in the branch name when linked to an issue.
+
+### Commits
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+- `feat: <description> (#issue)` - new feature
+- `fix: <description> (#issue)` - bug fix
+- `refactor: <description> (#issue)` - code restructuring
+- `docs: <description>` - documentation only
+
+Always use `--no-gpg-sign` (GPG signing not available in CI agent environments).
+
+### Pull Requests
+1. Create PRs via CLI using the repo's `.github/PULL_REQUEST_TEMPLATE.md` format
+2. Link to the issue with `Closes #N` in the PR body
+3. PRs require passing status checks (luacheck, test) before merge
+4. Squash merge only: `gh pr merge <number> --squash`
+5. Branches are auto-deleted after merge
+
+### Project Boards
 
 DragonLoot uses the **DragonAddons** org-level GitHub project board (#2) for issue tracking and sprint planning.
 
-### Board Columns
+#### Board Columns
 
 | Column | Purpose |
 |--------|---------|
@@ -481,7 +588,7 @@ DragonLoot uses the **DragonAddons** org-level GitHub project board (#2) for iss
 | In review | PR submitted, awaiting review |
 | Done | Merged / released |
 
-### Custom Fields
+#### Custom Fields
 
 | Field | Values / Type |
 |-------|---------------|
@@ -491,7 +598,7 @@ DragonLoot uses the **DragonAddons** org-level GitHub project board (#2) for iss
 | Start date | Date |
 | Target date | Date |
 
-### Workflow
+#### Workflow
 
 1. **Triage** - New issues land in *To triage*. Assign Priority and Size.
 2. **Plan** - Move to *Backlog* or *Ready* depending on urgency.
@@ -518,3 +625,29 @@ DragonLoot uses the **DragonAddons** org-level GitHub project board (#2) for iss
 13. **Roll result dedup** - Both Retail and Classic listeners use `notifiedRollResults` tables to prevent duplicate notifications per player per drop; tables are wiped on history clear and shutdown
 14. **CHAT_MSG_LOOT GlobalStrings differ by version** - TBC self-loot patterns have trailing periods, Retail does not. Build patterns from actual GlobalString values at runtime, never hardcode
 15. **GetItemInfo nil on first call** - LootHistoryChat uses C_Timer.After(0.5) retry to update quality when GetItemInfo returns nil for uncached items
+
+---
+
+## Working Agreement for Agents
+- Addon-level AGENTS.md overrides root rules when present
+- Do not add new dependencies without discussing trade-offs
+- Run luacheck before and after changes
+- If only manual tests exist, document what you verified in-game
+- Verify changes in the game client when possible
+- Keep changes small and focused; prefer composition over inheritance
+
+---
+
+## Communication Style
+
+When responding to or commenting on issues, always write in **first-person singular** ("I")
+as the repo owner -- never use "we" or "our team". Speak as if you are the developer personally.
+
+**Writing style:**
+- Direct, structured, solution-driven. Get to the point fast. Text is a tool, not decoration.
+- Think in systems. Break things into flows, roles, rules, and frameworks.
+- Bias toward precision. Concrete output, copy-paste-ready solutions, clear constraints. Low
+  tolerance for fluff.
+- Tone is calm and rational with small flashes of humor and self-awareness.
+- When confident in a topic, become more informal and creative.
+- When something matters, become sharp and focused.
