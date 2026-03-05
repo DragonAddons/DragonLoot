@@ -155,6 +155,12 @@ ns.RestoreBlizzardLootFrame = RestoreBlizzardLootFrame
 ns.RestoreBlizzardRollFrames = RestoreBlizzardRollFrames
 
 -------------------------------------------------------------------------------
+-- Bridge global for companion addons (e.g. DragonLoot_Options)
+-------------------------------------------------------------------------------
+
+DragonLootNS = ns
+
+-------------------------------------------------------------------------------
 -- AceAddon Lifecycle
 -------------------------------------------------------------------------------
 

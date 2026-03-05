@@ -1,0 +1,32 @@
+## Interface: 110207, 120001, 120000
+## Interface-BCC: 20505
+## Interface-Cata: 40402
+## Interface-Mists: 50503
+## Title: DragonLoot Options
+## Notes: Custom configuration UI for DragonLoot
+## Dependencies: DragonLoot
+## LoadOnDemand: 1
+## X-Part-Of: DragonLoot
+
+Core.lua
+Widgets\Panel.lua
+Widgets\ScrollFrame.lua
+Widgets\TabGroup.lua
+Widgets\Header.lua
+Widgets\Description.lua
+Widgets\Toggle.lua
+Widgets\Slider.lua
+Widgets\Dropdown.lua
+Widgets\ColorPicker.lua
+Widgets\TextInput.lua
+Widgets\Button.lua
+Widgets\ItemSlot.lua
+Widgets\ItemList.lua
+Tabs\GeneralTab.lua
+Tabs\LootWindowTab.lua
+Tabs\LootRollTab.lua
+Tabs\HistoryTab.lua
+Tabs\AutoLootTab.lua
+Tabs\AppearanceTab.lua
+Tabs\AnimationTab.lua
+Tabs\ProfilesTab.lua

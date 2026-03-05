@@ -3,6 +3,7 @@ max_line_length = 120
 codes = true
 exclude_files = {
     "Libs/",
+    "DragonLoot_Options/",
 }
 
 ignore = {
@@ -14,6 +15,7 @@ ignore = {
 
 globals = {
     "DragonLootDB",
+    "DragonLootNS",
     "SLASH_DRAGONLOOT1",
     "SLASH_DRAGONLOOT2",
     "SlashCmdList",
@@ -28,7 +30,7 @@ read_globals = {
     -- WoW API - General
     "CreateFrame", "GetTime", "IsInInstance", "UnitName", "UnitClass",
     "GetItemInfo", "GetItemInfoInstant", "GetItemQualityColor",
-    "C_Timer", "C_Item", "C_Container", "C_AddOns", "IsAddOnLoaded",
+    "C_Timer", "C_Item", "C_Container", "C_AddOns", "IsAddOnLoaded", "LoadAddOn",
     "CreateColor",
     "GameTooltip", "UIParent", "PlaySound", "PlaySoundFile",
     "ChatFrame_OpenChat", "IsShiftKeyDown",
@@ -75,4 +77,7 @@ read_globals = {
 
     -- Ace3
     "LibStub",
+
+    -- Companion addons
+    "DragonLoot_Options",
 }
