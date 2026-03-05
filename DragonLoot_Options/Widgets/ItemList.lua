@@ -27,7 +27,6 @@ local LABEL_FONT_SIZE = 11
 local SLOT_SIZE = 36
 local SLOT_SPACING = 4
 local SLOTS_PER_ROW = 6
-local DEFAULT_MAX_ITEMS = 50
 local WHITE_COLOR = { 1, 1, 1 }
 local GRAY_COLOR = { 0.7, 0.7, 0.7 }
 local HEADER_HEIGHT = 18
@@ -69,9 +68,9 @@ local function HandleAddDrop(frame, opts)
     local infoType, itemID = GetCursorInfo()
     if infoType ~= "item" or not itemID then return end
 
-    local maxItems = opts.maxItems or DEFAULT_MAX_ITEMS
+    local maxItems = opts.maxItems
     local items = opts.getItems and opts.getItems() or {}
-    if CountItems(items) >= maxItems then return end
+    if maxItems and CountItems(items) >= maxItems then return end
     if items[itemID] then return end -- already present
 
     ClearCursor()
@@ -138,7 +137,7 @@ local function BuildGrid(frame, opts)
 
     local items = opts.getItems and opts.getItems() or {}
     local ids = CollectSortedIDs(items)
-    local maxItems = opts.maxItems or DEFAULT_MAX_ITEMS
+    local maxItems = opts.maxItems
     local contentFrame = frame._gridContent
 
     for i, itemID in ipairs(ids) do
@@ -167,9 +166,9 @@ local function BuildGrid(frame, opts)
         slot:Show()
     end
 
-    -- Add slot after last item (if under max)
+    -- Add slot after last item (if under max or no max set)
     local count = #ids
-    if count < maxItems then
+    if not maxItems or count < maxItems then
         if not frame._addSlot then
             frame._addSlot = CreateAddSlot(contentFrame, frame, opts)
         end
@@ -178,13 +177,22 @@ local function BuildGrid(frame, opts)
     end
 
     -- Update content height
-    local totalSlots = count < maxItems and count + 1 or count
+    local totalSlots
+    if maxItems then
+        totalSlots = count < maxItems and count + 1 or count
+    else
+        totalSlots = count + 1
+    end
     local rows = math_floor((totalSlots - 1) / SLOTS_PER_ROW) + 1
     if totalSlots == 0 then rows = 1 end
     contentFrame:SetHeight(rows * (SLOT_SIZE + SLOT_SPACING))
 
     -- Update count display
-    frame._countText:SetText(count .. " / " .. maxItems .. " items")
+    if maxItems then
+        frame._countText:SetText(count .. " / " .. maxItems .. " items")
+    else
+        frame._countText:SetText(count .. " items")
+    end
 
     -- Empty text visibility
     frame._emptyText:SetShown(count == 0)

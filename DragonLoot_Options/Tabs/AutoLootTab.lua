@@ -104,7 +104,6 @@ local function CreateWhitelistSection(parent, W, db, yOffset)
         label = "",
         getItems = function() return db.profile.autoLoot.whitelist end,
         setItems = function(t) db.profile.autoLoot.whitelist = t end,
-        maxItems = 50,
         emptyText = "No items - drag items here to add",
     })
     itemList:SetHeight(ITEM_LIST_HEIGHT)
@@ -130,7 +129,6 @@ local function CreateBlacklistSection(parent, W, db, yOffset)
         label = "",
         getItems = function() return db.profile.autoLoot.blacklist end,
         setItems = function(t) db.profile.autoLoot.blacklist = t end,
-        maxItems = 50,
         emptyText = "No items - drag items here to add",
     })
     itemList:SetHeight(ITEM_LIST_HEIGHT)
