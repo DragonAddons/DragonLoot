@@ -39,7 +39,7 @@
 
 ### Download
 
-[![GitHub](https://img.shields.io/badge/GitHub-Releases-181717?style=for-the-badge&logo=github)](https://github.com/DragonAddons/DragonLoot/releases/latest)
+[![GitHub](https://img.shields.io/badge/GitHub-Releases-181717?style=for-the-badge&logo=github)](https://github.com/DragonAddons/DragonLoot/releases/latest) 
 
 ### Manual Install
 
