@@ -712,6 +712,46 @@ function ns.LootFrame.Shutdown()
     ns.DebugPrint("LootFrame shut down")
 end
 
+-------------------------------------------------------------------------------
+-- Smart Auto-Loot Evaluation
+-------------------------------------------------------------------------------
+
+local function EvaluateSlot(slotIndex)
+    local db = ns.Addon.db
+    if not db then return false end
+
+    local autoLootCfg = db.profile.autoLoot
+    if not autoLootCfg then return false end
+
+    local slotType = GetLootSlotType(slotIndex)
+
+    -- Money and currency always qualify
+    if slotType == LOOT_SLOT_MONEY or slotType == LOOT_SLOT_CURRENCY then
+        return true
+    end
+
+    -- Item evaluation
+    if slotType == LOOT_SLOT_ITEM then
+        local link = GetLootSlotLink(slotIndex)
+        if not link then return false end
+
+        local itemID = tonumber(link:match("item:(%d+)"))
+        if not itemID then return false end
+
+        -- Whitelist always qualifies
+        if autoLootCfg.whitelist[itemID] then return true end
+
+        -- Blacklist never qualifies
+        if autoLootCfg.blacklist[itemID] then return false end
+
+        -- Quality check
+        local _, _, _, quality = GetLootSlotInfo(slotIndex)
+        if quality and quality >= autoLootCfg.minQuality then return true end
+    end
+
+    return false
+end
+
 function ns.LootFrame.Show(autoLoot)
     if not containerFrame then return end
 
@@ -726,6 +766,39 @@ function ns.LootFrame.Show(autoLoot)
             LootSlot(i)
         end
         return
+    end
+
+    -- Smart auto-loot: evaluate each slot and auto-pick qualifying items
+    local db = ns.Addon.db
+    if db and db.profile.autoLoot and db.profile.autoLoot.enabled then
+        local qualifying = {}
+        local allQualify = true
+        for i = 1, numItems do
+            if EvaluateSlot(i) then
+                qualifying[#qualifying + 1] = i
+            else
+                allQualify = false
+            end
+        end
+
+        -- All qualify: loot everything, skip UI entirely
+        if allQualify and #qualifying > 0 then
+            for i = 1, numItems do
+                LootSlot(i)
+            end
+            return
+        end
+
+        -- Some qualify: loot them in reverse order (preserves lower indices)
+        if #qualifying > 0 then
+            for i = #qualifying, 1, -1 do
+                LootSlot(qualifying[i])
+            end
+            -- Fall through to show UI for remaining items
+            -- Re-read numItems since some were looted
+            numItems = GetNumLootItems()
+            if numItems == 0 then return end
+        end
     end
 
     -- Only acquire and populate slots when NOT auto-looting
