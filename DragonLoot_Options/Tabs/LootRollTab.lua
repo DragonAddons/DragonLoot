@@ -171,6 +171,7 @@ local function CreateLayoutSection(parent, W, db, yOffset)
         label = "Timer Bar Texture",
         values = GetStatusBarValues,
         sort = true,
+        mediaType = "statusbar",
         get = function() return db.profile.rollFrame.timerBarTexture end,
         set = function(value)
             db.profile.rollFrame.timerBarTexture = value

@@ -120,6 +120,7 @@ local function CreateFontSection(parent, W, db, yOffset)
         label = "Font Family",
         values = GetFontValues,
         sort = true,
+        mediaType = "font",
         get = function() return db.profile.appearance.font end,
         set = function(value)
             db.profile.appearance.font = value
@@ -278,6 +279,7 @@ local function CreateBackgroundSection(parent, W, db, yOffset)
         label = "Background Texture",
         values = GetBackgroundValues,
         sort = true,
+        mediaType = "background",
         get = function() return db.profile.appearance.backgroundTexture end,
         set = function(value)
             db.profile.appearance.backgroundTexture = value
@@ -332,6 +334,7 @@ local function CreateBorderSection(parent, W, db, yOffset)
         label = "Border Texture",
         values = GetBorderValues,
         sort = true,
+        mediaType = "border",
         get = function() return db.profile.appearance.borderTexture end,
         set = function(value)
             db.profile.appearance.borderTexture = value

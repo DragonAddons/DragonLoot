@@ -15,6 +15,7 @@ local CreateFrame = CreateFrame
 local PlaySound = PlaySound
 local SOUNDKIT = SOUNDKIT
 local table_sort = table.sort
+local LibStub = LibStub
 
 -------------------------------------------------------------------------------
 -- Constants
@@ -39,6 +40,12 @@ local BORDER_COLOR = { 0.4, 0.4, 0.4, 1 }
 local LIST_BG_COLOR = { 0.08, 0.08, 0.08, 0.95 }
 local HIGHLIGHT_COLOR = { 1, 1, 1, 0.08 }
 local SELECTED_COLOR = { 1, 0.82, 0, 0.15 }
+
+local PREVIEW_WIDTH = 40
+local PREVIEW_HEIGHT = 14
+local PREVIEW_INSET = 6
+local PREVIEW_TINT = { 1, 0.82, 0, 0.9 }
+local TEXT_OFFSET_WITH_PREVIEW = 52
 
 -------------------------------------------------------------------------------
 -- Module-level: track the currently open dropdown for mutual exclusion
@@ -82,16 +89,116 @@ local function FindDisplayText(values, key)
 end
 
 -------------------------------------------------------------------------------
+-- Apply texture preview to a button (statusbar, background, border)
+-------------------------------------------------------------------------------
+
+local function ApplyTexturePreview(btn, mediaType, value, lsm)
+    if not btn._preview then
+        btn._preview = btn:CreateTexture(nil, "ARTWORK")
+        btn._preview:SetSize(PREVIEW_WIDTH, PREVIEW_HEIGHT)
+        btn._preview:SetPoint("LEFT", btn, "LEFT", PREVIEW_INSET, 0)
+        btn._preview:SetVertexColor(
+            PREVIEW_TINT[1], PREVIEW_TINT[2], PREVIEW_TINT[3], PREVIEW_TINT[4]
+        )
+    end
+    local texPath = lsm:Fetch(mediaType, value)
+    if texPath then
+        btn._preview:SetTexture(texPath)
+        btn._preview:Show()
+    else
+        btn._preview:Hide()
+    end
+    btn._text:ClearAllPoints()
+    btn._text:SetPoint("LEFT", btn, "LEFT", TEXT_OFFSET_WITH_PREVIEW, 0)
+    btn._text:SetPoint("RIGHT", btn, "RIGHT", -6, 0)
+end
+
+-------------------------------------------------------------------------------
+-- Apply font preview to a button's text
+-------------------------------------------------------------------------------
+
+local function ApplyFontPreview(btn, value, lsm)
+    local fontPath = lsm:Fetch("font", value)
+    if fontPath then
+        btn._text:SetFont(fontPath, FONT_SIZE, "")
+    end
+end
+
+-------------------------------------------------------------------------------
+-- Reset preview state on a recycled button
+-------------------------------------------------------------------------------
+
+local function ResetPreview(btn)
+    if btn._preview then
+        btn._preview:Hide()
+    end
+    btn._text:ClearAllPoints()
+    btn._text:SetFont(FONT_PATH, FONT_SIZE, "")
+    btn._text:SetPoint("LEFT", btn, "LEFT", 6, 0)
+    btn._text:SetPoint("RIGHT", btn, "RIGHT", -6, 0)
+end
+
+-------------------------------------------------------------------------------
+-- Update the selected-value button preview
+-------------------------------------------------------------------------------
+
+local function UpdateSelectedPreview(dropdown, opts, value)
+    local mediaType = opts.mediaType
+    if not mediaType then
+        if dropdown._selPreview then dropdown._selPreview:Hide() end
+        dropdown._selectedText:ClearAllPoints()
+        dropdown._selectedText:SetFont(FONT_PATH, FONT_SIZE, "")
+        dropdown._selectedText:SetPoint("LEFT", dropdown._button, "LEFT", 6, 0)
+        dropdown._selectedText:SetPoint("RIGHT", dropdown._button, "RIGHT", -20, 0)
+        return
+    end
+
+    local lsm = LibStub("LibSharedMedia-3.0", true)
+    if not lsm then return end
+
+    if mediaType == "font" then
+        local fontPath = lsm:Fetch("font", value)
+        if fontPath then
+            dropdown._selectedText:SetFont(fontPath, FONT_SIZE, "")
+        end
+        return
+    end
+
+    -- Texture preview for statusbar/background/border
+    if not dropdown._selPreview then
+        dropdown._selPreview = dropdown._button:CreateTexture(nil, "ARTWORK")
+        dropdown._selPreview:SetSize(PREVIEW_WIDTH, PREVIEW_HEIGHT)
+        dropdown._selPreview:SetPoint("LEFT", dropdown._button, "LEFT", PREVIEW_INSET, 0)
+        dropdown._selPreview:SetVertexColor(
+            PREVIEW_TINT[1], PREVIEW_TINT[2], PREVIEW_TINT[3], PREVIEW_TINT[4]
+        )
+    end
+    local texPath = lsm:Fetch(mediaType, value)
+    if texPath then
+        dropdown._selPreview:SetTexture(texPath)
+        dropdown._selPreview:Show()
+    else
+        dropdown._selPreview:Hide()
+    end
+    dropdown._selectedText:ClearAllPoints()
+    dropdown._selectedText:SetPoint("LEFT", dropdown._button, "LEFT", TEXT_OFFSET_WITH_PREVIEW, 0)
+    dropdown._selectedText:SetPoint("RIGHT", dropdown._button, "RIGHT", -20, 0)
+end
+
+-------------------------------------------------------------------------------
 -- Build item buttons inside the list content frame
 -------------------------------------------------------------------------------
 
 local function BuildListItems(dropdown, opts)
     local listContent = dropdown._listContent
     local values = ResolveValues(opts)
+    local mediaType = opts.mediaType
+    local lsm = mediaType and LibStub("LibSharedMedia-3.0", true) or nil
 
     -- Recycle old buttons
     for _, btn in ipairs(dropdown._itemButtons) do
         btn:Hide()
+        ResetPreview(btn)
     end
 
     local yOffset = 0
@@ -111,7 +218,9 @@ local function BuildListItems(dropdown, opts)
 
             local hl = btn:CreateTexture(nil, "HIGHLIGHT")
             hl:SetAllPoints()
-            hl:SetColorTexture(HIGHLIGHT_COLOR[1], HIGHLIGHT_COLOR[2], HIGHLIGHT_COLOR[3], HIGHLIGHT_COLOR[4])
+            hl:SetColorTexture(
+                HIGHLIGHT_COLOR[1], HIGHLIGHT_COLOR[2], HIGHLIGHT_COLOR[3], HIGHLIGHT_COLOR[4]
+            )
 
             btn._selected = btn:CreateTexture(nil, "BACKGROUND")
             btn._selected:SetAllPoints()
@@ -130,6 +239,13 @@ local function BuildListItems(dropdown, opts)
         local current = opts.get and opts.get() or nil
         btn._selected:SetShown(entry.value == current)
 
+        -- Apply media preview
+        if lsm and mediaType ~= "font" then
+            ApplyTexturePreview(btn, mediaType, entry.value, lsm)
+        elseif lsm and mediaType == "font" then
+            ApplyFontPreview(btn, entry.value, lsm)
+        end
+
         btn:SetPoint("TOPLEFT", listContent, "TOPLEFT", 0, -yOffset)
         btn:SetPoint("TOPRIGHT", listContent, "TOPRIGHT", 0, -yOffset)
         btn:Show()
@@ -137,7 +253,10 @@ local function BuildListItems(dropdown, opts)
         btn:SetScript("OnClick", function()
             if opts.set then opts.set(entry.value) end
             dropdown._selectedText:SetText(entry.text or "")
-            if PlaySound and SOUNDKIT then PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON) end
+            UpdateSelectedPreview(dropdown, opts, entry.value)
+            if PlaySound and SOUNDKIT then
+                PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
+            end
             CloseActiveDropdown()
         end)
 
@@ -271,6 +390,7 @@ function ns.Widgets.CreateDropdown(parent, opts)
     local initValues = ResolveValues(opts)
     local initKey = opts.get and opts.get() or nil
     selectedText:SetText(FindDisplayText(initValues, initKey))
+    UpdateSelectedPreview(frame, opts, initKey)
 
     -- Public API
     function frame:GetValue()
@@ -281,6 +401,7 @@ function ns.Widgets.CreateDropdown(parent, opts)
         if opts.set then opts.set(v) end
         local vals = ResolveValues(opts)
         selectedText:SetText(FindDisplayText(vals, v))
+        UpdateSelectedPreview(frame, opts, v)
     end
 
     function frame:SetDisabled(state)
@@ -303,6 +424,7 @@ function ns.Widgets.CreateDropdown(parent, opts)
         local vals = ResolveValues(opts)
         local key = opts.get and opts.get() or nil
         selectedText:SetText(FindDisplayText(vals, key))
+        UpdateSelectedPreview(frame, opts, key)
     end
 
     frame._label = label
