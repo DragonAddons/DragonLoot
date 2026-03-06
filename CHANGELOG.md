@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/DragonAddons/DragonLoot/compare/0.5.0...0.5.1) (2026-03-06)
+
+
+### 🐛 Bug Fixes
+
+* suppress Blizzard roll frames via UIParent and convert roll timer from ms to seconds ([#45](https://github.com/DragonAddons/DragonLoot/issues/45)) ([93203ca](https://github.com/DragonAddons/DragonLoot/commit/93203cadc32898d6e9bf1c5ff0b3266375558745))
+
 ## [0.5.0](https://github.com/DragonAddons/DragonLoot/compare/0.4.0...0.5.0) (2026-03-05)
 
 
