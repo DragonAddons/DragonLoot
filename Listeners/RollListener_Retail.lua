@@ -36,8 +36,10 @@ local isRollActive = false
 
 local function OnStartLootRoll(_, rollID, rollTime)
     if not isRollActive then return end
-    ns.RollManager.StartRoll(rollID, rollTime)
-    ns.DebugPrint("START_LOOT_ROLL: rollID=" .. tostring(rollID) .. " time=" .. tostring(rollTime))
+    -- Retail passes rollTime in milliseconds; convert to seconds for RollManager
+    local rollTimeSec = rollTime / 1000
+    ns.RollManager.StartRoll(rollID, rollTimeSec)
+    ns.DebugPrint("START_LOOT_ROLL: rollID=" .. tostring(rollID) .. " time=" .. tostring(rollTimeSec) .. "s")
 end
 
 local function OnCancelLootRoll(_, rollID)
@@ -86,11 +88,14 @@ local function RecoverActiveRolls()
 
     local GetRollDuration = C_Loot and C_Loot.GetLootRollDuration
     for _, rollID in ipairs(activeRollIDs) do
-        local timeLeft = GetLootRollTimeLeft(rollID)
-        if timeLeft and timeLeft > 0 then
-            local totalDuration = GetRollDuration and GetRollDuration(rollID) or timeLeft
-            ns.RollManager.RecoverRoll(rollID, totalDuration or timeLeft, timeLeft)
-            ns.DebugPrint("Recovered active roll: " .. tostring(rollID))
+        local timeLeftMs = GetLootRollTimeLeft(rollID)
+        if timeLeftMs and timeLeftMs > 0 then
+            local totalDurationMs = GetRollDuration and GetRollDuration(rollID) or timeLeftMs
+            -- Retail returns milliseconds; convert to seconds for RollManager
+            local totalDuration = (totalDurationMs or timeLeftMs) / 1000
+            local timeLeft = timeLeftMs / 1000
+            ns.RollManager.RecoverRoll(rollID, totalDuration, timeLeft)
+            ns.DebugPrint("Recovered active roll: " .. tostring(rollID) .. " (" .. tostring(timeLeft) .. "s left)")
         end
     end
 end
