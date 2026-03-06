@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.2](https://github.com/DragonAddons/DragonLoot/compare/0.5.1...0.5.2) (2026-03-06)
+
+
+### 🐛 Bug Fixes
+
+* add packager directives to TOC and fix author field ([#47](https://github.com/DragonAddons/DragonLoot/issues/47)) ([3e689e1](https://github.com/DragonAddons/DragonLoot/commit/3e689e1a0d88e263257a53d5ed7fa9c6fd5ee355))
+* restore roll anchor visibility and fix local listener loading ([#49](https://github.com/DragonAddons/DragonLoot/issues/49)) ([6c56764](https://github.com/DragonAddons/DragonLoot/commit/6c567648b4159c434fc6c485d02a4e4e2661e3c0))
+
 ## [0.5.1](https://github.com/DragonAddons/DragonLoot/compare/0.5.0...0.5.1) (2026-03-06)
 
 
