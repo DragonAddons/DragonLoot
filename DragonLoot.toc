@@ -32,14 +32,14 @@ Display\HistoryFrame.lua
 # Listeners (shared)
 Listeners\LootHistoryChat.lua
 
-# Version-specific listeners (packager strips per flavor)
+# Version-specific listeners
+# Locally: both load, version guards in each file handle correctness
+# Packager: strips the wrong set per flavor
+Listeners\LootListener_Classic.lua
+Listeners\RollListener_Classic.lua
+Listeners\HistoryListener_Classic.lua
 #@retail@
 Listeners\LootListener_Retail.lua
 Listeners\RollListener_Retail.lua
 Listeners\HistoryListener_Retail.lua
 #@end-retail@
-#@non-retail@
-# Listeners\LootListener_Classic.lua
-# Listeners\RollListener_Classic.lua
-# Listeners\HistoryListener_Classic.lua
-#@end-non-retail@

@@ -771,7 +771,10 @@ end
 -------------------------------------------------------------------------------
 
 function ns.RollFrame.Initialize()
-    if anchorFrame then return end
+    if anchorFrame then
+        anchorFrame:Show()
+        return
+    end
     anchorFrame = CreateAnchorFrame()
     ns.RollFrame.ApplySettings()
     RestoreFramePosition()
