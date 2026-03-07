@@ -247,7 +247,7 @@ local function ProcessLootMessage(message, _, guid)
             quantity = otherQuantity
 
             -- Get class from GUID
-            if guid then
+            if type(guid) == "string" then
                 local _, englishClass = GetPlayerInfoByGUID(guid)
                 playerClass = englishClass
             end
@@ -275,7 +275,7 @@ end
 --   languageID, lineID, guid (arg12)
 -------------------------------------------------------------------------------
 
-local function OnChatMsgLoot(_, message, _, _, _, _, _, _, _, _, _, guid)
+local function OnChatMsgLoot(_, message, _, _, _, _, _, _, _, _, _, _, guid)
     ProcessLootMessage(message, nil, guid)
 end
 
