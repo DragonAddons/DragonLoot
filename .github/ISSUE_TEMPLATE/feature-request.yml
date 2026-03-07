@@ -1,6 +1,7 @@
 name: Feature Request
 description: Suggest a new feature or improvement for DragonLoot
 title: "[Feature]: "
+type: "Feature"
 labels:
   - enhancement
 assignees: []
