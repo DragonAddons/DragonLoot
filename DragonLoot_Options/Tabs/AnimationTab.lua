@@ -6,6 +6,7 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached globals
@@ -51,7 +52,7 @@ local function GetEntranceValues()
     local lib = LibStub("LibAnimate", true)
     if not lib then return {} end
     local names = lib:GetEntranceAnimations()
-    local values = { { value = "none", text = "None" } }
+    local values = { { value = "none", text = (L and L["None"] or "None") } }
     for _, name in ipairs(names) do
         values[#values + 1] = { value = name, text = name }
     end
@@ -62,7 +63,7 @@ local function GetExitValues()
     local lib = LibStub("LibAnimate", true)
     if not lib then return {} end
     local names = lib:GetExitAnimations()
-    local values = { { value = "none", text = "None" } }
+    local values = { { value = "none", text = (L and L["None"] or "None") } }
     for _, name in ipairs(names) do
         values[#values + 1] = { value = name, text = name }
     end
@@ -109,12 +110,12 @@ local function CreateContent(parent)
     ---------------------------------------------------------------------------
     -- Section: Animation (global toggle + durations)
     ---------------------------------------------------------------------------
-    local header = W.CreateHeader(parent, "Animation")
+    local header = W.CreateHeader(parent, L["Animation"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     local enableToggle = W.CreateToggle(parent, {
-        label = "Enable Animations",
-        tooltip = "Enable or disable all DragonLoot animations",
+        label = L["Enable Animations"],
+        tooltip = L["Enable or disable all DragonLoot animations"],
         get = function() return db.profile.animation.enabled end,
         set = function(value)
             db.profile.animation.enabled = value
@@ -124,8 +125,8 @@ local function CreateContent(parent)
     yOffset = AnchorWidget(enableToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local openDuration = W.CreateSlider(parent, {
-        label = "Open Duration",
-        tooltip = "Duration of open/show animations in seconds",
+        label = L["Open Duration"],
+        tooltip = L["Duration of open/show animations in seconds"],
         min = 0.1,
         max = 1,
         step = 0.05,
@@ -139,8 +140,8 @@ local function CreateContent(parent)
     yOffset = AnchorWidget(openDuration, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local closeDuration = W.CreateSlider(parent, {
-        label = "Close Duration",
-        tooltip = "Duration of close/hide animations in seconds",
+        label = L["Close Duration"],
+        tooltip = L["Duration of close/hide animations in seconds"],
         min = 0.1,
         max = 1,
         step = 0.05,
@@ -156,11 +157,15 @@ local function CreateContent(parent)
     ---------------------------------------------------------------------------
     -- Section: Loot Window animation types
     ---------------------------------------------------------------------------
-    local lootHeader = W.CreateHeader(parent, "Loot Window")
+    local lootHeader = W.CreateHeader(parent, L["Loot Window"])
     yOffset = AnchorWidget(lootHeader, parent, yOffset) - SPACING_AFTER_HEADER
 
-    yOffset = CreateAnimDropdown(parent, W, db, yOffset, "Open Animation", "lootOpenAnim", GetEntranceValues)
-    yOffset = CreateAnimDropdown(parent, W, db, yOffset, "Close Animation", "lootCloseAnim", GetExitValues)
+    yOffset = CreateAnimDropdown(
+        parent, W, db, yOffset, L["Open Animation"], "lootOpenAnim", GetEntranceValues
+    )
+    yOffset = CreateAnimDropdown(
+        parent, W, db, yOffset, L["Close Animation"], "lootCloseAnim", GetExitValues
+    )
 
     -- Extra section spacing before next header
     yOffset = yOffset - SPACING_BETWEEN_SECTIONS + SPACING_BETWEEN_WIDGETS
@@ -168,11 +173,15 @@ local function CreateContent(parent)
     ---------------------------------------------------------------------------
     -- Section: Roll Frame animation types
     ---------------------------------------------------------------------------
-    local rollHeader = W.CreateHeader(parent, "Roll Frame")
+    local rollHeader = W.CreateHeader(parent, L["Roll Frame"])
     yOffset = AnchorWidget(rollHeader, parent, yOffset) - SPACING_AFTER_HEADER
 
-    yOffset = CreateAnimDropdown(parent, W, db, yOffset, "Show Animation", "rollShowAnim", GetEntranceValues)
-    yOffset = CreateAnimDropdown(parent, W, db, yOffset, "Hide Animation", "rollHideAnim", GetExitValues)
+    yOffset = CreateAnimDropdown(
+        parent, W, db, yOffset, L["Show Animation"], "rollShowAnim", GetEntranceValues
+    )
+    yOffset = CreateAnimDropdown(
+        parent, W, db, yOffset, L["Hide Animation"], "rollHideAnim", GetExitValues
+    )
 
     ---------------------------------------------------------------------------
     -- Set content height for scroll frame
@@ -187,7 +196,7 @@ end
 ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "animation",
-    label = "Animation",
+    label = L["Animation"],
     order = 7,
     createFunc = CreateContent,
 }

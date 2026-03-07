@@ -19,6 +19,8 @@ local UnitClass = UnitClass
 local C_Timer = C_Timer
 local max = math.max
 
+local L = ns.L
+
 -------------------------------------------------------------------------------
 -- Constants
 -------------------------------------------------------------------------------
@@ -33,13 +35,13 @@ local ROLL_TYPE_GREED = 2
 local ROLL_TYPE_DISENCHANT = 3
 local ROLL_TYPE_TRANSMOG = 4
 
--- Human-readable roll type names for toast display
-local ROLL_TYPE_NAMES = {
-    [ROLL_TYPE_PASS] = "Pass",
-    [ROLL_TYPE_NEED] = "Need",
-    [ROLL_TYPE_GREED] = "Greed",
-    [ROLL_TYPE_DISENCHANT] = "Disenchant",
-    [ROLL_TYPE_TRANSMOG] = "Transmog",
+-- Human-readable roll type names for toast display (shared via ns for RollFrame/HistoryFrame)
+ns.RollTypeNames = {
+    [ROLL_TYPE_PASS] = L["Pass"],
+    [ROLL_TYPE_NEED] = L["Need"],
+    [ROLL_TYPE_GREED] = L["Greed"],
+    [ROLL_TYPE_DISENCHANT] = L["Disenchant"],
+    [ROLL_TYPE_TRANSMOG] = L["Transmog"],
 }
 
 -- Retail C_LootHistory state -> canonical roll type (preserves Transmog)
@@ -237,7 +239,7 @@ local function SendRollWonNotification(rollID, winnerName, _winnerClass, rollTyp
     -- Quality filter
     if roll.itemQuality and roll.itemQuality < db.rollNotifications.minQuality then return end
 
-    local rollTypeName = ROLL_TYPE_NAMES[rollType] or "Unknown"
+    local rollTypeName = ns.RollTypeNames[rollType] or L["Unknown"]
 
     -- Fire generic DragonToast message (fire-and-forget, no detection needed)
     ns.Addon:SendMessage("DRAGONTOAST_QUEUE_TOAST", {
@@ -284,7 +286,7 @@ function ns.RollManager.SendRollResultNotification(itemLink, itemName, itemQuali
     -- Skip passes - nobody wants a toast for "Player passed"
     if rollType == ROLL_TYPE_PASS then return end
 
-    local rollTypeName = ROLL_TYPE_NAMES[rollType] or "Unknown"
+    local rollTypeName = ns.RollTypeNames[rollType] or L["Unknown"]
     local itemID = itemLink and tonumber(itemLink:match("item:(%d+)"))
 
     ns.Addon:SendMessage("DRAGONTOAST_QUEUE_TOAST", {

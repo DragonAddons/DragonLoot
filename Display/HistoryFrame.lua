@@ -20,8 +20,10 @@ local STANDARD_TEXT_FONT = STANDARD_TEXT_FONT
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 local HandleModifiedItemClick = HandleModifiedItemClick
 local math_floor = math.floor
+local string_format = string.format
 
 local LSM = LibStub("LibSharedMedia-3.0")
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Constants
@@ -167,15 +169,8 @@ end
 -- Roll type text helper
 -------------------------------------------------------------------------------
 
-local ROLL_TYPE_TEXT = {
-    [0] = "Pass",
-    [1] = "Need",
-    [2] = "Greed",
-    [3] = "Disenchant",
-}
-
 local function GetRollTypeText(rollType)
-    return ROLL_TYPE_TEXT[rollType] or ""
+    return ns.RollTypeNames[rollType] or ""
 end
 
 -------------------------------------------------------------------------------
@@ -188,11 +183,11 @@ local function FormatTimeAgo(timestamp)
     if elapsed < 0 then elapsed = 0 end
 
     if elapsed < 60 then
-        return math_floor(elapsed) .. "s ago"
+        return string_format(L["%ds ago"], math_floor(elapsed))
     elseif elapsed < 3600 then
-        return math_floor(elapsed / 60) .. "m ago"
+        return string_format(L["%dm ago"], math_floor(elapsed / 60))
     else
-        return math_floor(elapsed / 3600) .. "h ago"
+        return string_format(L["%dh ago"], math_floor(elapsed / 3600))
     end
 end
 
@@ -346,7 +341,7 @@ local function PopulateEntry(entry, data)
         local name = data.itemLink:match("%[(.-)%]") or data.itemLink
         entry.itemName:SetText(name)
     else
-        entry.itemName:SetText("Unknown Item")
+        entry.itemName:SetText(L["Unknown Item"])
     end
     entry.itemName:SetTextColor(qr, qg, qb)
 
@@ -363,7 +358,7 @@ local function PopulateEntry(entry, data)
     -- Roll info
     entry.rollInfo:SetFont(fontPath, fontSize - 2, fontOutline)
     if data.isDirectLoot then
-        entry.rollInfo:SetText("Looted")
+        entry.rollInfo:SetText(L["Looted"])
         entry.rollInfo:SetTextColor(0.6, 0.6, 0.6)
     else
         local rollText = GetRollTypeText(data.rollType)
@@ -479,7 +474,7 @@ local function CreateTitleBar(parent)
     titleBar.text = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleBar.text:SetPoint("LEFT", titleBar, "LEFT", 8, 0)
     titleBar.text:SetFont(fontPath, fontSize, fontOutline)
-    titleBar.text:SetText("DragonLoot - Loot History")
+    titleBar.text:SetText(L["DragonLoot - Loot History"])
     titleBar.text:SetTextColor(1, 0.82, 0)
 
     -- Close button
@@ -509,7 +504,7 @@ local function CreateTitleBar(parent)
     end)
     clearBtn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Clear History")
+        GameTooltip:SetText(L["Clear History"])
         GameTooltip:Show()
     end)
     clearBtn:SetScript("OnLeave", function()

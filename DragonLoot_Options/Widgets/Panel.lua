@@ -6,6 +6,7 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached WoW API
@@ -37,7 +38,7 @@ local function CreateTitleBar(parent)
     -- Title text
     titleBar.text = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     titleBar.text:SetPoint("LEFT", titleBar, "LEFT", 12, 0)
-    titleBar.text:SetText("DragonLoot Options")
+    titleBar.text:SetText(L and L["DragonLoot Options"] or "DragonLoot Options")
     titleBar.text:SetTextColor(1, 0.82, 0)
 
     -- Make title bar the drag handle

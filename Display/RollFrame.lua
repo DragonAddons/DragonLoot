@@ -23,6 +23,7 @@ local STANDARD_TEXT_FONT = STANDARD_TEXT_FONT
 local HandleModifiedItemClick = HandleModifiedItemClick
 
 local LSM = LibStub("LibSharedMedia-3.0")
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Roll type constants (values used by RollOnLoot)
@@ -33,14 +34,6 @@ local ROLL_NEED = 1
 local ROLL_GREED = 2
 local ROLL_DISENCHANT = 3
 local ROLL_TRANSMOG = 4
-
-local ROLL_TYPE_NAMES = {
-    [ROLL_PASS] = "Pass",
-    [ROLL_NEED] = "Need",
-    [ROLL_GREED] = "Greed",
-    [ROLL_DISENCHANT] = "Disenchant",
-    [ROLL_TRANSMOG] = "Transmog",
-}
 
 -------------------------------------------------------------------------------
 -- Test roll data
@@ -268,7 +261,7 @@ end
 local function OnRollButtonClick(self)
     local frame = self:GetParent()
     if frame.isTestMode then
-        ns.Print("Test roll: " .. (ROLL_TYPE_NAMES[self.rollType] or "Unknown"))
+        ns.Print(L["Test roll: "] .. (ns.RollTypeNames[self.rollType] or L["Unknown"]))
         return
     end
     if frame.rollID then
@@ -281,16 +274,16 @@ end
 -------------------------------------------------------------------------------
 
 local ROLL_TOOLTIP_LABELS = {
-    [ROLL_NEED] = "Need",
-    [ROLL_GREED] = "Greed",
-    [ROLL_DISENCHANT] = "Disenchant",
-    [ROLL_PASS] = "Pass",
-    [ROLL_TRANSMOG] = "Transmog",
+    [ROLL_NEED] = L["Need"],
+    [ROLL_GREED] = L["Greed"],
+    [ROLL_DISENCHANT] = L["Disenchant"],
+    [ROLL_PASS] = L["Pass"],
+    [ROLL_TRANSMOG] = L["Transmog"],
 }
 
 local function OnRollButtonEnter(self)
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-    local label = ROLL_TOOLTIP_LABELS[self.rollType] or "Roll"
+    local label = ROLL_TOOLTIP_LABELS[self.rollType] or L["Roll"]
     GameTooltip:SetText(label)
     if self.disabledReason then
         GameTooltip:AddLine(self.disabledReason, 1, 0.2, 0.2, true)
@@ -310,7 +303,7 @@ local function OnIconEnter(self)
     local frame = self:GetParent()
     if frame.isTestMode then
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:AddLine(frame.testItemName or "Test Item", 1, 1, 1)
+        GameTooltip:AddLine(frame.testItemName or L["Test Item"], 1, 1, 1)
         GameTooltip:Show()
         return
     end
@@ -328,7 +321,7 @@ end
 local function OnIconClick(self, button)
     local frame = self:GetParent()
     if frame.isTestMode then
-        ns.Print("Test item: " .. (frame.testItemName or "Test Item"))
+        ns.Print(L["Test item: "] .. (frame.testItemName or L["Test Item"]))
         return
     end
     if not frame.rollID then return end
@@ -501,7 +494,7 @@ local function SetButtonState(btn, canUse, reason)
         btn:Disable()
         btn.icon:SetDesaturated(true)
         btn.icon:SetAlpha(0.4)
-        btn.disabledReason = reason or "Not available for this item"
+        btn.disabledReason = reason or L["Not available for this item"]
     end
 end
 
@@ -546,7 +539,7 @@ local function PopulateRollFrame(frame, rollID)
 
     -- BoP indicator
     if bindOnPickUp then
-        frame.bindText:SetText("BoP")
+        frame.bindText:SetText(L["BoP"])
         frame.bindText:Show()
     else
         frame.bindText:Hide()
@@ -692,7 +685,7 @@ local function PopulateTestRollFrame(frame, testData)
 
     -- BoP indicator
     if testData.bindOnPickUp then
-        frame.bindText:SetText("BoP")
+        frame.bindText:SetText(L["BoP"])
         frame.bindText:Show()
     else
         frame.bindText:Hide()
@@ -959,5 +952,5 @@ function ns.RollFrame.ShowTestRoll()
         StartTestTimer(i, testData.duration)
     end
 
-    ns.Print("Showing test roll frames.")
+    ns.Print(L["Showing test roll frames."])
 end

@@ -6,6 +6,7 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached globals
@@ -42,7 +43,7 @@ local function CreateContent(parent)
     ---------------------------------------------------------------------------
     -- Header: General
     ---------------------------------------------------------------------------
-    local header = W.CreateHeader(parent, "General")
+    local header = W.CreateHeader(parent, L["General"])
     header:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
     header:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
     yOffset = yOffset - header:GetHeight() - SPACING_AFTER_HEADER
@@ -51,8 +52,8 @@ local function CreateContent(parent)
     -- Toggle: Enable DragonLoot
     ---------------------------------------------------------------------------
     local enableToggle = W.CreateToggle(parent, {
-        label = "Enable DragonLoot",
-        tooltip = "Enable or disable the DragonLoot addon",
+        label = L["Enable DragonLoot"],
+        tooltip = L["Enable or disable the DragonLoot addon"],
         get = function() return db.profile.enabled end,
         set = function(value)
             db.profile.enabled = value
@@ -71,8 +72,8 @@ local function CreateContent(parent)
     -- Toggle: Show Minimap Icon
     ---------------------------------------------------------------------------
     local minimapToggle = W.CreateToggle(parent, {
-        label = "Show Minimap Icon",
-        tooltip = "Show or hide the minimap button",
+        label = L["Show Minimap Icon"],
+        tooltip = L["Show or hide the minimap button"],
         get = function() return not db.profile.minimap.hide end,
         set = function(value)
             db.profile.minimap.hide = not value
@@ -89,8 +90,8 @@ local function CreateContent(parent)
     -- Toggle: Debug Mode
     ---------------------------------------------------------------------------
     local debugToggle = W.CreateToggle(parent, {
-        label = "Debug Mode",
-        tooltip = "Enable verbose debug output in chat",
+        label = L["Debug Mode"],
+        tooltip = L["Enable verbose debug output in chat"],
         get = function() return db.profile.debug end,
         set = function(value)
             db.profile.debug = value
@@ -113,7 +114,7 @@ end
 ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "general",
-    label = "General",
+    label = L["General"],
     order = 1,
     createFunc = CreateContent,
 }

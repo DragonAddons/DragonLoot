@@ -6,6 +6,7 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached globals
@@ -33,15 +34,6 @@ local SPACING_BETWEEN_SECTIONS = 16
 local PADDING_BOTTOM = 20
 local ITEM_LIST_HEIGHT = 220
 
-local QUALITY_VALUES = {
-    { value = "0", text = "|cff9d9d9dPoor|r" },
-    { value = "1", text = "|cffffffffCommon|r" },
-    { value = "2", text = "|cff1eff00Uncommon|r" },
-    { value = "3", text = "|cff0070ddRare|r" },
-    { value = "4", text = "|cffa335eeEpic|r" },
-    { value = "5", text = "|cffff8000Legendary|r" },
-}
-
 -------------------------------------------------------------------------------
 -- Anchor a widget to the parent at the current yOffset
 -------------------------------------------------------------------------------
@@ -59,26 +51,26 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateSettingsSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, "Smart Auto-Loot")
+    local header = W.CreateHeader(parent, L["Smart Auto-Loot"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     local desc = W.CreateDescription(parent,
-        "Automatically loot items that meet your criteria. Items on the whitelist are always picked up."
-        .. " Items on the blacklist are never auto-looted. Everything else is evaluated against the"
-        .. " minimum quality threshold.")
+        L["Automatically loot items that meet your criteria. Items on the whitelist are always"
+        .. " picked up. Items on the blacklist are never auto-looted. Everything else is evaluated"
+        .. " against the minimum quality threshold."])
     yOffset = AnchorWidget(desc, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local enableToggle = W.CreateToggle(parent, {
-        label = "Enable Smart Auto-Loot",
-        tooltip = "When enabled, qualifying items are automatically looted based on your filter rules",
+        label = L["Enable Smart Auto-Loot"],
+        tooltip = L["When enabled, qualifying items are automatically looted based on your filter rules"],
         get = function() return db.profile.autoLoot.enabled end,
         set = function(value) db.profile.autoLoot.enabled = value end,
     })
     yOffset = AnchorWidget(enableToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local qualityDropdown = W.CreateDropdown(parent, {
-        label = "Minimum Quality",
-        values = QUALITY_VALUES,
+        label = L["Minimum Quality"],
+        values = ns.QualityValues,
         get = function() return tostring(db.profile.autoLoot.minQuality) end,
         set = function(value) db.profile.autoLoot.minQuality = tonumber(value) end,
     })
@@ -92,19 +84,19 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateWhitelistSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, "Whitelist")
+    local header = W.CreateHeader(parent, L["Whitelist"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     local desc = W.CreateDescription(parent,
-        "Items on this list are always looted automatically, regardless of quality."
-        .. " Drag an item from your bags onto an empty slot to add it.")
+        L["Items on this list are always looted automatically, regardless of quality."
+        .. " Drag an item from your bags onto an empty slot to add it."])
     yOffset = AnchorWidget(desc, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local itemList = W.CreateItemList(parent, {
         label = "",
         getItems = function() return db.profile.autoLoot.whitelist end,
         setItems = function(t) db.profile.autoLoot.whitelist = t end,
-        emptyText = "No items - drag items here to add",
+        emptyText = L["No items - drag items here to add"],
     })
     itemList:SetHeight(ITEM_LIST_HEIGHT)
     yOffset = AnchorWidget(itemList, parent, yOffset) - SPACING_BETWEEN_SECTIONS
@@ -117,19 +109,19 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateBlacklistSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, "Blacklist")
+    local header = W.CreateHeader(parent, L["Blacklist"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     local desc = W.CreateDescription(parent,
-        "Items on this list are never auto-looted, even if they meet the quality threshold."
-        .. " They will remain in the loot window for manual pickup.")
+        L["Items on this list are never auto-looted, even if they meet the quality threshold."
+        .. " They will remain in the loot window for manual pickup."])
     yOffset = AnchorWidget(desc, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local itemList = W.CreateItemList(parent, {
         label = "",
         getItems = function() return db.profile.autoLoot.blacklist end,
         setItems = function(t) db.profile.autoLoot.blacklist = t end,
-        emptyText = "No items - drag items here to add",
+        emptyText = L["No items - drag items here to add"],
     })
     itemList:SetHeight(ITEM_LIST_HEIGHT)
     yOffset = AnchorWidget(itemList, parent, yOffset) - SPACING_BETWEEN_WIDGETS
@@ -161,7 +153,7 @@ end
 ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "autoLoot",
-    label = "Auto-Loot",
+    label = L["Auto-Loot"],
     order = 5,
     createFunc = CreateContent,
 }

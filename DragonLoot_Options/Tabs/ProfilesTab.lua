@@ -6,6 +6,7 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached globals
@@ -15,6 +16,8 @@ local math_abs = math.abs
 local table_sort = table.sort
 local StaticPopup_Show = StaticPopup_Show
 local StaticPopupDialogs = StaticPopupDialogs
+local YES = YES
+local NO = NO
 
 -------------------------------------------------------------------------------
 -- Namespace references
@@ -39,9 +42,10 @@ local NEW_PROFILE_INPUT_WIDTH = 250
 -------------------------------------------------------------------------------
 
 StaticPopupDialogs["DRAGONLOOT_RESET_PROFILE"] = {
-    text = "Are you sure you want to reset the current profile to defaults?",
-    button1 = "Yes",
-    button2 = "No",
+    text = (L and L["Are you sure you want to reset the current profile to defaults?"]
+        or "Are you sure you want to reset the current profile to defaults?"),
+    button1 = YES,
+    button2 = NO,
     OnAccept = function()
         local db = dlns.Addon.db
         db:ResetProfile()
@@ -53,9 +57,10 @@ StaticPopupDialogs["DRAGONLOOT_RESET_PROFILE"] = {
 }
 
 StaticPopupDialogs["DRAGONLOOT_DELETE_PROFILE"] = {
-    text = "Are you sure you want to delete profile \"%s\"?",
-    button1 = "Yes",
-    button2 = "No",
+    text = (L and L["Are you sure you want to delete profile \"%s\"?"]
+        or "Are you sure you want to delete profile \"%s\"?"),
+    button1 = YES,
+    button2 = NO,
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
@@ -110,11 +115,11 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateCurrentProfileSection(parent, W, db, yOffset, refreshAll)
-    local header = W.CreateHeader(parent, "Current Profile")
+    local header = W.CreateHeader(parent, L["Current Profile"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     local activeDropdown = W.CreateDropdown(parent, {
-        label = "Active Profile",
+        label = L["Active Profile"],
         values = function() return GetProfileValues(db) end,
         get = function() return db:GetCurrentProfile() end,
         set = function(value)
@@ -126,7 +131,7 @@ local function CreateCurrentProfileSection(parent, W, db, yOffset, refreshAll)
 
     -- New profile: text input on the left, create button to its right
     local newProfileInput = W.CreateTextInput(parent, {
-        label = "New Profile",
+        label = L["New Profile"],
         width = NEW_PROFILE_INPUT_WIDTH,
         maxLength = 64,
     })
@@ -134,9 +139,9 @@ local function CreateCurrentProfileSection(parent, W, db, yOffset, refreshAll)
     newProfileInput:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
 
     local createBtn = W.CreateButton(parent, {
-        text = "Create",
+        text = L["Create"],
         width = 80,
-        tooltip = "Create a new profile with the entered name and switch to it",
+        tooltip = L["Create a new profile with the entered name and switch to it"],
         onClick = function()
             local name = newProfileInput:GetValue()
             if not name or name == "" then return end
@@ -158,12 +163,12 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateActionsSection(parent, W, db, yOffset, refreshAll)
-    local header = W.CreateHeader(parent, "Profile Actions")
+    local header = W.CreateHeader(parent, L["Profile Actions"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     -- Copy From dropdown
     local copyDropdown = W.CreateDropdown(parent, {
-        label = "Copy From",
+        label = L["Copy From"],
         values = function() return GetOtherProfileValues(db) end,
         get = function() return nil end,
         set = function(value)
@@ -175,9 +180,9 @@ local function CreateActionsSection(parent, W, db, yOffset, refreshAll)
 
     -- Reset Current Profile button
     local resetBtn = W.CreateButton(parent, {
-        text = "Reset Current Profile",
+        text = L["Reset Current Profile"],
         width = 160,
-        tooltip = "Reset all settings in the current profile to their default values",
+        tooltip = L["Reset all settings in the current profile to their default values"],
         onClick = function()
             StaticPopup_Show("DRAGONLOOT_RESET_PROFILE")
         end,
@@ -187,7 +192,7 @@ local function CreateActionsSection(parent, W, db, yOffset, refreshAll)
 
     -- Delete Profile dropdown
     local deleteDropdown = W.CreateDropdown(parent, {
-        label = "Delete Profile",
+        label = L["Delete Profile"],
         values = function() return GetOtherProfileValues(db) end,
         get = function() return nil end,
         set = function(value)
@@ -223,12 +228,12 @@ local function CreateContent(parent)
     end
 
     -- Header + description
-    local header = W.CreateHeader(parent, "Profiles")
+    local header = W.CreateHeader(parent, L["Profiles"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     local desc = W.CreateDescription(parent,
-        "Profiles allow you to save different settings configurations. You can switch between"
-        .. " profiles, copy settings from another profile, or reset to defaults.")
+        L["Profiles allow you to save different settings configurations. You can switch between"
+        .. " profiles, copy settings from another profile, or reset to defaults."])
     yOffset = AnchorWidget(desc, parent, yOffset) - SPACING_BETWEEN_SECTIONS
 
     -- Current Profile section
@@ -251,7 +256,7 @@ end
 ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "profiles",
-    label = "Profiles",
+    label = L["Profiles"],
     order = 8,
     createFunc = CreateContent,
 }

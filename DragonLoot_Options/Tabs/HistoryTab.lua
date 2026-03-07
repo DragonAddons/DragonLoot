@@ -6,6 +6,7 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached globals
@@ -31,15 +32,6 @@ local SPACING_AFTER_HEADER = 8
 local SPACING_BETWEEN_WIDGETS = 6
 local SPACING_BETWEEN_SECTIONS = 16
 local PADDING_BOTTOM = 20
-
-local QUALITY_VALUES = {
-    { value = "0", text = "|cff9d9d9dPoor|r" },
-    { value = "1", text = "|cffffffffCommon|r" },
-    { value = "2", text = "|cff1eff00Uncommon|r" },
-    { value = "3", text = "|cff0070ddRare|r" },
-    { value = "4", text = "|cffa335eeEpic|r" },
-    { value = "5", text = "|cffff8000Legendary|r" },
-}
 
 -------------------------------------------------------------------------------
 -- Helper: call HistoryFrame.ApplySettings if available
@@ -67,7 +59,7 @@ end
 local function CreateTogglesSection(parent, W, db, yOffset)
     -- Enable History
     local enableToggle = W.CreateToggle(parent, {
-        label = "Enable History",
+        label = L["Enable History"],
         get = function() return db.profile.history.enabled end,
         set = function(value)
             db.profile.history.enabled = value
@@ -79,7 +71,7 @@ local function CreateTogglesSection(parent, W, db, yOffset)
 
     -- Auto Show on Loot
     local autoShowToggle = W.CreateToggle(parent, {
-        label = "Auto Show on Loot",
+        label = L["Auto Show on Loot"],
         get = function() return db.profile.history.autoShow end,
         set = function(value)
             db.profile.history.autoShow = value
@@ -93,8 +85,8 @@ local function CreateTogglesSection(parent, W, db, yOffset)
 
     -- Track Direct Loot (set callback updates dropdown disabled state)
     local trackToggle = W.CreateToggle(parent, {
-        label = "Track Direct Loot",
-        tooltip = "Track items you pick up directly (not from a loot window)",
+        label = L["Track Direct Loot"],
+        tooltip = L["Track items you pick up directly (not from a loot window)"],
         get = function() return db.profile.history.trackDirectLoot end,
         set = function(value)
             db.profile.history.trackDirectLoot = value
@@ -108,8 +100,8 @@ local function CreateTogglesSection(parent, W, db, yOffset)
 
     -- Minimum Quality dropdown
     qualityDropdown = W.CreateDropdown(parent, {
-        label = "Minimum Quality",
-        values = QUALITY_VALUES,
+        label = L["Minimum Quality"],
+        values = ns.QualityValues,
         get = function() return tostring(db.profile.history.minQuality) end,
         set = function(value)
             db.profile.history.minQuality = tonumber(value)
@@ -130,13 +122,13 @@ end
 
 local function CreateLayoutSection(parent, W, db, yOffset)
     -- Header: Layout
-    local layoutHeader = W.CreateHeader(parent, "Layout")
+    local layoutHeader = W.CreateHeader(parent, L["Layout"])
     AnchorWidget(layoutHeader, parent, yOffset)
     yOffset = yOffset - layoutHeader:GetHeight() - SPACING_AFTER_HEADER
 
     -- Slider: Max Entries
     local maxEntriesSlider = W.CreateSlider(parent, {
-        label = "Max Entries",
+        label = L["Max Entries"],
         min = 10, max = 500, step = 10,
         format = "%d",
         get = function() return db.profile.history.maxEntries end,
@@ -149,7 +141,7 @@ local function CreateLayoutSection(parent, W, db, yOffset)
 
     -- Slider: Entry Spacing
     local entrySpacingSlider = W.CreateSlider(parent, {
-        label = "Entry Spacing",
+        label = L["Entry Spacing"],
         min = 0, max = 12, step = 1,
         format = "%d",
         get = function() return db.profile.history.entrySpacing end,
@@ -163,7 +155,7 @@ local function CreateLayoutSection(parent, W, db, yOffset)
 
     -- Slider: Content Padding
     local contentPaddingSlider = W.CreateSlider(parent, {
-        label = "Content Padding",
+        label = L["Content Padding"],
         min = 0, max = 12, step = 1,
         format = "%d",
         get = function() return db.profile.history.contentPadding end,
@@ -189,7 +181,7 @@ local function CreateContent(parent)
     local yOffset = PADDING_TOP
 
     -- Header: History
-    local header = W.CreateHeader(parent, "History")
+    local header = W.CreateHeader(parent, L["History"])
     AnchorWidget(header, parent, yOffset)
     yOffset = yOffset - header:GetHeight() - SPACING_AFTER_HEADER
 
@@ -213,7 +205,7 @@ end
 ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "history",
-    label = "History",
+    label = L["History"],
     order = 4,
     createFunc = CreateContent,
 }

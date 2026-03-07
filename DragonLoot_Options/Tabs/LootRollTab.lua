@@ -6,6 +6,7 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached globals
@@ -40,23 +41,6 @@ local PADDING_BOTTOM = 20
 -------------------------------------------------------------------------------
 
 local LSM = LibStub("LibSharedMedia-3.0")
-
--------------------------------------------------------------------------------
--- Quality dropdown values
--------------------------------------------------------------------------------
-
-local QUALITY_VALUES = {
-    { value = "0", text = "|cff9d9d9dPoor|r" },
-    { value = "1", text = "|cffffffffCommon|r" },
-    { value = "2", text = "|cff1eff00Uncommon|r" },
-    { value = "3", text = "|cff0070ddRare|r" },
-    { value = "4", text = "|cffa335eeEpic|r" },
-    { value = "5", text = "|cffff8000Legendary|r" },
-}
-
--------------------------------------------------------------------------------
--- Notify appearance change helper
--------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
 -- Notify roll manager helper
@@ -97,12 +81,12 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateRollFrameSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, "Roll Frame")
+    local header = W.CreateHeader(parent, L["Roll Frame"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     local enableToggle = W.CreateToggle(parent, {
-        label = "Enable Custom Roll Frame",
-        tooltip = "Replace the default Blizzard roll frame with DragonLoot's custom version",
+        label = L["Enable Custom Roll Frame"],
+        tooltip = L["Replace the default Blizzard roll frame with DragonLoot's custom version"],
         get = function() return db.profile.rollFrame.enabled end,
         set = function(value)
             db.profile.rollFrame.enabled = value
@@ -112,8 +96,8 @@ local function CreateRollFrameSection(parent, W, db, yOffset)
     yOffset = AnchorWidget(enableToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local lockToggle = W.CreateToggle(parent, {
-        label = "Lock Position",
-        tooltip = "Prevent the roll frame from being dragged",
+        label = L["Lock Position"],
+        tooltip = L["Prevent the roll frame from being dragged"],
         get = function() return db.profile.rollFrame.lock end,
         set = function(value) db.profile.rollFrame.lock = value end,
     })
@@ -145,30 +129,30 @@ local function CreateLayoutSlider(parent, W, db, yOffset, label, tooltip, key, m
 end
 
 local function CreateLayoutSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, "Layout")
+    local header = W.CreateHeader(parent, L["Layout"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Scale", "Roll frame scale", "scale", 0.5, 2, 0.05, "%.2f")
+        L["Scale"], L["Roll frame scale"], "scale", 0.5, 2, 0.05, "%.2f")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Frame Width", "Width of the roll frame", "frameWidth", 200, 500, 10, "%d")
+        L["Frame Width"], L["Width of the roll frame"], "frameWidth", 200, 500, 10, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Row Spacing", "Vertical spacing between roll rows", "rowSpacing", 0, 16, 1, "%d")
+        L["Row Spacing"], L["Vertical spacing between roll rows"], "rowSpacing", 0, 16, 1, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Timer Bar Height", "Height of the countdown timer bar", "timerBarHeight", 6, 24, 1, "%d")
+        L["Timer Bar Height"], L["Height of the countdown timer bar"], "timerBarHeight", 6, 24, 1, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Timer Bar Spacing", "Space between item row and timer bar", "timerBarSpacing", 0, 16, 1, "%d")
+        L["Timer Bar Spacing"], L["Space between item row and timer bar"], "timerBarSpacing", 0, 16, 1, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Content Padding", "Inner padding of the roll frame", "contentPadding", 0, 12, 1, "%d")
+        L["Content Padding"], L["Inner padding of the roll frame"], "contentPadding", 0, 12, 1, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Button Size", "Size of Need/Greed/Pass buttons", "buttonSize", 16, 36, 1, "%d")
+        L["Button Size"], L["Size of Need/Greed/Pass buttons"], "buttonSize", 16, 36, 1, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Button Spacing", "Spacing between roll buttons", "buttonSpacing", 0, 12, 1, "%d")
+        L["Button Spacing"], L["Spacing between roll buttons"], "buttonSpacing", 0, 12, 1, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset,
-        "Frame Spacing", "Spacing between multiple roll frames", "frameSpacing", 0, 16, 1, "%d")
+        L["Frame Spacing"], L["Spacing between multiple roll frames"], "frameSpacing", 0, 16, 1, "%d")
 
     local textureDropdown = W.CreateDropdown(parent, {
-        label = "Timer Bar Texture",
+        label = L["Timer Bar Texture"],
         values = GetStatusBarValues,
         sort = true,
         mediaType = "statusbar",
@@ -188,15 +172,15 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateNotificationSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, "Roll Notifications")
+    local header = W.CreateHeader(parent, L["Roll Notifications"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     -- Forward declarations for cross-widget disable logic
     local groupWinsToggle, selfRollsToggle, groupRollsToggle
 
     local showRollWon = W.CreateToggle(parent, {
-        label = "Show Roll Won",
-        tooltip = "Show a notification when someone wins a roll",
+        label = L["Show Roll Won"],
+        tooltip = L["Show a notification when someone wins a roll"],
         get = function() return db.profile.rollNotifications.showRollWon end,
         set = function(value)
             db.profile.rollNotifications.showRollWon = value
@@ -206,8 +190,8 @@ local function CreateNotificationSection(parent, W, db, yOffset)
     yOffset = AnchorWidget(showRollWon, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     groupWinsToggle = W.CreateToggle(parent, {
-        label = "Show Group Wins",
-        tooltip = "Show notifications when other group members win rolls",
+        label = L["Show Group Wins"],
+        tooltip = L["Show notifications when other group members win rolls"],
         get = function() return db.profile.rollNotifications.showGroupWins end,
         set = function(value) db.profile.rollNotifications.showGroupWins = value end,
         disabled = not db.profile.rollNotifications.showRollWon,
@@ -215,8 +199,8 @@ local function CreateNotificationSection(parent, W, db, yOffset)
     yOffset = AnchorWidget(groupWinsToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local showRollResults = W.CreateToggle(parent, {
-        label = "Show Roll Results",
-        tooltip = "Show individual roll result notifications",
+        label = L["Show Roll Results"],
+        tooltip = L["Show individual roll result notifications"],
         get = function() return db.profile.rollNotifications.showRollResults end,
         set = function(value)
             db.profile.rollNotifications.showRollResults = value
@@ -227,8 +211,8 @@ local function CreateNotificationSection(parent, W, db, yOffset)
     yOffset = AnchorWidget(showRollResults, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     selfRollsToggle = W.CreateToggle(parent, {
-        label = "Show My Rolls",
-        tooltip = "Show notifications for your own roll results",
+        label = L["Show My Rolls"],
+        tooltip = L["Show notifications for your own roll results"],
         get = function() return db.profile.rollNotifications.showSelfRolls end,
         set = function(value) db.profile.rollNotifications.showSelfRolls = value end,
         disabled = not db.profile.rollNotifications.showRollResults,
@@ -236,8 +220,8 @@ local function CreateNotificationSection(parent, W, db, yOffset)
     yOffset = AnchorWidget(selfRollsToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     groupRollsToggle = W.CreateToggle(parent, {
-        label = "Show Group Rolls",
-        tooltip = "Show notifications for other group members' roll results",
+        label = L["Show Group Rolls"],
+        tooltip = L["Show notifications for other group members' roll results"],
         get = function() return db.profile.rollNotifications.showGroupRolls end,
         set = function(value) db.profile.rollNotifications.showGroupRolls = value end,
         disabled = not db.profile.rollNotifications.showRollResults,
@@ -245,8 +229,8 @@ local function CreateNotificationSection(parent, W, db, yOffset)
     yOffset = AnchorWidget(groupRollsToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local qualityDropdown = W.CreateDropdown(parent, {
-        label = "Minimum Quality",
-        values = QUALITY_VALUES,
+        label = L["Minimum Quality"],
+        values = ns.QualityValues,
         get = function() return tostring(db.profile.rollNotifications.minQuality) end,
         set = function(value) db.profile.rollNotifications.minQuality = tonumber(value) or 0 end,
     })
@@ -260,28 +244,28 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateInstanceFilterSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, "Instance Filters")
+    local header = W.CreateHeader(parent, L["Instance Filters"])
     yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
 
     local worldToggle = W.CreateToggle(parent, {
-        label = "Show in Open World",
-        tooltip = "Show roll notifications while in the open world",
+        label = L["Show in Open World"],
+        tooltip = L["Show roll notifications while in the open world"],
         get = function() return db.profile.rollNotifications.showInWorld end,
         set = function(value) db.profile.rollNotifications.showInWorld = value end,
     })
     yOffset = AnchorWidget(worldToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local dungeonToggle = W.CreateToggle(parent, {
-        label = "Show in Dungeons",
-        tooltip = "Show roll notifications while in dungeons",
+        label = L["Show in Dungeons"],
+        tooltip = L["Show roll notifications while in dungeons"],
         get = function() return db.profile.rollNotifications.showInDungeon end,
         set = function(value) db.profile.rollNotifications.showInDungeon = value end,
     })
     yOffset = AnchorWidget(dungeonToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
 
     local raidToggle = W.CreateToggle(parent, {
-        label = "Show in Raids",
-        tooltip = "Show roll notifications while in raids",
+        label = L["Show in Raids"],
+        tooltip = L["Show roll notifications while in raids"],
         get = function() return db.profile.rollNotifications.showInRaid end,
         set = function(value) db.profile.rollNotifications.showInRaid = value end,
     })
@@ -315,7 +299,7 @@ end
 ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "lootRoll",
-    label = "Loot Roll",
+    label = L["Loot Roll"],
     order = 3,
     createFunc = CreateContent,
 }
