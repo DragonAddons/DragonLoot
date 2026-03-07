@@ -56,18 +56,22 @@
 
 ## ⌨️ Commands
 
-All commands use the `/dl` prefix (or the full `/dragonloot`):
+Use `/dl` or `/dragonloot`.
 
-| Command           | Description                    |
-|:------------------|:-------------------------------|
-| `/dl`             | Open settings                  |
-| `/dl test`        | Show test loot items           |
-| `/dl testmode`    | Toggle continuous test mode    |
-| `/dl testroll`    | Show test roll frame           |
-| `/dl clear`       | Clear all test items           |
-| `/dl history`     | Toggle loot history panel      |
-| `/dl config`      | Open settings panel            |
-| `/dl minimap`     | Toggle minimap icon            |
+Typing `/dl` by itself shows the help list. `/dl toggle` is the only slash command that turns DragonLoot on or off.
+
+| Command | What it does |
+|:--------|:-------------|
+| `/dl` | Show the help list |
+| `/dl help` | Show the help list |
+| `/dl toggle` | Turn DragonLoot on or off |
+| `/dl config` | Open the settings panel |
+| `/dl minimap` | Show or hide the minimap button |
+| `/dl reset` | Reset the loot window position |
+| `/dl test` | Show test loot |
+| `/dl testroll` | Show test roll frames |
+| `/dl history` | Open or close the loot history window |
+| `/dl status` | Show your current DragonLoot settings |
 
 ## ⚙️ Configuration
 
