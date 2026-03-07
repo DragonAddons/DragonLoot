@@ -29,7 +29,7 @@ read_globals = {
 
     -- WoW API - General
     "CreateFrame", "GetTime", "IsInInstance", "UnitName", "UnitClass",
-    "GetItemInfo", "GetItemInfoInstant", "GetItemQualityColor",
+    "GetItemInfo", "GetItemInfoInstant", "GetItemQualityColor", "GetCursorPosition",
     "C_Timer", "C_Item", "C_Container", "C_AddOns", "IsAddOnLoaded", "LoadAddOn",
     "CreateColor",
     "GameTooltip", "UIParent", "PlaySound", "PlaySoundFile",

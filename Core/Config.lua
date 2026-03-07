@@ -28,6 +28,7 @@ local defaults = {
             height = 300,
             slotSpacing = 2,
             contentPadding = 4,
+            positionAtCursor = false,
         },
 
         rollFrame = {

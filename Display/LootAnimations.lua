@@ -32,8 +32,6 @@ function ns.LootAnimations.PlayOpen(frame)
     frame:SetAlpha(0)
     frame:Show()
 
-    ns.LootAnimations.StopAll(frame)
-
     local animName = db.animation.lootOpenAnim or "fadeIn"
     local ok = pcall(lib.Animate, lib, frame, animName, {
         duration = duration,

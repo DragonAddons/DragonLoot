@@ -104,10 +104,25 @@ local ROLL_FRAME_EVENTS = {
     "START_LOOT_ROLL", "CANCEL_LOOT_ROLL",
 }
 
+local blizzardLootHooked = false
+
 local function SuppressBlizzardLootFrame()
     if not LootFrame then return end
     LootFrame:UnregisterAllEvents()
     LootFrame:Hide()
+
+    -- Persistent OnShow hook: catches any attempt to show the Blizzard frame
+    -- (EventRegistry callbacks, re-registered events, direct Show calls).
+    -- The config check keeps the hook inert when DragonLoot's loot window is disabled.
+    if not blizzardLootHooked then
+        LootFrame:HookScript("OnShow", function(self)
+            local db = ns.Addon and ns.Addon.db and ns.Addon.db.profile
+            if db and db.lootWindow and db.lootWindow.enabled then
+                self:Hide()
+            end
+        end)
+        blizzardLootHooked = true
+    end
 end
 
 local function SuppressBlizzardRollFrames()

@@ -25,6 +25,7 @@ local STANDARD_TEXT_FONT = STANDARD_TEXT_FONT
 local UNKNOWN = UNKNOWN
 local GetLootSlotLink = GetLootSlotLink
 local CreateColor = CreateColor
+local GetCursorPosition = GetCursorPosition
 
 local LSM = LibStub("LibSharedMedia-3.0")
 
@@ -283,6 +284,14 @@ local function RestoreFramePosition()
     else
         containerFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
     end
+end
+
+local function PositionAtCursor()
+    if not containerFrame then return end
+    local x, y = GetCursorPosition()
+    local scale = containerFrame:GetEffectiveScale()
+    containerFrame:ClearAllPoints()
+    containerFrame:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x / scale, y / scale)
 end
 
 -------------------------------------------------------------------------------
@@ -813,6 +822,19 @@ function ns.LootFrame.Show(autoLoot)
 
     LayoutSlots()
 
+    -- Clean up any lingering animation state before positioning so that
+    -- LibAnimate's Stop() does not restore a stale anchor and undo the
+    -- cursor placement set below.
+    if ns.LootAnimations and ns.LootAnimations.StopAll then
+        ns.LootAnimations.StopAll(containerFrame)
+    end
+
+    -- Position at cursor if enabled
+    local lootDb = ns.Addon.db.profile.lootWindow
+    if lootDb.positionAtCursor then
+        PositionAtCursor()
+    end
+
     -- Fishing indicator
     if IsFishingLoot and IsFishingLoot() then
         containerFrame.fishingText:SetText("Fishing")
@@ -1118,6 +1140,16 @@ function ns.LootFrame.ShowTestLoot()
     end
 
     LayoutSlots()
+
+    -- Clean up lingering animation state before positioning (same as Show)
+    if ns.LootAnimations and ns.LootAnimations.StopAll then
+        ns.LootAnimations.StopAll(containerFrame)
+    end
+
+    local lootDb = ns.Addon.db.profile.lootWindow
+    if lootDb.positionAtCursor then
+        PositionAtCursor()
+    end
     containerFrame.fishingText:Hide()
 
     ShowWithAnimation()

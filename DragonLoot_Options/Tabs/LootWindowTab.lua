@@ -87,7 +87,22 @@ local function CreateContent(parent)
     })
     lockToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
     lockToggle:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - lockToggle:GetHeight() - SPACING_BETWEEN_SECTIONS
+    yOffset = yOffset - lockToggle:GetHeight() - SPACING_BETWEEN_WIDGETS
+
+    ---------------------------------------------------------------------------
+    -- Toggle: Position at Cursor
+    ---------------------------------------------------------------------------
+    local cursorToggle = W.CreateToggle(parent, {
+        label = "Position at Cursor",
+        tooltip = "Open the loot window at the mouse cursor instead of the saved position",
+        get = function() return db.profile.lootWindow.positionAtCursor end,
+        set = function(value)
+            db.profile.lootWindow.positionAtCursor = value
+        end,
+    })
+    cursorToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
+    cursorToggle:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
+    yOffset = yOffset - cursorToggle:GetHeight() - SPACING_BETWEEN_SECTIONS
 
     ---------------------------------------------------------------------------
     -- Header: Layout
