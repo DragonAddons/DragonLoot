@@ -16,11 +16,10 @@ local strtrim = strtrim
 
 local function PrintHelp()
     print(ns.COLOR_GOLD .. "--- DragonLoot Commands ---" .. ns.COLOR_RESET)
-    print("  " .. ns.COLOR_WHITE .. "/dl" .. ns.COLOR_RESET .. " - Toggle addon on/off")
+    print("  " .. ns.COLOR_WHITE .. "/dl" .. ns.COLOR_RESET .. " - Show this help")
+    print("  " .. ns.COLOR_WHITE .. "/dl toggle" .. ns.COLOR_RESET .. " - Toggle addon on/off")
     print("  " .. ns.COLOR_WHITE .. "/dl config" .. ns.COLOR_RESET .. " - Open settings panel")
     print("  " .. ns.COLOR_WHITE .. "/dl minimap" .. ns.COLOR_RESET .. " - Toggle minimap icon")
-    print("  " .. ns.COLOR_WHITE .. "/dl enable" .. ns.COLOR_RESET .. " - Enable addon")
-    print("  " .. ns.COLOR_WHITE .. "/dl disable" .. ns.COLOR_RESET .. " - Disable addon")
     print("  " .. ns.COLOR_WHITE .. "/dl reset" .. ns.COLOR_RESET .. " - Reset loot frame position")
     print("  " .. ns.COLOR_WHITE .. "/dl test" .. ns.COLOR_RESET .. " - Show test loot")
     print("  " .. ns.COLOR_WHITE .. "/dl testroll" .. ns.COLOR_RESET .. " - Show test roll frames")
@@ -66,28 +65,12 @@ local function ToggleAddon()
     end
 end
 
-local function SetAddonEnabled(enabled)
-    local db = ns.Addon.db.profile
-    if db.enabled ~= enabled then
-        db.enabled = enabled
-        if enabled then
-            ns.Addon:OnEnable()
-        else
-            ns.Addon:OnDisable()
-        end
-    end
-    local color = enabled and ns.COLOR_GREEN or ns.COLOR_RED
-    local label = enabled and "enabled" or "disabled"
-    ns.Print("Addon " .. color .. label .. ns.COLOR_RESET)
-end
-
 local commandHandlers = {
     ["config"]   = function() if ns.ToggleConfigWindow then ns.ToggleConfigWindow() end end,
     ["options"]  = function() if ns.ToggleConfigWindow then ns.ToggleConfigWindow() end end,
     ["settings"] = function() if ns.ToggleConfigWindow then ns.ToggleConfigWindow() end end,
     ["minimap"]  = function() if ns.MinimapIcon.Toggle then ns.MinimapIcon.Toggle() end end,
-    ["enable"]   = function() SetAddonEnabled(true) end,
-    ["disable"]  = function() SetAddonEnabled(false) end,
+    ["toggle"]   = ToggleAddon,
     ["status"]   = PrintStatus,
     ["help"]     = PrintHelp,
     ["?"]        = PrintHelp,
@@ -126,7 +109,7 @@ function ns.HandleSlashCommand(input)
     local cmd = strtrim((input or ""):lower())
 
     if cmd == "" then
-        ToggleAddon()
+        PrintHelp()
         return
     end
 
