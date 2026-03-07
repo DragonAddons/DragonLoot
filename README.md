@@ -1,6 +1,6 @@
 <div align="center">
 
-![Dragon Loot Logo](https://raw.githubusercontent.com/DragonAddons/DragonLoot/refs/heads/main/assets/dragon-loot.png)
+![Dragon Loot Logo](https://raw.githubusercontent.com/DragonAddons/DragonLoot/refs/heads/master/assets/dragon-loot.png)
 
 # Dragon Loot
 
@@ -99,3 +99,4 @@ Contributions are welcome! Please open an issue or pull request on [GitHub](http
 This project is licensed under the **MIT License**. See the [LICENSE](https://github.com/DragonAddons/DragonLoot/blob/main/LICENSE) file for details.
 
 Made with ❤️ by [Xerrion](https://github.com/Xerrion)
+
