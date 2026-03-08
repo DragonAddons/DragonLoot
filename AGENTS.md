@@ -139,6 +139,48 @@ All modules attach to `ns`:
 
 ---
 
+## Options UI (DragonLoot_Options)
+
+DragonLoot_Options is a standalone addon that provides the config window. It depends on `DragonLoot` and `LibDragonFramework` (declared in the TOC `## Dependencies` line).
+
+### LibDragonFramework (LDF)
+
+All options UI is built with **LibDragonFramework** (LDF), not bespoke widgets or AceGUI. LDF is embedded via `Libs/embeds.xml` in the main DragonLoot addon and available globally:
+
+```lua
+local LDF = _G.LibDragonFramework
+```
+
+- **Do not** use `ns.Widgets` - that pattern is removed.
+- **Do not** create manual widget code - use LDF factory functions.
+- The old `Widgets/` directory no longer exists.
+
+### LDF Patterns
+
+Tab files follow a consistent pattern:
+
+1. Create sections with `LDF.CreateSection(parent, label)` (all DragonLoot sections are flat - no collapsible sections)
+2. Create a stack layout inside each section: `LDF.CreateStackLayout(section.content, "vertical")`
+3. Add widgets via `stack:AddChild(LDF.CreateToggle(...))`, `LDF.CreateSlider(...)`, `LDF.CreateDropdown(...)`, `LDF.CreateColorPicker(...)`, `LDF.CreateDescription(...)`, `LDF.CreateTextInput(...)`, `LDF.CreateButton(...)`, etc.
+4. AutoLootTab uses `LDF.CreateItemList(...)` for whitelist/blacklist item management
+5. All LDF widgets support `SetDisabled(state)` for conditional enable/disable
+
+### Tab Files
+
+| File | Purpose |
+|------|---------|
+| `Core.lua` | Config window frame, tab bar, tab switching |
+| `Tabs/GeneralTab.lua` | Enable/disable, minimap icon, lock frames |
+| `Tabs/LootWindowTab.lua` | Loot window behavior and position settings |
+| `Tabs/LootRollTab.lua` | Roll frame, layout, notifications, instance filters |
+| `Tabs/AutoLootTab.lua` | Smart auto-loot, whitelist/blacklist (LDF.CreateItemList) |
+| `Tabs/HistoryTab.lua` | History tracking, layout, quality filter |
+| `Tabs/AnimationTab.lua` | Loot window and roll frame animation settings |
+| `Tabs/AppearanceTab.lua` | Font, icon sizes, background, border |
+| `Tabs/ProfilesTab.lua` | Profile selection, copy, delete |
+
+---
+
 ## Version-Specific API Differences
 
 | Aspect | Retail | Classic (TBC/Cata/MoP) |
