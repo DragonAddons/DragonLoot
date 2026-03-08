@@ -8,20 +8,9 @@
 ## Dependencies: DragonLoot
 ## LoadOnDemand: 1
 
+Libs\embeds.xml
+
 Core.lua
-Widgets\Panel.lua
-Widgets\ScrollFrame.lua
-Widgets\TabGroup.lua
-Widgets\Header.lua
-Widgets\Description.lua
-Widgets\Toggle.lua
-Widgets\Slider.lua
-Widgets\Dropdown.lua
-Widgets\ColorPicker.lua
-Widgets\TextInput.lua
-Widgets\Button.lua
-Widgets\ItemSlot.lua
-Widgets\ItemList.lua
 Tabs\GeneralTab.lua
 Tabs\LootWindowTab.lua
 Tabs\LootRollTab.lua

@@ -6,30 +6,19 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local LDF = _G.LibDragonFramework
+
+-------------------------------------------------------------------------------
+-- Localization
+-------------------------------------------------------------------------------
+
 local L = ns.L
-
--------------------------------------------------------------------------------
--- Cached globals
--------------------------------------------------------------------------------
-
-local math_abs = math.abs
 
 -------------------------------------------------------------------------------
 -- Namespace references
 -------------------------------------------------------------------------------
 
 local dlns
-
--------------------------------------------------------------------------------
--- Constants
--------------------------------------------------------------------------------
-
-local PADDING_SIDE = 10
-local PADDING_TOP = -10
-local SPACING_AFTER_HEADER = 8
-local SPACING_BETWEEN_WIDGETS = 6
-local SPACING_BETWEEN_SECTIONS = 16
-local PADDING_BOTTOM = 20
 
 -------------------------------------------------------------------------------
 -- Helper: call LootFrame.ApplySettings if available
@@ -42,27 +31,15 @@ local function ApplyLootSettings()
 end
 
 -------------------------------------------------------------------------------
--- Build the Loot Window tab content
+-- Section builders
 -------------------------------------------------------------------------------
 
-local function CreateContent(parent)
-    dlns = ns.dlns
-    local W = ns.Widgets
+local function CreateLootWindowSection(parent)
     local db = dlns.Addon.db
-    local yOffset = PADDING_TOP
+    local section = LDF.CreateSection(parent, L["Loot Window"])
+    local stack = LDF.CreateStackLayout(section.content, "vertical")
 
-    ---------------------------------------------------------------------------
-    -- Header: Loot Window
-    ---------------------------------------------------------------------------
-    local header = W.CreateHeader(parent, L["Loot Window"])
-    header:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    header:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - header:GetHeight() - SPACING_AFTER_HEADER
-
-    ---------------------------------------------------------------------------
-    -- Toggle: Enable Custom Loot Window
-    ---------------------------------------------------------------------------
-    local enableToggle = W.CreateToggle(parent, {
+    stack:AddChild(LDF.CreateToggle(section.content, {
         label = L["Enable Custom Loot Window"],
         tooltip = L["Replace the default loot window with DragonLoot's custom frame"],
         get = function() return db.profile.lootWindow.enabled end,
@@ -70,53 +47,35 @@ local function CreateContent(parent)
             db.profile.lootWindow.enabled = value
             ApplyLootSettings()
         end,
-    })
-    enableToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    enableToggle:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - enableToggle:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Toggle: Lock Position
-    ---------------------------------------------------------------------------
-    local lockToggle = W.CreateToggle(parent, {
+    stack:AddChild(LDF.CreateToggle(section.content, {
         label = L["Lock Position"],
         tooltip = L["Prevent the loot window from being moved"],
         get = function() return db.profile.lootWindow.lock end,
         set = function(value)
             db.profile.lootWindow.lock = value
         end,
-    })
-    lockToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    lockToggle:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - lockToggle:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Toggle: Position at Cursor
-    ---------------------------------------------------------------------------
-    local cursorToggle = W.CreateToggle(parent, {
+    stack:AddChild(LDF.CreateToggle(section.content, {
         label = L["Position at Cursor"],
         tooltip = L["Open the loot window at the mouse cursor instead of the saved position"],
         get = function() return db.profile.lootWindow.positionAtCursor end,
         set = function(value)
             db.profile.lootWindow.positionAtCursor = value
         end,
-    })
-    cursorToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    cursorToggle:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - cursorToggle:GetHeight() - SPACING_BETWEEN_SECTIONS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Header: Layout
-    ---------------------------------------------------------------------------
-    local layoutHeader = W.CreateHeader(parent, L["Layout"])
-    layoutHeader:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    layoutHeader:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - layoutHeader:GetHeight() - SPACING_AFTER_HEADER
+    return section
+end
 
-    ---------------------------------------------------------------------------
-    -- Slider: Scale
-    ---------------------------------------------------------------------------
-    local scaleSlider = W.CreateSlider(parent, {
+local function CreateLayoutSection(parent)
+    local db = dlns.Addon.db
+    local section = LDF.CreateSection(parent, L["Layout"])
+    local stack = LDF.CreateStackLayout(section.content, "vertical")
+
+    stack:AddChild(LDF.CreateSlider(section.content, {
         label = L["Scale"],
         min = 0.5, max = 2, step = 0.05,
         get = function() return db.profile.lootWindow.scale end,
@@ -124,15 +83,9 @@ local function CreateContent(parent)
             db.profile.lootWindow.scale = value
             ApplyLootSettings()
         end,
-    })
-    scaleSlider:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    scaleSlider:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - scaleSlider:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Slider: Width
-    ---------------------------------------------------------------------------
-    local widthSlider = W.CreateSlider(parent, {
+    stack:AddChild(LDF.CreateSlider(section.content, {
         label = L["Width"],
         min = 150, max = 400, step = 10,
         format = "%d",
@@ -141,15 +94,9 @@ local function CreateContent(parent)
             db.profile.lootWindow.width = value
             ApplyLootSettings()
         end,
-    })
-    widthSlider:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    widthSlider:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - widthSlider:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Slider: Height
-    ---------------------------------------------------------------------------
-    local heightSlider = W.CreateSlider(parent, {
+    stack:AddChild(LDF.CreateSlider(section.content, {
         label = L["Height"],
         min = 150, max = 600, step = 10,
         format = "%d",
@@ -158,15 +105,9 @@ local function CreateContent(parent)
             db.profile.lootWindow.height = value
             ApplyLootSettings()
         end,
-    })
-    heightSlider:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    heightSlider:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - heightSlider:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Slider: Slot Spacing
-    ---------------------------------------------------------------------------
-    local slotSpacingSlider = W.CreateSlider(parent, {
+    stack:AddChild(LDF.CreateSlider(section.content, {
         label = L["Slot Spacing"],
         min = 0, max = 12, step = 1,
         format = "%d",
@@ -175,15 +116,9 @@ local function CreateContent(parent)
             db.profile.lootWindow.slotSpacing = value
             ApplyLootSettings()
         end,
-    })
-    slotSpacingSlider:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    slotSpacingSlider:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - slotSpacingSlider:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Slider: Content Padding
-    ---------------------------------------------------------------------------
-    local contentPaddingSlider = W.CreateSlider(parent, {
+    stack:AddChild(LDF.CreateSlider(section.content, {
         label = L["Content Padding"],
         min = 0, max = 12, step = 1,
         format = "%d",
@@ -192,15 +127,20 @@ local function CreateContent(parent)
             db.profile.lootWindow.contentPadding = value
             ApplyLootSettings()
         end,
-    })
-    contentPaddingSlider:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    contentPaddingSlider:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - contentPaddingSlider:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Set content height for scroll frame
-    ---------------------------------------------------------------------------
-    parent:SetHeight(math_abs(yOffset) + PADDING_BOTTOM)
+    return section
+end
+
+-------------------------------------------------------------------------------
+-- Build the Loot Window tab content
+-------------------------------------------------------------------------------
+
+local function CreateContent(parent)
+    dlns = ns.dlns
+    local stack = LDF.CreateStackLayout(parent, "vertical")
+    stack:AddChild(CreateLootWindowSection(parent))
+    stack:AddChild(CreateLayoutSection(parent))
 end
 
 -------------------------------------------------------------------------------

@@ -13,3 +13,6 @@
 [submodule "DragonLoot/Libs/LibSharedMedia-3.0"]
 	path = DragonLoot/Libs/LibSharedMedia-3.0
 	url = https://github.com/wowace-clone/LibSharedMedia-3.0.git
+[submodule "DragonLoot_Options/Libs/LibDragonFramework"]
+	path = DragonLoot_Options/Libs/LibDragonFramework
+	url = https://github.com/DragonAddons/LibDragonFramework.git

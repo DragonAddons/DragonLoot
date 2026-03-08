@@ -7,11 +7,7 @@
 
 local ADDON_NAME, ns = ...
 
--------------------------------------------------------------------------------
--- Cached WoW API
--------------------------------------------------------------------------------
-
-local tinsert = table.insert
+local LDF = _G.LibDragonFramework
 
 -------------------------------------------------------------------------------
 -- Locale bridge from main addon
@@ -20,10 +16,9 @@ local tinsert = table.insert
 ns.L = LibStub("AceLocale-3.0"):GetLocale("DragonLoot")
 
 -------------------------------------------------------------------------------
--- Widget and tab registries (populated by subsequent files)
+-- Tab registry (populated by subsequent files)
 -------------------------------------------------------------------------------
 
-ns.Widgets = {}
 ns.Tabs = {}
 
 -------------------------------------------------------------------------------
@@ -75,15 +70,14 @@ local function CreateOptionsPanel()
         return
     end
 
-    local panel = ns.Widgets.CreatePanel("DragonLootOptionsFrame", 800, 600)
+    local panel = LDF.CreateWindow({
+        name = "DragonLootOptionsFrame",
+        title = "DragonLoot",
+        width = 800,
+        height = 600,
+    })
 
-    -- Tab group below title bar
-    tabGroup = ns.Widgets.CreateTabGroup(panel, ns.Tabs)
-    tabGroup:SetPoint("TOPLEFT", panel, "TOPLEFT", 8, -32)
-    tabGroup:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -8, 8)
-
-    -- ESC-closable
-    tinsert(UISpecialFrames, "DragonLootOptionsFrame")
+    tabGroup = LDF.CreateTabGroup(panel.content, ns.Tabs)
 
     optionsPanel = panel
 end

@@ -6,32 +6,26 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
-local L = ns.L
+local LDF = _G.LibDragonFramework
 
 -------------------------------------------------------------------------------
 -- Cached globals
 -------------------------------------------------------------------------------
 
-local math_abs = math.abs
 local ipairs = ipairs
 local LibStub = LibStub
+
+-------------------------------------------------------------------------------
+-- Localization
+-------------------------------------------------------------------------------
+
+local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Namespace references
 -------------------------------------------------------------------------------
 
 local dlns
-
--------------------------------------------------------------------------------
--- Constants
--------------------------------------------------------------------------------
-
-local PADDING_SIDE = 10
-local PADDING_TOP = -10
-local SPACING_AFTER_HEADER = 8
-local SPACING_BETWEEN_WIDGETS = 6
-local SPACING_BETWEEN_SECTIONS = 16
-local PADDING_BOTTOM = 20
 
 -------------------------------------------------------------------------------
 -- Notify appearance change helper
@@ -71,21 +65,11 @@ local function GetExitValues()
 end
 
 -------------------------------------------------------------------------------
--- Anchor a widget to the parent at the current yOffset
+-- Helper: create an animation dropdown for a given db key
 -------------------------------------------------------------------------------
 
-local function AnchorWidget(widget, parent, yOffset)
-    widget:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    widget:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    return yOffset - widget:GetHeight()
-end
-
--------------------------------------------------------------------------------
--- Create an animation dropdown for a given db key
--------------------------------------------------------------------------------
-
-local function CreateAnimDropdown(parent, W, db, yOffset, label, key, valuesFn)
-    local dropdown = W.CreateDropdown(parent, {
+local function AddAnimDropdown(stack, parent, db, label, key, valuesFn)
+    stack:AddChild(LDF.CreateDropdown(parent, {
         label = label,
         values = valuesFn,
         get = function() return db.profile.animation[key] end,
@@ -93,27 +77,19 @@ local function CreateAnimDropdown(parent, W, db, yOffset, label, key, valuesFn)
             db.profile.animation[key] = value
             NotifyAppearanceChange()
         end,
-    })
-    return AnchorWidget(dropdown, parent, yOffset) - SPACING_BETWEEN_WIDGETS
+    }))
 end
 
 -------------------------------------------------------------------------------
--- Build the Animation tab content
+-- Section: Animation (global toggle + durations)
 -------------------------------------------------------------------------------
 
-local function CreateContent(parent)
-    dlns = ns.dlns
-    local W = ns.Widgets
+local function CreateAnimationSection(parent)
     local db = dlns.Addon.db
-    local yOffset = PADDING_TOP
+    local section = LDF.CreateSection(parent, L["Animation"])
+    local stack = LDF.CreateStackLayout(section.content, "vertical")
 
-    ---------------------------------------------------------------------------
-    -- Section: Animation (global toggle + durations)
-    ---------------------------------------------------------------------------
-    local header = W.CreateHeader(parent, L["Animation"])
-    yOffset = AnchorWidget(header, parent, yOffset) - SPACING_AFTER_HEADER
-
-    local enableToggle = W.CreateToggle(parent, {
+    stack:AddChild(LDF.CreateToggle(section.content, {
         label = L["Enable Animations"],
         tooltip = L["Enable or disable all DragonLoot animations"],
         get = function() return db.profile.animation.enabled end,
@@ -121,10 +97,9 @@ local function CreateContent(parent)
             db.profile.animation.enabled = value
             NotifyAppearanceChange()
         end,
-    })
-    yOffset = AnchorWidget(enableToggle, parent, yOffset) - SPACING_BETWEEN_WIDGETS
+    }))
 
-    local openDuration = W.CreateSlider(parent, {
+    stack:AddChild(LDF.CreateSlider(section.content, {
         label = L["Open Duration"],
         tooltip = L["Duration of open/show animations in seconds"],
         min = 0.1,
@@ -136,10 +111,9 @@ local function CreateContent(parent)
             db.profile.animation.openDuration = value
             NotifyAppearanceChange()
         end,
-    })
-    yOffset = AnchorWidget(openDuration, parent, yOffset) - SPACING_BETWEEN_WIDGETS
+    }))
 
-    local closeDuration = W.CreateSlider(parent, {
+    stack:AddChild(LDF.CreateSlider(section.content, {
         label = L["Close Duration"],
         tooltip = L["Duration of close/hide animations in seconds"],
         min = 0.1,
@@ -151,42 +125,52 @@ local function CreateContent(parent)
             db.profile.animation.closeDuration = value
             NotifyAppearanceChange()
         end,
-    })
-    yOffset = AnchorWidget(closeDuration, parent, yOffset) - SPACING_BETWEEN_SECTIONS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Section: Loot Window animation types
-    ---------------------------------------------------------------------------
-    local lootHeader = W.CreateHeader(parent, L["Loot Window"])
-    yOffset = AnchorWidget(lootHeader, parent, yOffset) - SPACING_AFTER_HEADER
+    return section
+end
 
-    yOffset = CreateAnimDropdown(
-        parent, W, db, yOffset, L["Open Animation"], "lootOpenAnim", GetEntranceValues
-    )
-    yOffset = CreateAnimDropdown(
-        parent, W, db, yOffset, L["Close Animation"], "lootCloseAnim", GetExitValues
-    )
+-------------------------------------------------------------------------------
+-- Section: Loot Window animation types
+-------------------------------------------------------------------------------
 
-    -- Extra section spacing before next header
-    yOffset = yOffset - SPACING_BETWEEN_SECTIONS + SPACING_BETWEEN_WIDGETS
+local function CreateLootAnimSection(parent)
+    local db = dlns.Addon.db
+    local section = LDF.CreateSection(parent, L["Loot Window"])
+    local stack = LDF.CreateStackLayout(section.content, "vertical")
 
-    ---------------------------------------------------------------------------
-    -- Section: Roll Frame animation types
-    ---------------------------------------------------------------------------
-    local rollHeader = W.CreateHeader(parent, L["Roll Frame"])
-    yOffset = AnchorWidget(rollHeader, parent, yOffset) - SPACING_AFTER_HEADER
+    AddAnimDropdown(stack, section.content, db, L["Open Animation"], "lootOpenAnim", GetEntranceValues)
+    AddAnimDropdown(stack, section.content, db, L["Close Animation"], "lootCloseAnim", GetExitValues)
 
-    yOffset = CreateAnimDropdown(
-        parent, W, db, yOffset, L["Show Animation"], "rollShowAnim", GetEntranceValues
-    )
-    yOffset = CreateAnimDropdown(
-        parent, W, db, yOffset, L["Hide Animation"], "rollHideAnim", GetExitValues
-    )
+    return section
+end
 
-    ---------------------------------------------------------------------------
-    -- Set content height for scroll frame
-    ---------------------------------------------------------------------------
-    parent:SetHeight(math_abs(yOffset) + PADDING_BOTTOM)
+-------------------------------------------------------------------------------
+-- Section: Roll Frame animation types
+-------------------------------------------------------------------------------
+
+local function CreateRollAnimSection(parent)
+    local db = dlns.Addon.db
+    local section = LDF.CreateSection(parent, L["Roll Frame"])
+    local stack = LDF.CreateStackLayout(section.content, "vertical")
+
+    AddAnimDropdown(stack, section.content, db, L["Show Animation"], "rollShowAnim", GetEntranceValues)
+    AddAnimDropdown(stack, section.content, db, L["Hide Animation"], "rollHideAnim", GetExitValues)
+
+    return section
+end
+
+-------------------------------------------------------------------------------
+-- Build the Animation tab content
+-------------------------------------------------------------------------------
+
+local function CreateContent(parent)
+    dlns = ns.dlns
+    local stack = LDF.CreateStackLayout(parent, "vertical")
+
+    stack:AddChild(CreateAnimationSection(parent))
+    stack:AddChild(CreateLootAnimSection(parent))
+    stack:AddChild(CreateRollAnimSection(parent))
 end
 
 -------------------------------------------------------------------------------

@@ -6,13 +6,13 @@
 -------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
+local LDF = _G.LibDragonFramework
+
+-------------------------------------------------------------------------------
+-- Localization
+-------------------------------------------------------------------------------
+
 local L = ns.L
-
--------------------------------------------------------------------------------
--- Cached globals
--------------------------------------------------------------------------------
-
-local math_abs = math.abs
 
 -------------------------------------------------------------------------------
 -- Namespace references
@@ -21,37 +21,15 @@ local math_abs = math.abs
 local dlns
 
 -------------------------------------------------------------------------------
--- Constants
+-- Section builders
 -------------------------------------------------------------------------------
 
-local PADDING_SIDE = 10
-local PADDING_TOP = -10
-local SPACING_AFTER_HEADER = 8
-local SPACING_BETWEEN_WIDGETS = 6
-local PADDING_BOTTOM = 20
-
--------------------------------------------------------------------------------
--- Build the General tab content
--------------------------------------------------------------------------------
-
-local function CreateContent(parent)
-    dlns = ns.dlns
-    local W = ns.Widgets
+local function CreateGeneralSection(parent)
     local db = dlns.Addon.db
-    local yOffset = PADDING_TOP
+    local section = LDF.CreateSection(parent, L["General"])
+    local stack = LDF.CreateStackLayout(section.content, "vertical")
 
-    ---------------------------------------------------------------------------
-    -- Header: General
-    ---------------------------------------------------------------------------
-    local header = W.CreateHeader(parent, L["General"])
-    header:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    header:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - header:GetHeight() - SPACING_AFTER_HEADER
-
-    ---------------------------------------------------------------------------
-    -- Toggle: Enable DragonLoot
-    ---------------------------------------------------------------------------
-    local enableToggle = W.CreateToggle(parent, {
+    stack:AddChild(LDF.CreateToggle(section.content, {
         label = L["Enable DragonLoot"],
         tooltip = L["Enable or disable the DragonLoot addon"],
         get = function() return db.profile.enabled end,
@@ -63,15 +41,9 @@ local function CreateContent(parent)
                 dlns.Addon:OnDisable()
             end
         end,
-    })
-    enableToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    enableToggle:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - enableToggle:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Toggle: Show Minimap Icon
-    ---------------------------------------------------------------------------
-    local minimapToggle = W.CreateToggle(parent, {
+    stack:AddChild(LDF.CreateToggle(section.content, {
         label = L["Show Minimap Icon"],
         tooltip = L["Show or hide the minimap button"],
         get = function() return not db.profile.minimap.hide end,
@@ -81,30 +53,26 @@ local function CreateContent(parent)
                 dlns.MinimapIcon.Refresh()
             end
         end,
-    })
-    minimapToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    minimapToggle:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - minimapToggle:GetHeight() - SPACING_BETWEEN_WIDGETS
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Toggle: Debug Mode
-    ---------------------------------------------------------------------------
-    local debugToggle = W.CreateToggle(parent, {
+    stack:AddChild(LDF.CreateToggle(section.content, {
         label = L["Debug Mode"],
         tooltip = L["Enable verbose debug output in chat"],
         get = function() return db.profile.debug end,
-        set = function(value)
-            db.profile.debug = value
-        end,
-    })
-    debugToggle:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING_SIDE, yOffset)
-    debugToggle:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -PADDING_SIDE, yOffset)
-    yOffset = yOffset - debugToggle:GetHeight() - SPACING_BETWEEN_WIDGETS
+        set = function(value) db.profile.debug = value end,
+    }))
 
-    ---------------------------------------------------------------------------
-    -- Set content height for scroll frame
-    ---------------------------------------------------------------------------
-    parent:SetHeight(math_abs(yOffset) + PADDING_BOTTOM)
+    return section
+end
+
+-------------------------------------------------------------------------------
+-- Build the General tab content
+-------------------------------------------------------------------------------
+
+local function CreateContent(parent)
+    dlns = ns.dlns
+    local stack = LDF.CreateStackLayout(parent, "vertical")
+    stack:AddChild(CreateGeneralSection(parent))
 end
 
 -------------------------------------------------------------------------------

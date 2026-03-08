@@ -107,6 +107,7 @@ files["DragonLoot_Options/"] = {
     read_globals = {
         -- WoW API
         "GetCursorInfo", "ClearCursor", "ShowUIPanel",
+        "_G",
 
         -- WoW Globals
         "UISpecialFrames", "YES", "NO",
