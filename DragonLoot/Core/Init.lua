@@ -7,6 +7,8 @@
 
 local ADDON_NAME, ns = ...
 
+local hooksecurefunc = hooksecurefunc
+
 -------------------------------------------------------------------------------
 -- Constants
 -------------------------------------------------------------------------------
@@ -107,10 +109,26 @@ local ROLL_FRAME_EVENTS = {
     "START_LOOT_ROLL", "CANCEL_LOOT_ROLL",
 }
 
+local lootFrameHooked = false
+
 local function SuppressBlizzardLootFrame()
     if not LootFrame then return end
     LootFrame:UnregisterAllEvents()
     LootFrame:Hide()
+
+    -- One-time hook: catches any code path that calls LootFrame:Show()
+    -- (e.g. Blizzard event dispatch race, LoD addon re-showing the frame).
+    -- The hook is permanent but config-gated, so it becomes a no-op when
+    -- the custom loot window is disabled.
+    if not lootFrameHooked then
+        hooksecurefunc(LootFrame, "Show", function(self)
+            local db = ns.Addon.db and ns.Addon.db.profile
+            if db and db.lootWindow and db.lootWindow.enabled then
+                self:Hide()
+            end
+        end)
+        lootFrameHooked = true
+    end
 end
 
 local function SuppressBlizzardRollFrames()
@@ -197,6 +215,17 @@ function Addon:OnEnable()
     -- Suppress Blizzard frames when our replacement is enabled
     if db.lootWindow and db.lootWindow.enabled then
         SuppressBlizzardLootFrame()
+
+        -- If LootFrame doesn't exist yet (Blizzard LoD addon not loaded),
+        -- watch ADDON_LOADED and suppress as soon as it appears.
+        if not LootFrame then
+            self:RegisterEvent("ADDON_LOADED", function()
+                if LootFrame then
+                    SuppressBlizzardLootFrame()
+                    self:UnregisterEvent("ADDON_LOADED")
+                end
+            end)
+        end
     end
     if db.rollFrame and db.rollFrame.enabled then
         SuppressBlizzardRollFrames()
@@ -217,6 +246,9 @@ function Addon:OnDisable()
     -- Restore Blizzard frames
     RestoreBlizzardLootFrame()
     RestoreBlizzardRollFrames()
+
+    -- Stop watching for Blizzard LoD addon if still waiting
+    pcall(self.UnregisterEvent, self, "ADDON_LOADED")
 
     -- Shutdown modules if present
     if ns.LootFrame.Shutdown then ns.LootFrame.Shutdown() end
