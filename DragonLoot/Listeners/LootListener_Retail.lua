@@ -29,6 +29,15 @@ local function OnLootOpened(_, autoLoot)
     -- LOOT_OPENED fires first on Retail and carries the autoLoot flag.
     -- Capture it for LOOT_READY which follows immediately after.
     pendingAutoLoot = (autoLoot == 1) or (autoLoot == true)
+
+    -- Suppress the Blizzard loot frame as early as possible. LOOT_OPENED
+    -- fires before LOOT_READY; without this, Blizzard's LootFrame processes
+    -- LOOT_OPENED and shows before OnLootReady can suppress it.
+    local db = ns.Addon.db and ns.Addon.db.profile
+    if db and db.lootWindow and db.lootWindow.enabled then
+        ns.SuppressBlizzardLootFrame()
+    end
+
     ns.DebugPrint("LOOT_OPENED captured autoLoot=" .. tostring(pendingAutoLoot))
 end
 
