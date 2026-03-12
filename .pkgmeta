@@ -17,11 +17,10 @@ ignore:
   - ".git*"
   - .luacheckrc
   - .release
-  - scripts
   - "*.md"
   - "*.png"
   - release-please-config.json
   - .release-please-manifest.json
-  - spec/
-  - scripts/
-  - "Assets/*logo*"
+  - "*spec/"
+  - "*scripts/"
+  - "*Assets/"
