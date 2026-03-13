@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.4](https://github.com/DragonAddons/DragonLoot/compare/0.6.3...0.6.4) (2026-03-13)
+
+
+### ⚙️ Miscellaneous Tasks
+
+* fix wrong toc version ([864ec29](https://github.com/DragonAddons/DragonLoot/commit/864ec29f1d447eae883951a613f32d5516c0c6a6))
+
 ## [0.6.3](https://github.com/DragonAddons/DragonLoot/compare/0.6.2...0.6.3) (2026-03-13)
 
 
