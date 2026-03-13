@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/DragonAddons/DragonLoot/compare/0.6.2...0.6.3) (2026-03-13)
+
+
+### ⚙️ Miscellaneous Tasks
+
+* toc bump ([91f3c40](https://github.com/DragonAddons/DragonLoot/commit/91f3c40409d6867ac663b44e2caf17b49908a514))
+
 ## [0.6.2](https://github.com/DragonAddons/DragonLoot/compare/0.6.1...0.6.2) (2026-03-13)
 
 
