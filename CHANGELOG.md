@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.2](https://github.com/DragonAddons/DragonLoot/compare/0.6.1...0.6.2) (2026-03-13)
+
+
+### 🐛 Bug Fixes
+
+* remember to include missing interface versions ([#72](https://github.com/DragonAddons/DragonLoot/issues/72)) ([249748a](https://github.com/DragonAddons/DragonLoot/commit/249748a920af953cd3686bc333cc2ebf2b7e887b))
+* use correct verion tags ([#70](https://github.com/DragonAddons/DragonLoot/issues/70)) ([b7a503d](https://github.com/DragonAddons/DragonLoot/commit/b7a503d49723cbf0a700e3b91bf9d271edb5630a))
+
+
+### 🚜 Refactor
+
+* codebase-wide consistency and maintainability improvements ([#73](https://github.com/DragonAddons/DragonLoot/issues/73)) ([24619ab](https://github.com/DragonAddons/DragonLoot/commit/24619abe3a3bb15c182f483d5f759ddd793b2723))
+
 ## [0.6.1](https://github.com/DragonAddons/DragonLoot/compare/0.6.0...0.6.1) (2026-03-11)
 
 
