@@ -32,9 +32,10 @@ jobs:
           fi
           echo "TAG_NAME=$TAG" >> "$GITHUB_ENV"
 
-      - name: Checkout workflow source
+      - name: Checkout helper script source
         uses: actions/checkout@v5
         with:
+          ref: refs/heads/master
           fetch-depth: 1
           path: workflow-source
 
