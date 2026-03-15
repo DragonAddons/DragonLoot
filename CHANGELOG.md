@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.7](https://github.com/Xerrion/DragonLoot/compare/0.6.6...0.6.7) (2026-03-15)
+
+
+### 🐛 Bug Fixes
+
+* resolve lingering roll frames caused by lootHandle/rollID mismatch ([#80](https://github.com/Xerrion/DragonLoot/issues/80)) ([9d4d38f](https://github.com/Xerrion/DragonLoot/commit/9d4d38fc85fb0cecf17e24a73664b4dd51f58977))
+
 ## [0.6.6](https://github.com/Xerrion/DragonLoot/compare/0.6.5...0.6.6) (2026-03-15)
 
 
