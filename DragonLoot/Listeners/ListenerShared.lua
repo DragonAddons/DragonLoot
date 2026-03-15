@@ -31,6 +31,15 @@ LS.MILLISECONDS_PER_SECOND = 1000
 LS.WINNER_RESOLVE_DELAY = 0.3
 
 -------------------------------------------------------------------------------
+-- lootHandle -> rollID mapping
+-- START_LOOT_ROLL provides (rollID, rollTime, lootHandle) but
+-- LOOT_ROLLS_COMPLETE fires with (lootHandle), not rollID. This map resolves
+-- the mismatch so OnRollComplete receives the correct rollID.
+-------------------------------------------------------------------------------
+
+local lootHandleToRollID = {}
+
+-------------------------------------------------------------------------------
 -- Item texture helper
 -- Used by HistoryListener_Retail, HistoryListener_Classic, LootHistoryChat
 -------------------------------------------------------------------------------
@@ -79,8 +88,11 @@ end
 -- Used by RollListener_Retail and RollListener_Classic
 -------------------------------------------------------------------------------
 
-function LS.OnStartLootRoll(isRollActive, rollID, rollTime, msPerSec, _)
+function LS.OnStartLootRoll(isRollActive, rollID, rollTime, msPerSec, _, lootHandle)
     if not isRollActive then return end
+    if lootHandle then
+        lootHandleToRollID[lootHandle] = rollID
+    end
     local rollTimeSec = rollTime / msPerSec
     ns.RollManager.StartRoll(rollID, rollTimeSec)
     ns.DebugPrint("START_LOOT_ROLL: rollID=" .. tostring(rollID)
@@ -91,6 +103,12 @@ function LS.OnCancelLootRoll(isRollActive, rollID)
     if not isRollActive then return end
     local rolls = ns.RollManager.GetActiveRolls()
     if rolls[rollID] and rolls[rollID].completing then return end
+    for handle, id in pairs(lootHandleToRollID) do
+        if id == rollID then
+            lootHandleToRollID[handle] = nil
+            break
+        end
+    end
     ns.RollManager.CancelRoll(rollID)
     ns.DebugPrint("CANCEL_LOOT_ROLL: rollID=" .. tostring(rollID))
 end
@@ -104,8 +122,11 @@ end
 
 function LS.OnLootRollsComplete(isRollActive, lootHandle)
     if not isRollActive then return end
-    ns.RollManager.OnRollComplete(lootHandle)
-    ns.DebugPrint("LOOT_ROLLS_COMPLETE: handle=" .. tostring(lootHandle))
+    local rollID = lootHandleToRollID[lootHandle] or lootHandle
+    lootHandleToRollID[lootHandle] = nil
+    ns.RollManager.OnRollComplete(rollID)
+    ns.DebugPrint("LOOT_ROLLS_COMPLETE: handle=" .. tostring(lootHandle)
+        .. " rollID=" .. tostring(rollID))
 end
 
 function LS.OnLootItemRollWon(isRollActive, itemLink, rollType, rollValue)

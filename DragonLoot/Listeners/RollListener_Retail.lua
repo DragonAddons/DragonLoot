@@ -40,8 +40,8 @@ local lifecycleState = LifecycleUtil.CreateState()
 -- Event Handlers
 -------------------------------------------------------------------------------
 
-local function OnStartLootRoll(_, rollID, rollTime)
-    LS.OnStartLootRoll(isRollActive, rollID, rollTime, LS.MILLISECONDS_PER_SECOND)
+local function OnStartLootRoll(_, rollID, rollTime, lootHandle)
+    LS.OnStartLootRoll(isRollActive, rollID, rollTime, LS.MILLISECONDS_PER_SECOND, nil, lootHandle)
 end
 
 local function OnCancelLootRoll(_, rollID)
