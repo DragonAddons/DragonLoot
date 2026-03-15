@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.6](https://github.com/Xerrion/DragonLoot/compare/0.6.5...0.6.6) (2026-03-15)
+
+
+### ⚙️ Miscellaneous Tasks
+
+* update repo refs ([0bd502a](https://github.com/Xerrion/DragonLoot/commit/0bd502a831b166b236d6a7fa158407c3d2c0c6ae))
+
 ## [0.6.5](https://github.com/Xerrion/DragonLoot/compare/0.6.4...0.6.5) (2026-03-15)
 
 
