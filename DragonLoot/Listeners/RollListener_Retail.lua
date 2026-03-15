@@ -41,7 +41,7 @@ local lifecycleState = LifecycleUtil.CreateState()
 -------------------------------------------------------------------------------
 
 local function OnStartLootRoll(_, rollID, rollTime, lootHandle)
-    LS.OnStartLootRoll(isRollActive, rollID, rollTime, LS.MILLISECONDS_PER_SECOND, nil, lootHandle)
+    LS.OnStartLootRoll(isRollActive, rollID, rollTime, LS.MILLISECONDS_PER_SECOND, "Retail", lootHandle)
 end
 
 local function OnCancelLootRoll(_, rollID)
