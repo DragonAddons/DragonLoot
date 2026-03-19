@@ -560,6 +560,7 @@ local function RenderSlot(slot, data, isTest)
 
     -- Item name
     slot.itemName:SetFont(fontPath, fontSize, fontOutline)
+    DU.ApplyFontShadow(slot.itemName, ns.Addon.db)
     slot.itemName:SetText(data.name)
     slot.itemName:SetTextColor(r, g, b)
 
@@ -575,6 +576,7 @@ local function RenderSlot(slot, data, isTest)
     if data.subText then
         local subFontSize = math.max(fontSize - 2, 8)
         slot.subText:SetFont(fontPath, subFontSize, fontOutline)
+        DU.ApplyFontShadow(slot.subText, ns.Addon.db)
         slot.subText:SetText(data.subText)
         slot.subText:SetTextColor(0.6, 0.6, 0.6)
         slot.subText:Show()
@@ -694,6 +696,7 @@ local function CreateContainerFrame()
     frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     frame.title:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -6)
     frame.title:SetFont(fontPath, fontSize, fontOutline)
+    DU.ApplyFontShadow(frame.title, ns.Addon.db)
     frame.title:SetText(L["Loot"])
     frame.title:SetTextColor(1, 0.82, 0)
 
@@ -972,11 +975,13 @@ function ns.LootFrame.ApplySettings()
     -- Update title font
     local fontPath, fontSize, fontOutline = GetFont()
     containerFrame.title:SetFont(fontPath, fontSize, fontOutline)
+    DU.ApplyFontShadow(containerFrame.title, ns.Addon.db)
 
     -- Update visible slots
     for _, slot in ipairs(activeSlots) do
         if slot:IsShown() then
             slot.itemName:SetFont(fontPath, fontSize, fontOutline)
+            DU.ApplyFontShadow(slot.itemName, ns.Addon.db)
             -- Refresh quality border visibility
             if slot.slotIndex then
                 local _, _, _, quality = GetNormalizedSlotInfo(slot.slotIndex)
@@ -992,6 +997,7 @@ function ns.LootFrame.ApplySettings()
                 -- Update sub-text font
                 local subFontSize = math.max(fontSize - 2, 8)
                 slot.subText:SetFont(fontPath, subFontSize, fontOutline)
+                DU.ApplyFontShadow(slot.subText, ns.Addon.db)
                 -- Refresh row background and highlight
                 ApplySlotBackground(slot, quality)
                 slot.highlight:SetColorTexture(slot._qr or 1, slot._qg or 1, slot._qb or 1, 0.15)

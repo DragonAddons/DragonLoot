@@ -37,6 +37,12 @@ local defaults = {
             lock = false,
             timerBarHeight = 12,
             timerBarTexture = "Blizzard",
+            timerBarBorder = false,
+            timerBarBorderColor = { r = 0.3, g = 0.3, b = 0.3 },
+            timerBarColorMode = "gradient",
+            timerBarColor = { r = 0, g = 1, b = 0 },
+            timerBarBackgroundColor = { r = 0.1, g = 0.1, b = 0.1 },
+            timerBarBackgroundAlpha = 0.8,
             frameWidth = 328,
             rowSpacing = 4,
             timerBarSpacing = 4,
@@ -44,6 +50,10 @@ local defaults = {
             buttonSize = 24,
             buttonSpacing = 4,
             frameSpacing = 4,
+            frameMinHeight = 68,
+            compactTextLayout = false,
+            timerBarStyle = "normal",
+            timerBarMinimalHeight = 3,
         },
 
         history = {
@@ -55,12 +65,14 @@ local defaults = {
             minQuality = 2,  -- Uncommon
             entrySpacing = 2,
             contentPadding = 6,
+            showRollDetails = true,
         },
 
         appearance = {
             font = "Friz Quadrata TT",
             fontSize = 12,
             fontOutline = "OUTLINE",
+            fontShadow = true,
             lootIconSize = 36,
             rollIconSize = 36,
             historyIconSize = 24,

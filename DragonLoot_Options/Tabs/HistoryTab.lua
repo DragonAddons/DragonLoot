@@ -90,6 +90,25 @@ local function CreateTogglesSection(parent, W, db, yOffset)
     -- Apply initial disabled state based on current trackDirectLoot value
     qualityDropdown:SetDisabled(not db.profile.history.trackDirectLoot)
 
+    -- Section gap
+    yOffset = yOffset - LC.SPACING_BETWEEN_SECTIONS + LC.SPACING_BETWEEN_WIDGETS
+
+    -- Roll Details header
+    local detailsHeader = W.CreateHeader(parent, L["Roll Details"])
+    yOffset = LC.AnchorWidget(detailsHeader, parent, yOffset) - LC.SPACING_AFTER_HEADER
+
+    -- Show Roll Details toggle
+    local rollDetailsToggle = W.CreateToggle(parent, {
+        label = L["Show Roll Details"],
+        tooltip = L["Click history entries to expand and see all player rolls"],
+        get = function() return db.profile.history.showRollDetails end,
+        set = function(value)
+            db.profile.history.showRollDetails = value
+            ApplyHistorySettings()
+        end,
+    })
+    yOffset = LC.AnchorWidget(rollDetailsToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
     return yOffset
 end
 

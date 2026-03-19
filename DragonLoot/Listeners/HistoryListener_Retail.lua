@@ -114,6 +114,23 @@ local function ProcessDrop(encounterID, drop)
     local winner = drop.winner
     local leader = drop.currentLeader
 
+    -- Build per-player roll results for history detail expansion
+    local rollResults
+    if drop.rollInfos then
+        rollResults = {}
+        for _, rollInfo in ipairs(drop.rollInfos) do
+            if rollInfo.playerName then
+                rollResults[#rollResults + 1] = {
+                    playerName = rollInfo.playerName,
+                    playerClass = rollInfo.playerClass,
+                    rollType = ConvertRollState(rollInfo.state),
+                    roll = rollInfo.roll,
+                }
+            end
+        end
+        if #rollResults == 0 then rollResults = nil end
+    end
+
     local entry = {
         itemLink = itemLink,
         itemTexture = GetItemTexture(itemLink),
@@ -126,6 +143,7 @@ local function ProcessDrop(encounterID, drop)
         isComplete = drop.allPassed or (winner ~= nil),
         encounterID = encounterID,
         dropKey = dropKey,
+        rollResults = rollResults,
     }
 
     if processedDrops[dropKey] then

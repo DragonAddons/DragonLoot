@@ -17,8 +17,10 @@ local UIParent = UIParent
 local GetTime = GetTime
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 local HandleModifiedItemClick = HandleModifiedItemClick
+local IsShiftKeyDown = IsShiftKeyDown
 local math_floor = math.floor
 local string_format = string.format
+local tostring = tostring
 
 local L = ns.L
 local DU = ns.DisplayUtils
@@ -37,6 +39,8 @@ local SCROLLBAR_GAP = 2
 local DEFAULT_HISTORY_X_OFFSET = 200
 local SCROLLBAR_THUMB_HEIGHT = 30
 local TIME_REFRESH_INTERVAL = 10
+local DETAIL_ROW_HEIGHT = 16
+local DETAIL_PADDING = 4
 
 local function GetEntrySpacing()
     return ns.Addon.db.profile.history.entrySpacing or 2
@@ -62,12 +66,17 @@ local scrollBar
 local entryPool = {}
 local entryCount = 0
 local activeEntries = {}
+local expandedEntries = {}
+local detailRowPool = {}
 
 -------------------------------------------------------------------------------
 -- History data (populated by listeners)
 -------------------------------------------------------------------------------
 
 ns.historyData = {}
+
+-- Forward declaration for RefreshHistory (used by OnEntryClick)
+local RefreshHistory
 
 -------------------------------------------------------------------------------
 -- Backdrop and font wrappers (delegate to DisplayUtils)
@@ -212,7 +221,90 @@ local function CreateEntryFrame()
     entry.highlight:SetAllPoints()
     entry.highlight:SetColorTexture(1, 1, 1, 0.05)
 
+    -- Detail container for expanded roll results
+    entry.detailContainer = CreateFrame("Frame", nil, entry)
+    entry.detailContainer:SetPoint("TOPLEFT", entry.icon, "BOTTOMLEFT", 0, -2)
+    entry.detailContainer:SetPoint("RIGHT", entry, "RIGHT", 0, 0)
+    entry.detailContainer:Hide()
+
+    -- Expand indicator
+    entry.expandIndicator = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    entry.expandIndicator:SetPoint("BOTTOMRIGHT", entry.icon, "BOTTOMRIGHT", -1, 1)
+    entry.expandIndicator:SetTextColor(1, 0.82, 0)
+    entry.expandIndicator:Hide()
+
+    entry.detailRows = {}
+
     return entry
+end
+
+-------------------------------------------------------------------------------
+-- Detail row creation and pool management
+-------------------------------------------------------------------------------
+
+local function CreateDetailRow(parent)
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetHeight(DETAIL_ROW_HEIGHT)
+
+    local fontPath, fontSize, fontOutline = GetFont()
+
+    row.playerName = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    row.playerName:SetPoint("LEFT", row, "LEFT", 4, 0)
+    row.playerName:SetFont(fontPath, fontSize - 2, fontOutline)
+    row.playerName:SetJustifyH("LEFT")
+
+    row.rollType = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    row.rollType:SetPoint("CENTER", row, "CENTER", 0, 0)
+    row.rollType:SetFont(fontPath, fontSize - 2, fontOutline)
+    row.rollType:SetJustifyH("CENTER")
+    row.rollType:SetTextColor(0.8, 0.8, 0.8)
+
+    row.rollValue = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    row.rollValue:SetPoint("RIGHT", row, "RIGHT", -4, 0)
+    row.rollValue:SetFont(fontPath, fontSize - 2, fontOutline)
+    row.rollValue:SetJustifyH("RIGHT")
+    row.rollValue:SetTextColor(0.9, 0.9, 0.9)
+
+    return row
+end
+
+local function AcquireDetailRow(parent)
+    local row = table.remove(detailRowPool)
+    if not row then
+        row = CreateDetailRow(parent)
+    else
+        row:SetParent(parent)
+    end
+    row:Show()
+    return row
+end
+
+local function ReleaseDetailRow(row)
+    row:Hide()
+    row:ClearAllPoints()
+    row.playerName:SetText("")
+    row.rollType:SetText("")
+    row.rollValue:SetText("")
+    table.insert(detailRowPool, row)
+end
+
+local function ReleaseEntryDetails(entry)
+    if entry.detailRows then
+        for i = #entry.detailRows, 1, -1 do
+            ReleaseDetailRow(entry.detailRows[i])
+            entry.detailRows[i] = nil
+        end
+    end
+    if entry.detailContainer then
+        entry.detailContainer:Hide()
+    end
+end
+
+local function GetEntryKey(data)
+    if data.dropKey then
+        return data.dropKey
+    end
+    return (data.timestamp or 0) .. "|" .. (data.itemLink or "") .. "|" .. (data.winner or "")
 end
 
 -------------------------------------------------------------------------------
@@ -231,15 +323,19 @@ end
 local function ReleaseEntry(entry)
     if entry._isPooled then return end
     entry._isPooled = true
+    ReleaseEntryDetails(entry)
     entry:Hide()
     entry:ClearAllPoints()
     entry.itemLink = nil
     entry.quality = nil
+    entry._entryKey = nil
+    entry._rollResults = nil
     entry.icon:SetTexture(nil)
     entry.itemName:SetText("")
     entry.winnerName:SetText("")
     entry.rollInfo:SetText("")
     entry.timeText:SetText("")
+    if entry.expandIndicator then entry.expandIndicator:Hide() end
     entry:SetScript("OnClick", nil)
     entry:SetScript("OnEnter", nil)
     entry:SetScript("OnLeave", nil)
@@ -269,10 +365,81 @@ local function OnEntryLeave()
     GameTooltip:Hide()
 end
 
-local function OnEntryClick(self)
-    if self.itemLink then
+local function OnEntryClick(self, _button)
+    if not self.itemLink then return end
+
+    local db = ns.Addon.db.profile
+    local canExpand = db.history.showRollDetails and self._rollResults
+        and #self._rollResults > 0
+
+    -- Shift-click always inserts item link
+    if IsShiftKeyDown() then
         HandleModifiedItemClick(self.itemLink)
+        return
     end
+
+    -- Toggle expand/collapse if roll details are available
+    if canExpand then
+        local key = self._entryKey
+        if expandedEntries[key] then
+            expandedEntries[key] = nil
+        else
+            expandedEntries[key] = true
+        end
+        RefreshHistory()
+        return
+    end
+
+    -- Default: insert item link
+    HandleModifiedItemClick(self.itemLink)
+end
+
+-------------------------------------------------------------------------------
+-- Populate detail rows for an expanded entry
+-------------------------------------------------------------------------------
+
+local function PopulateEntryDetails(entry, rollResults)
+    ReleaseEntryDetails(entry)
+
+    if not rollResults or #rollResults == 0 then
+        entry.detailContainer:Hide()
+        return
+    end
+
+    local fontPath, fontSize, fontOutline = GetFont()
+    entry.detailRows = {}
+
+    for idx, result in ipairs(rollResults) do
+        local row = AcquireDetailRow(entry.detailContainer)
+        row:SetPoint("TOPLEFT", entry.detailContainer, "TOPLEFT", 0,
+            -((idx - 1) * DETAIL_ROW_HEIGHT))
+        row:SetPoint("RIGHT", entry.detailContainer, "RIGHT", 0, 0)
+
+        -- Font
+        row.playerName:SetFont(fontPath, fontSize - 2, fontOutline)
+        DU.ApplyFontShadow(row.playerName, ns.Addon.db)
+        row.rollType:SetFont(fontPath, fontSize - 2, fontOutline)
+        DU.ApplyFontShadow(row.rollType, ns.Addon.db)
+        row.rollValue:SetFont(fontPath, fontSize - 2, fontOutline)
+        DU.ApplyFontShadow(row.rollValue, ns.Addon.db)
+
+        -- Player name (class colored)
+        local cr, cg, cb = GetClassColor(result.playerClass)
+        row.playerName:SetText(result.playerName or "")
+        row.playerName:SetTextColor(cr, cg, cb)
+
+        -- Roll type
+        row.rollType:SetText(GetRollTypeText(result.rollType))
+
+        -- Roll value
+        row.rollValue:SetText(result.roll and tostring(result.roll) or "-")
+
+        entry.detailRows[idx] = row
+    end
+
+    local containerHeight = #rollResults * DETAIL_ROW_HEIGHT + DETAIL_PADDING
+    entry.detailContainer:SetHeight(containerHeight)
+    entry.detailContainer:Show()
 end
 
 -------------------------------------------------------------------------------
@@ -299,6 +466,7 @@ local function PopulateEntry(entry, data)
     -- Item name (quality colored)
     local fontPath, fontSize, fontOutline = GetFont()
     entry.itemName:SetFont(fontPath, fontSize - 1, fontOutline)
+    DU.ApplyFontShadow(entry.itemName, ns.Addon.db)
     if data.itemLink then
         -- Extract name from link for display, fallback to link itself
         local name = data.itemLink:match("%[(.-)%]") or data.itemLink
@@ -310,6 +478,7 @@ local function PopulateEntry(entry, data)
 
     -- Winner name (class colored)
     entry.winnerName:SetFont(fontPath, fontSize - 2, fontOutline)
+    DU.ApplyFontShadow(entry.winnerName, ns.Addon.db)
     if data.winner then
         local cr, cg, cb = GetClassColor(data.winnerClass)
         entry.winnerName:SetText(data.winner)
@@ -320,6 +489,7 @@ local function PopulateEntry(entry, data)
 
     -- Roll info
     entry.rollInfo:SetFont(fontPath, fontSize - 2, fontOutline)
+    DU.ApplyFontShadow(entry.rollInfo, ns.Addon.db)
     if data.isDirectLoot then
         entry.rollInfo:SetText(L["Looted"])
         entry.rollInfo:SetTextColor(0.6, 0.6, 0.6)
@@ -334,7 +504,32 @@ local function PopulateEntry(entry, data)
 
     -- Time
     entry.timeText:SetFont(fontPath, fontSize - 2, fontOutline)
+    DU.ApplyFontShadow(entry.timeText, ns.Addon.db)
     entry.timeText:SetText(FormatTimeAgo(data.timestamp))
+
+    -- Roll details expand/collapse
+    local db = ns.Addon.db.profile
+    local entryKey = GetEntryKey(data)
+    entry._entryKey = entryKey
+    entry._rollResults = data.rollResults
+
+    if db.history.showRollDetails and data.rollResults and #data.rollResults > 0 then
+        local fontPath2, fontSize2, fontOutline2 = GetFont()
+        entry.expandIndicator:SetFont(fontPath2, fontSize2 - 3, fontOutline2)
+        DU.ApplyFontShadow(entry.expandIndicator, ns.Addon.db)
+        if expandedEntries[entryKey] then
+            entry.expandIndicator:SetText("-")
+            entry.expandIndicator:Show()
+            PopulateEntryDetails(entry, data.rollResults)
+        else
+            entry.expandIndicator:SetText("+")
+            entry.expandIndicator:Show()
+            ReleaseEntryDetails(entry)
+        end
+    else
+        entry.expandIndicator:Hide()
+        ReleaseEntryDetails(entry)
+    end
 
     -- Interaction scripts (named functions, no per-entry closures)
     entry:SetScript("OnEnter", OnEntryEnter)
@@ -367,11 +562,12 @@ end
 -- Refresh history display
 -------------------------------------------------------------------------------
 
-local function RefreshHistory()
+RefreshHistory = function()
     if not containerFrame or not containerFrame:IsShown() then return end
 
     ReleaseAllEntries()
 
+    local db = ns.Addon.db.profile
     local entryHeight = GetEntryHeight()
     local entrySpacing = GetEntrySpacing()
     local yOffset = 0
@@ -382,11 +578,21 @@ local function RefreshHistory()
         entry:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, -yOffset)
         entry:SetPoint("RIGHT", scrollChild, "RIGHT", 0, 0)
         activeEntries[i] = entry
-        yOffset = yOffset + entryHeight + entrySpacing
+
+        -- Variable height: base + expanded detail rows
+        local thisHeight = entryHeight
+        local entryKey = GetEntryKey(data)
+        if db.history.showRollDetails and expandedEntries[entryKey]
+            and data.rollResults and #data.rollResults > 0 then
+            thisHeight = entryHeight + (#data.rollResults * DETAIL_ROW_HEIGHT)
+                + DETAIL_PADDING
+        end
+        entry:SetHeight(thisHeight)
+        yOffset = yOffset + thisHeight + entrySpacing
     end
 
-    -- Resize scroll child to fit all entries
-    local totalHeight = #ns.historyData * (entryHeight + entrySpacing)
+    -- Resize scroll child to fit all entries (use accumulated yOffset)
+    local totalHeight = yOffset
     if totalHeight < 1 then totalHeight = 1 end
     scrollChild:SetHeight(totalHeight)
 
@@ -437,6 +643,7 @@ local function CreateTitleBar(parent)
     titleBar.text = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleBar.text:SetPoint("LEFT", titleBar, "LEFT", 8, 0)
     titleBar.text:SetFont(fontPath, fontSize, fontOutline)
+    DU.ApplyFontShadow(titleBar.text, ns.Addon.db)
     titleBar.text:SetText(L["DragonLoot - Loot History"])
     titleBar.text:SetTextColor(1, 0.82, 0)
 
@@ -664,6 +871,7 @@ function ns.HistoryFrame.ApplySettings()
     -- Update title font
     local fontPath, fontSize, fontOutline = GetFont()
     containerFrame.titleBar.text:SetFont(fontPath, fontSize, fontOutline)
+    DU.ApplyFontShadow(containerFrame.titleBar.text, ns.Addon.db)
 
     -- Update visible entries with current icon size and entry height
     local db = ns.Addon.db.profile
@@ -674,9 +882,25 @@ function ns.HistoryFrame.ApplySettings()
             entry:SetHeight(entryHeight)
             entry.icon:SetSize(iconSize, iconSize)
             entry.itemName:SetFont(fontPath, fontSize - 1, fontOutline)
+            DU.ApplyFontShadow(entry.itemName, ns.Addon.db)
             entry.winnerName:SetFont(fontPath, fontSize - 2, fontOutline)
+            DU.ApplyFontShadow(entry.winnerName, ns.Addon.db)
             entry.rollInfo:SetFont(fontPath, fontSize - 2, fontOutline)
+            DU.ApplyFontShadow(entry.rollInfo, ns.Addon.db)
             entry.timeText:SetFont(fontPath, fontSize - 2, fontOutline)
+            DU.ApplyFontShadow(entry.timeText, ns.Addon.db)
+
+            -- Update detail rows if expanded
+            if entry.detailRows then
+                for _, row in ipairs(entry.detailRows) do
+                    row.playerName:SetFont(fontPath, fontSize - 2, fontOutline)
+                    DU.ApplyFontShadow(row.playerName, ns.Addon.db)
+                    row.rollType:SetFont(fontPath, fontSize - 2, fontOutline)
+                    DU.ApplyFontShadow(row.rollType, ns.Addon.db)
+                    row.rollValue:SetFont(fontPath, fontSize - 2, fontOutline)
+                    DU.ApplyFontShadow(row.rollValue, ns.Addon.db)
+                end
+            end
 
             -- Refresh quality border visibility
             if entry.itemLink and db.appearance.qualityBorder then
@@ -747,6 +971,7 @@ function ns.HistoryFrame.SetEntries(entries)
 end
 
 function ns.HistoryFrame.ClearHistory()
+    wipe(expandedEntries)
     wipe(ns.historyData)
     if containerFrame and containerFrame:IsShown() then
         RefreshHistory()

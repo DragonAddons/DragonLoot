@@ -33,6 +33,20 @@ local function NotifyRollManager()
 end
 
 -------------------------------------------------------------------------------
+-- Timer bar color mode values
+-------------------------------------------------------------------------------
+
+local COLOR_MODE_VALUES = {
+    { value = "gradient", text = L["Gradient"] },
+    { value = "custom", text = L["Custom"] },
+}
+
+local TIMER_BAR_STYLE_VALUES = {
+    { value = "normal", text = L["Normal"] },
+    { value = "minimal", text = L["Minimal"] },
+}
+
+-------------------------------------------------------------------------------
 -- Section: Roll Frame (basic settings)
 -------------------------------------------------------------------------------
 
@@ -89,13 +103,62 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
     yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
 
     yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
+        L["Frame Height"], L["Minimum height of the roll frame"], "frameMinHeight", 40, 120, 1, "%d")
+    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
         L["Scale"], L["Roll frame scale"], "scale", 0.5, 2, 0.05, "%.2f")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
         L["Frame Width"], L["Width of the roll frame"], "frameWidth", 200, 500, 10, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
         L["Row Spacing"], L["Vertical spacing between roll rows"], "rowSpacing", 0, 16, 1, "%d")
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
-        L["Timer Bar Height"], L["Height of the countdown timer bar"], "timerBarHeight", 6, 24, 1, "%d")
+    -- Timer Bar Style dropdown + height sliders
+    local timerBarHeightSlider, minimalHeightSlider  -- forward declare
+
+    local styleDropdown = W.CreateDropdown(parent, {
+        label = L["Timer Bar Style"],
+        values = TIMER_BAR_STYLE_VALUES,
+        get = function() return db.profile.rollFrame.timerBarStyle end,
+        set = function(value)
+            db.profile.rollFrame.timerBarStyle = value
+            local isMinimal = (value == "minimal")
+            if timerBarHeightSlider then timerBarHeightSlider:SetDisabled(isMinimal) end
+            if minimalHeightSlider then minimalHeightSlider:SetDisabled(not isMinimal) end
+            NotifyRollManager()
+        end,
+    })
+    yOffset = LC.AnchorWidget(styleDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    timerBarHeightSlider = W.CreateSlider(parent, {
+        label = L["Timer Bar Height"],
+        tooltip = L["Height of the countdown timer bar"],
+        min = 6,
+        max = 24,
+        step = 1,
+        format = "%d",
+        get = function() return db.profile.rollFrame.timerBarHeight end,
+        set = function(value)
+            db.profile.rollFrame.timerBarHeight = value
+            NotifyRollManager()
+        end,
+    })
+    timerBarHeightSlider:SetDisabled(db.profile.rollFrame.timerBarStyle == "minimal")
+    yOffset = LC.AnchorWidget(timerBarHeightSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    minimalHeightSlider = W.CreateSlider(parent, {
+        label = L["Minimal Height"],
+        tooltip = L["Height of the minimal timer bar"],
+        min = 1,
+        max = 6,
+        step = 1,
+        format = "%d",
+        get = function() return db.profile.rollFrame.timerBarMinimalHeight end,
+        set = function(value)
+            db.profile.rollFrame.timerBarMinimalHeight = value
+            NotifyRollManager()
+        end,
+    })
+    minimalHeightSlider:SetDisabled(db.profile.rollFrame.timerBarStyle ~= "minimal")
+    yOffset = LC.AnchorWidget(minimalHeightSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
     yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
         L["Timer Bar Spacing"], L["Space between item row and timer bar"], "timerBarSpacing", 0, 16, 1, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
@@ -106,6 +169,17 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
         L["Button Spacing"], L["Spacing between roll buttons"], "buttonSpacing", 0, 12, 1, "%d")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
         L["Frame Spacing"], L["Spacing between multiple roll frames"], "frameSpacing", 0, 16, 1, "%d")
+
+    local compactToggle = W.CreateToggle(parent, {
+        label = L["Compact Text Layout"],
+        tooltip = L["Show item name and bind type on the same line"],
+        get = function() return db.profile.rollFrame.compactTextLayout end,
+        set = function(value)
+            db.profile.rollFrame.compactTextLayout = value
+            NotifyRollManager()
+        end,
+    })
+    yOffset = LC.AnchorWidget(compactToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
 
     local textureDropdown = W.CreateDropdown(parent, {
         label = L["Timer Bar Texture"],
@@ -118,7 +192,104 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(textureDropdown, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    yOffset = LC.AnchorWidget(textureDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    -- Timer Bar Appearance sub-section
+    local timerBarHeader = W.CreateHeader(parent, L["Timer Bar Appearance"])
+    yOffset = LC.AnchorWidget(timerBarHeader, parent, yOffset) - LC.SPACING_AFTER_HEADER
+
+    local borderColorPicker  -- forward declare
+
+    local borderToggle = W.CreateToggle(parent, {
+        label = L["Timer Bar Border"],
+        tooltip = L["Show a border around the timer bar"],
+        get = function() return db.profile.rollFrame.timerBarBorder end,
+        set = function(value)
+            db.profile.rollFrame.timerBarBorder = value
+            if borderColorPicker then borderColorPicker:SetDisabled(not value) end
+            NotifyRollManager()
+        end,
+    })
+    yOffset = LC.AnchorWidget(borderToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    borderColorPicker = W.CreateColorPicker(parent, {
+        label = L["Timer Bar Border Color"],
+        hasAlpha = false,
+        get = function()
+            local c = db.profile.rollFrame.timerBarBorderColor
+            return c.r, c.g, c.b
+        end,
+        set = function(r, g, b)
+            db.profile.rollFrame.timerBarBorderColor.r = r
+            db.profile.rollFrame.timerBarBorderColor.g = g
+            db.profile.rollFrame.timerBarBorderColor.b = b
+            NotifyRollManager()
+        end,
+    })
+    borderColorPicker:SetDisabled(not db.profile.rollFrame.timerBarBorder)
+    yOffset = LC.AnchorWidget(borderColorPicker, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    local barColorPicker  -- forward declare
+
+    local colorModeDropdown = W.CreateDropdown(parent, {
+        label = L["Color Mode"],
+        values = COLOR_MODE_VALUES,
+        get = function() return db.profile.rollFrame.timerBarColorMode end,
+        set = function(value)
+            db.profile.rollFrame.timerBarColorMode = value
+            if barColorPicker then barColorPicker:SetDisabled(value ~= "custom") end
+            NotifyRollManager()
+        end,
+    })
+    yOffset = LC.AnchorWidget(colorModeDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    barColorPicker = W.CreateColorPicker(parent, {
+        label = L["Bar Color"],
+        hasAlpha = false,
+        get = function()
+            local c = db.profile.rollFrame.timerBarColor
+            return c.r, c.g, c.b
+        end,
+        set = function(r, g, b)
+            db.profile.rollFrame.timerBarColor.r = r
+            db.profile.rollFrame.timerBarColor.g = g
+            db.profile.rollFrame.timerBarColor.b = b
+            NotifyRollManager()
+        end,
+    })
+    barColorPicker:SetDisabled(db.profile.rollFrame.timerBarColorMode ~= "custom")
+    yOffset = LC.AnchorWidget(barColorPicker, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    local bgColorPicker = W.CreateColorPicker(parent, {
+        label = L["Bar Background"],
+        hasAlpha = false,
+        get = function()
+            local c = db.profile.rollFrame.timerBarBackgroundColor
+            return c.r, c.g, c.b
+        end,
+        set = function(r, g, b)
+            db.profile.rollFrame.timerBarBackgroundColor.r = r
+            db.profile.rollFrame.timerBarBackgroundColor.g = g
+            db.profile.rollFrame.timerBarBackgroundColor.b = b
+            NotifyRollManager()
+        end,
+    })
+    yOffset = LC.AnchorWidget(bgColorPicker, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    local bgOpacitySlider = W.CreateSlider(parent, {
+        label = L["Bar Background Opacity"],
+        min = 0,
+        max = 1,
+        step = 0.05,
+        isPercent = true,
+        format = "%.0f",
+        get = function() return db.profile.rollFrame.timerBarBackgroundAlpha end,
+        set = function(value)
+            db.profile.rollFrame.timerBarBackgroundAlpha = value
+            NotifyRollManager()
+        end,
+    })
+    yOffset = LC.AnchorWidget(bgOpacitySlider, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end

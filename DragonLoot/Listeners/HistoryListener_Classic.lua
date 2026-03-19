@@ -58,6 +58,24 @@ local function RefreshFromAPI()
             winner, winnerClass, rollType, roll = C_LootHistory.GetPlayerInfo(i, winnerIdx)
         end
 
+        -- Build per-player roll results for history detail expansion
+        local rollResults
+        if numPlayers and numPlayers > 0 then
+            rollResults = {}
+            for pi = 1, numPlayers do
+                local pName, pClass, pRollType, pRoll = C_LootHistory.GetPlayerInfo(i, pi)
+                if pName then
+                    rollResults[#rollResults + 1] = {
+                        playerName = pName,
+                        playerClass = pClass,
+                        rollType = pRollType,
+                        roll = pRoll,
+                    }
+                end
+            end
+            if #rollResults == 0 then rollResults = nil end
+        end
+
         local quality = 1
         if itemLink then
             local _, _, q = GetItemInfo(itemLink)
@@ -74,6 +92,7 @@ local function RefreshFromAPI()
             roll = roll,
             timestamp = now,
             isComplete = isDone,
+            rollResults = rollResults,
         }
     end
 

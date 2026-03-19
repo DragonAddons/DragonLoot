@@ -144,10 +144,13 @@ L["Width"] = true
 -- DragonLoot_Options/Tabs/LootRollTab.lua
 L["Button Size"] = true
 L["Button Spacing"] = true
+L["Compact Text Layout"] = true
 L["Enable Custom Roll Frame"] = true
 L["Frame Spacing"] = true
+L["Frame Height"] = true
 L["Frame Width"] = true
 L["Height of the countdown timer bar"] = true
+L["Minimum height of the roll frame"] = true
 L["Inner padding of the roll frame"] = true
 L["Instance Filters"] = true
 L["Loot Roll"] = true
@@ -168,6 +171,7 @@ L["Show in Dungeons"] = true
 L["Show in Open World"] = true
 L["Show in Raids"] = true
 L["Show individual roll result notifications"] = true
+L["Show item name and bind type on the same line"] = true
 L["Show notifications for other group members' roll results"] = true
 L["Show notifications for your own roll results"] = true
 L["Show notifications when other group members win rolls"] = true
@@ -180,7 +184,21 @@ L["Spacing between multiple roll frames"] = true
 L["Spacing between roll buttons"] = true
 L["Timer Bar Height"] = true
 L["Timer Bar Spacing"] = true
+L["Timer Bar Style"] = true
+L["Normal"] = true
+L["Minimal"] = true
+L["Minimal Height"] = true
+L["Height of the minimal timer bar"] = true
+L["Timer Bar Appearance"] = true
+L["Timer Bar Border"] = true
+L["Timer Bar Border Color"] = true
 L["Timer Bar Texture"] = true
+L["Color Mode"] = true
+L["Custom"] = true
+L["Bar Color"] = true
+L["Bar Background"] = true
+L["Bar Background Opacity"] = true
+L["Show a border around the timer bar"] = true
 L["Vertical spacing between roll rows"] = true
 L["Width of the roll frame"] = true
 
@@ -192,6 +210,9 @@ L["History"] = true
 L["Max Entries"] = true
 L["Track Direct Loot"] = true
 L["Track items you pick up directly (not from a loot window)"] = true
+L["Roll Details"] = true
+L["Show Roll Details"] = true
+L["Click history entries to expand and see all player rolls"] = true
 
 -- DragonLoot_Options/Tabs/AutoLootTab.lua
 L["Auto-Loot"] = true
@@ -243,6 +264,8 @@ L["Slot Background"] = true
 L["Stripe"] = true
 L["Thick Outline"] = true
 L["Thickness of the frame border"] = true
+L["Text Shadow"] = true
+L["Enable text shadow on all text elements"] = true
 
 -- DragonLoot_Options/Tabs/AnimationTab.lua
 L["Animation"] = true

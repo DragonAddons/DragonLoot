@@ -25,6 +25,25 @@ local L = ns.L
 local DU = ns.DisplayUtils
 
 -------------------------------------------------------------------------------
+-- Timer bar border helper
+-------------------------------------------------------------------------------
+
+local function ApplyTimerBarBorder(container)
+    local db = ns.Addon.db.profile
+    local rollCfg = db.rollFrame
+    if rollCfg.timerBarBorder then
+        container:SetBackdrop({
+            edgeFile = DU.WHITE8x8,
+            edgeSize = 1,
+        })
+        local c = rollCfg.timerBarBorderColor or { r = 0.3, g = 0.3, b = 0.3 }
+        container:SetBackdropBorderColor(c.r, c.g, c.b, 0.8)
+    else
+        container:SetBackdrop(nil)
+    end
+end
+
+-------------------------------------------------------------------------------
 -- Roll type constants (values used by RollOnLoot)
 -------------------------------------------------------------------------------
 
@@ -78,7 +97,6 @@ local PASS_ICON = "Interface\\Buttons\\UI-GroupLoot-Pass-Up"
 -- Frame dimensions
 -------------------------------------------------------------------------------
 
-local FRAME_BASE_HEIGHT = 68
 local MAX_VISIBLE_ROLLS = 4
 local DEFAULT_ROLL_ANCHOR_Y = -200
 local ROLL_FRAME_EXTRA_HEIGHT = 18
@@ -136,6 +154,18 @@ local function GetTimerBarSpacing()
     return ns.Addon.db.profile.rollFrame.timerBarSpacing or 4
 end
 
+local function GetFrameMinHeight()
+    return ns.Addon.db.profile.rollFrame.frameMinHeight or 68
+end
+
+local function GetTimerBarStyle()
+    return ns.Addon.db.profile.rollFrame.timerBarStyle or "normal"
+end
+
+local function GetTimerBarMinimalHeight()
+    return ns.Addon.db.profile.rollFrame.timerBarMinimalHeight or 3
+end
+
 local function ApplyLayoutOffsets(frame)
     local db = ns.Addon.db.profile
     local borderSize = db.appearance.borderSize or 1
@@ -143,31 +173,59 @@ local function ApplyLayoutOffsets(frame)
     local padding = GetContentPadding()
     local rowSpacing = GetRowSpacing()
     local timerBarSpacing = GetTimerBarSpacing()
+    local compact = db.rollFrame.compactTextLayout
 
     -- Icon position (vertically centered on left)
     frame.iconFrame:ClearAllPoints()
     frame.iconFrame:SetPoint("LEFT", frame, "LEFT", padding + borderSize, 0)
 
-    -- Item name - anchored to frame top (independent of icon vertical centering)
+    -- Item name
     frame.itemName:ClearAllPoints()
     frame.itemName:SetPoint("TOPLEFT", frame, "TOPLEFT",
         iconSize + padding + 6 + borderSize, -(padding + borderSize))
-    frame.itemName:SetPoint("RIGHT", frame, "RIGHT", -(padding + borderSize), 0)
 
-    -- BoP indicator - Row 2 left side, below item name with rowSpacing gap
-    frame.bindText:ClearAllPoints()
-    frame.bindText:SetPoint("TOPLEFT", frame.itemName, "BOTTOMLEFT", 0, -rowSpacing)
+    if compact then
+        -- Compact: item name + bind text + pass button on one line
+        frame.itemName:SetPoint("RIGHT", frame, "RIGHT", -(padding + borderSize + 80), 0)
 
-    -- Timer bar - Row 3 at bottom with timerBarSpacing
-    frame.timerBar:ClearAllPoints()
-    frame.timerBar:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT",
-        iconSize + padding + 6 + borderSize, timerBarSpacing + borderSize)
-    frame.timerBar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
-        -(padding + 2 + borderSize), timerBarSpacing + borderSize)
+        frame.bindText:ClearAllPoints()
+        frame.bindText:SetPoint("LEFT", frame.itemName, "RIGHT", 4, 0)
 
-    -- Pass button - Row 2 right side, below item name with rowSpacing gap
-    frame.passButton:ClearAllPoints()
-    frame.passButton:SetPoint("TOPRIGHT", frame.itemName, "BOTTOMRIGHT", 0, -rowSpacing)
+        frame.passButton:ClearAllPoints()
+        frame.passButton:SetPoint("RIGHT", frame, "RIGHT", -(padding + borderSize), 0)
+        frame.passButton:SetPoint("TOP", frame.itemName, "TOP", 0, 0)
+    else
+        -- Normal: stacked rows
+        frame.itemName:SetPoint("RIGHT", frame, "RIGHT", -(padding + borderSize), 0)
+
+        frame.bindText:ClearAllPoints()
+        frame.bindText:SetPoint("TOPLEFT", frame.itemName, "BOTTOMLEFT", 0, -rowSpacing)
+
+        frame.passButton:ClearAllPoints()
+        frame.passButton:SetPoint("TOPRIGHT", frame.itemName, "BOTTOMRIGHT", 0, -rowSpacing)
+    end
+
+    -- Timer bar container - style-dependent positioning
+    local timerBarAnchor = frame.timerBar.container or frame.timerBar
+    timerBarAnchor:ClearAllPoints()
+
+    if GetTimerBarStyle() == "minimal" then
+        -- Minimal: full width at very bottom, thin bar, no text
+        local minimalHeight = GetTimerBarMinimalHeight()
+        timerBarAnchor:SetHeight(minimalHeight)
+        timerBarAnchor:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", borderSize, borderSize)
+        timerBarAnchor:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -borderSize, borderSize)
+        frame.timerBar.text:Hide()
+    else
+        -- Normal: indented past icon, configurable height, text visible
+        local barHeight = ns.Addon.db.profile.rollFrame.timerBarHeight or 12
+        timerBarAnchor:SetHeight(barHeight)
+        timerBarAnchor:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT",
+            iconSize + padding + 6 + borderSize, timerBarSpacing + borderSize)
+        timerBarAnchor:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
+            -(padding + 2 + borderSize), timerBarSpacing + borderSize)
+        frame.timerBar.text:Show()
+    end
 end
 
 -------------------------------------------------------------------------------
@@ -175,15 +233,20 @@ end
 -------------------------------------------------------------------------------
 
 local function GetTimerBarColor(timeLeft, rollTime)
+    local db = ns.Addon.db.profile.rollFrame
+    if db.timerBarColorMode == "custom" then
+        local c = db.timerBarColor
+        return c.r, c.g, c.b
+    end
+
+    -- Gradient: green -> yellow -> red
     if rollTime <= 0 then return 1, 0, 0 end
     local ratio = timeLeft / rollTime
 
     if ratio > 0.5 then
-        -- Green to Yellow
         local t = (ratio - 0.5) / 0.5
         return 1 - t, 1, 0
     else
-        -- Yellow to Red
         local t = ratio / 0.5
         return 1, t, 0
     end
@@ -358,13 +421,20 @@ local function CreateTimerBar(parent)
     local barTexture = LSM:Fetch("statusbar", db.rollFrame.timerBarTexture)
         or "Interface\\TargetingFrame\\UI-StatusBar"
 
-    local bar = CreateFrame("StatusBar", nil, parent)
-    bar:SetHeight(barHeight)
     local iconSize = GetRollIconSize()
     local padding = GetContentPadding()
     local timerBarSpacing = GetTimerBarSpacing()
-    bar:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", iconSize + padding + 6, timerBarSpacing)
-    bar:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -(padding + 2), timerBarSpacing)
+
+    -- Container frame owns the optional border
+    local container = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    container:SetHeight(barHeight)
+    container:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", iconSize + padding + 6, timerBarSpacing)
+    container:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -(padding + 2), timerBarSpacing)
+
+    -- StatusBar fills the container with 1px inset for the border
+    local bar = CreateFrame("StatusBar", nil, container)
+    bar:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1)
+    bar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -1, 1)
     bar:SetStatusBarTexture(barTexture)
     bar:SetMinMaxValues(0, 1)
     bar:SetValue(1)
@@ -372,11 +442,15 @@ local function CreateTimerBar(parent)
 
     bar.bg = bar:CreateTexture(nil, "BACKGROUND")
     bar.bg:SetAllPoints()
-    bar.bg:SetColorTexture(0.1, 0.1, 0.1, 0.8)
+    local bgColor = db.rollFrame.timerBarBackgroundColor
+    bar.bg:SetColorTexture(bgColor.r, bgColor.g, bgColor.b, db.rollFrame.timerBarBackgroundAlpha)
 
     bar.text = bar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     bar.text:SetPoint("CENTER", bar, "CENTER", 0, 0)
     bar.text:SetTextColor(1, 1, 1)
+
+    bar.container = container
+    ApplyTimerBarBorder(container)
 
     return bar
 end
@@ -390,7 +464,7 @@ local function CreateRollFrame(index)
     local frameName = "DragonLootRoll" .. rollFrameCount
 
     local frame = CreateFrame("Frame", frameName, anchorFrame, "BackdropTemplate")
-    frame:SetSize(GetFrameWidth(), FRAME_BASE_HEIGHT)
+    frame:SetSize(GetFrameWidth(), GetFrameMinHeight())
     ApplyBackdrop(frame)
     frame:SetFrameStrata("HIGH")
     frame:SetFrameLevel(110)
@@ -535,7 +609,7 @@ local function RenderRollFrame(frame, data, rollID, isTest)
     frame.iconFrame:SetSize(iconSize, iconSize)
 
     -- Adjust frame height based on icon size
-    frame:SetHeight(math.max(FRAME_BASE_HEIGHT, iconSize + ROLL_FRAME_EXTRA_HEIGHT))
+    frame:SetHeight(math.max(GetFrameMinHeight(), iconSize + ROLL_FRAME_EXTRA_HEIGHT))
 
     -- Icon
     frame.iconFrame.icon:SetTexture(data.texture)
@@ -550,6 +624,7 @@ local function RenderRollFrame(frame, data, rollID, isTest)
 
     -- Item name
     frame.itemName:SetFont(fontPath, fontSize, fontOutline)
+    DU.ApplyFontShadow(frame.itemName, ns.Addon.db)
     frame.itemName:SetText(data.name)
     frame.itemName:SetTextColor(r, g, b)
 
@@ -726,7 +801,9 @@ local function StartTestTimer(frameIndex, duration)
         frame.timerBar:SetValue(pct)
         local r, g, b = GetTimerBarColor(remaining, total)
         frame.timerBar:SetStatusBarColor(r, g, b)
-        frame.timerBar.text:SetText(string.format("%.0f", remaining))
+        if GetTimerBarStyle() ~= "minimal" then
+            frame.timerBar.text:SetText(string.format("%.0f", remaining))
+        end
     end)
 end
 
@@ -803,7 +880,10 @@ function ns.RollFrame.UpdateTimer(frameIndex, timeLeft, rollTime)
 
     local r, g, b = GetTimerBarColor(timeLeft, rollTime)
     bar:SetStatusBarColor(r, g, b)
-    bar.text:SetText(string.format("%.0f", timeLeft))
+
+    if GetTimerBarStyle() ~= "minimal" then
+        bar.text:SetText(string.format("%.0f", timeLeft))
+    end
 end
 
 function ns.RollFrame.ApplySettings()
@@ -846,17 +926,34 @@ function ns.RollFrame.ApplySettings()
             end
 
             -- Adjust frame height based on icon size
-            frame:SetHeight(math.max(FRAME_BASE_HEIGHT, iconSize + ROLL_FRAME_EXTRA_HEIGHT))
+            frame:SetHeight(math.max(GetFrameMinHeight(), iconSize + ROLL_FRAME_EXTRA_HEIGHT))
 
             -- Update layout offsets for border thickness
             ApplyLayoutOffsets(frame)
 
             -- Update timer bar
-            frame.timerBar:SetHeight(barHeight)
             frame.timerBar:SetStatusBarTexture(barTexture)
+
+            -- Update timer bar container size and border
+            if frame.timerBar.container then
+                if GetTimerBarStyle() == "minimal" then
+                    frame.timerBar.container:SetHeight(GetTimerBarMinimalHeight())
+                else
+                    frame.timerBar.container:SetHeight(barHeight)
+                end
+                ApplyTimerBarBorder(frame.timerBar.container)
+            end
+
+            -- Update timer bar background color
+            local bgColor = db.rollFrame.timerBarBackgroundColor
+            frame.timerBar.bg:SetColorTexture(bgColor.r, bgColor.g, bgColor.b,
+                db.rollFrame.timerBarBackgroundAlpha)
 
             -- Update fonts
             frame.itemName:SetFont(fontPath, fontSize, fontOutline)
+            DU.ApplyFontShadow(frame.itemName, ns.Addon.db)
+            DU.ApplyFontShadow(frame.bindText, ns.Addon.db)
+            DU.ApplyFontShadow(frame.timerBar.text, ns.Addon.db)
 
             -- Update quality border
             if frame.rollID and frame:IsShown() then

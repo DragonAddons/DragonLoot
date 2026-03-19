@@ -104,7 +104,18 @@ local function CreateFontSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(outlineDropdown, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    yOffset = LC.AnchorWidget(outlineDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    local fontShadowToggle = W.CreateToggle(parent, {
+        label = L["Text Shadow"],
+        tooltip = L["Enable text shadow on all text elements"],
+        get = function() return db.profile.appearance.fontShadow end,
+        set = function(value)
+            db.profile.appearance.fontShadow = value
+            LC.NotifyAppearanceChange()
+        end,
+    })
+    yOffset = LC.AnchorWidget(fontShadowToggle, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end

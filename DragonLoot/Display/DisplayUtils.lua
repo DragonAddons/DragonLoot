@@ -57,6 +57,22 @@ function DisplayUtils.GetFont(db)
 end
 
 -------------------------------------------------------------------------------
+-- ApplyFontShadow(fontString, db) - apply or remove text shadow
+-------------------------------------------------------------------------------
+
+function DisplayUtils.ApplyFontShadow(fontString, db)
+    if not fontString or not fontString.SetShadowOffset then return end
+    local appearance = db and db.profile and db.profile.appearance
+    if not appearance then return end
+    if appearance.fontShadow then
+        fontString:SetShadowOffset(1, -1)
+        fontString:SetShadowColor(0, 0, 0, 1)
+    else
+        fontString:SetShadowOffset(0, 0)
+    end
+end
+
+-------------------------------------------------------------------------------
 -- GetBackdropSettings(db) - returns a backdrop table
 -------------------------------------------------------------------------------
 
