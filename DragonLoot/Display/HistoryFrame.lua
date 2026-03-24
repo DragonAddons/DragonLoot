@@ -223,7 +223,7 @@ local function CreateEntryFrame()
 
     -- Detail container for expanded roll results
     entry.detailContainer = CreateFrame("Frame", nil, entry)
-    entry.detailContainer:SetPoint("TOPLEFT", entry.icon, "BOTTOMLEFT", 0, -2)
+    entry.detailContainer:SetPoint("TOPLEFT", entry, "TOPLEFT", 2, -GetEntryHeight())
     entry.detailContainer:SetPoint("RIGHT", entry, "RIGHT", 0, 0)
     entry.detailContainer:Hide()
 
@@ -408,6 +408,11 @@ local function PopulateEntryDetails(entry, rollResults)
 
     local fontPath, fontSize, fontOutline = GetFont()
     entry.detailRows = {}
+
+    -- Re-anchor detail container to account for icon size config changes since frame creation
+    entry.detailContainer:ClearAllPoints()
+    entry.detailContainer:SetPoint("TOPLEFT", entry, "TOPLEFT", 2, -GetEntryHeight())
+    entry.detailContainer:SetPoint("RIGHT", entry, "RIGHT", 0, 0)
 
     for idx, result in ipairs(rollResults) do
         local row = AcquireDetailRow(entry.detailContainer)

@@ -102,14 +102,46 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
     local header = W.CreateHeader(parent, L["Layout"])
     yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
 
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
-        L["Frame Height"], L["Minimum height of the roll frame"], "frameMinHeight", 40, 120, 1, "%d")
+    local frameMinHeightSlider, rowSpacingSlider  -- forward declare for compact toggle
+
+    local isCompact = db.profile.rollFrame.compactTextLayout
+
+    frameMinHeightSlider = W.CreateSlider(parent, {
+        label = L["Frame Height"],
+        tooltip = L["Minimum height of the roll frame"],
+        min = 40,
+        max = 120,
+        step = 1,
+        format = "%d",
+        get = function() return db.profile.rollFrame.frameMinHeight end,
+        set = function(value)
+            db.profile.rollFrame.frameMinHeight = value
+            NotifyRollManager()
+        end,
+    })
+    frameMinHeightSlider:SetDisabled(isCompact)
+    yOffset = LC.AnchorWidget(frameMinHeightSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
     yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
         L["Scale"], L["Roll frame scale"], "scale", 0.5, 2, 0.05, "%.2f")
     yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
         L["Frame Width"], L["Width of the roll frame"], "frameWidth", 200, 500, 10, "%d")
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
-        L["Row Spacing"], L["Vertical spacing between roll rows"], "rowSpacing", 0, 16, 1, "%d")
+
+    rowSpacingSlider = W.CreateSlider(parent, {
+        label = L["Row Spacing"],
+        tooltip = L["Vertical spacing between roll rows"],
+        min = 0,
+        max = 16,
+        step = 1,
+        format = "%d",
+        get = function() return db.profile.rollFrame.rowSpacing end,
+        set = function(value)
+            db.profile.rollFrame.rowSpacing = value
+            NotifyRollManager()
+        end,
+    })
+    rowSpacingSlider:SetDisabled(isCompact)
+    yOffset = LC.AnchorWidget(rowSpacingSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
     -- Timer Bar Style dropdown + height sliders
     local timerBarHeightSlider, minimalHeightSlider  -- forward declare
 
@@ -176,6 +208,8 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
         get = function() return db.profile.rollFrame.compactTextLayout end,
         set = function(value)
             db.profile.rollFrame.compactTextLayout = value
+            if frameMinHeightSlider then frameMinHeightSlider:SetDisabled(value) end
+            if rowSpacingSlider then rowSpacingSlider:SetDisabled(value) end
             NotifyRollManager()
         end,
     })
