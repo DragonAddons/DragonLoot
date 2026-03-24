@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/Xerrion/DragonLoot/compare/0.8.0...0.8.1) (2026-03-24)
+
+
+### 🐛 Bug Fixes
+
+* resolve compact anchor crash, missing font settings, and history overlap ([#63](https://github.com/Xerrion/DragonLoot/issues/63)) ([#85](https://github.com/Xerrion/DragonLoot/issues/85)) ([265318c](https://github.com/Xerrion/DragonLoot/commit/265318c3f234c615a8d742e2cd90842cc96fa631))
+
 ## [0.8.0](https://github.com/Xerrion/DragonLoot/compare/0.7.0...0.8.0) (2026-03-24)
 
 
