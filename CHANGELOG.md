@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/Xerrion/DragonLoot/compare/0.7.0...0.8.0) (2026-03-24)
+
+
+### 🚀 Features
+
+* add more visual options ([#63](https://github.com/Xerrion/DragonLoot/issues/63)) ([#83](https://github.com/Xerrion/DragonLoot/issues/83)) ([8d4904f](https://github.com/Xerrion/DragonLoot/commit/8d4904f8b77cb97e0fe530f8176a3da787af5967))
+
 ## [0.7.0](https://github.com/Xerrion/DragonLoot/compare/0.6.7...0.7.0) (2026-03-15)
 
 
