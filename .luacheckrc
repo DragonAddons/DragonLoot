@@ -63,6 +63,7 @@ files["DragonLoot/"] = {
         "GetLootRollItemInfo", "GetLootRollItemLink", "RollOnLoot", "GetLootRollTimeLeft",
         "GetActiveLootRollIDs", "ConfirmLootRoll",
         "HandleModifiedItemClick",
+        "C_Texture",
 
         -- WoW API - Loot History
         "C_LootHistory",

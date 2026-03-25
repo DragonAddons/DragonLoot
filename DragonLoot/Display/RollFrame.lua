@@ -19,6 +19,7 @@ local GetLootRollItemInfo = GetLootRollItemInfo
 local GetLootRollItemLink = GetLootRollItemLink
 local RollOnLoot = RollOnLoot
 local HandleModifiedItemClick = HandleModifiedItemClick
+local C_Texture = C_Texture
 
 local LSM = LibStub("LibSharedMedia-3.0")
 local L = ns.L
@@ -92,6 +93,18 @@ local TEST_ROLLS = {
         canDisenchant = true,
         canTransmog = false,
         duration = 20,
+    },
+    {
+        texture = 133280,           -- Blazefury, Reborn (fire sword icon)
+        name = "Blazefury, Reborn",
+        count = 1,
+        quality = 4,                -- Epic
+        bindOnPickUp = true,
+        canNeed = true,
+        canGreed = false,           -- Greed disabled when Transmog available
+        canDisenchant = true,
+        canTransmog = true,
+        duration = 15,
     },
 }
 
@@ -592,8 +605,10 @@ local function CreateRollFrame(index)
 
     -- Transmog button - only functional on Retail where canTransmog is returned
     frame.transmogButton = CreateRollButton(frame, nil, ROLL_TRANSMOG, GetButtonSize())
-    local success = pcall(function() frame.transmogButton.icon:SetAtlas("transmog-icon-small") end)
-    if not success then
+    -- Use Blizzard's loot roll transmog atlas; fall back to disenchant icon if atlas missing (Classic)
+    if C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo("lootroll-toast-icon-transmog-up") then
+        frame.transmogButton.icon:SetAtlas("lootroll-toast-icon-transmog-up")
+    else
         frame.transmogButton.icon:SetTexture("Interface\\ICONS\\INV_Enchant_Disenchant")
     end
     frame.transmogButton:SetPoint("RIGHT", frame.needButton, "LEFT", -GetButtonSpacing(), 0)
@@ -761,8 +776,11 @@ local function RenderRollFrame(frame, data, rollID, isTest)
         if data.canTransmog then
             frame.transmogButton:Show()
             SetButtonState(frame.transmogButton, true, nil)
+            -- Match Blizzard: Transmog replaces Greed
+            frame.greedButton:Hide()
         else
             frame.transmogButton:Hide()
+            frame.greedButton:Show()
         end
     end
 
