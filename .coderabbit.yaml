@@ -1,0 +1,200 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# DragonLoot - Lua / WoW addon specific overrides.
+# Generic settings inherited from org-level .coderabbit.yaml
+
+language: en-US
+inheritance: true
+
+tone_instructions: >-
+  Review WoW addon Lua code. Focus on nil safety, global leaks,
+  event hygiene, and taint risks. Skip style - luacheck handles it.
+
+reviews:
+  profile: chill
+  high_level_summary: true
+  poem: false
+  sequence_diagrams: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: true
+  auto_apply_labels: true
+  suggested_reviewers: false
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords:
+      - WIP
+      - DO NOT MERGE
+    drafts: false
+
+  labeling_instructions:
+    - label: core
+      instructions: >-
+        Apply when the PR changes files under DragonLoot/Core/ -
+        addon lifecycle, config, slash commands, minimap icon.
+    - label: display
+      instructions: >-
+        Apply when the PR changes files under DragonLoot/Display/ -
+        loot window, roll frame, history frame, animations, roll manager.
+    - label: listeners
+      instructions: >-
+        Apply when the PR changes files under DragonLoot/Listeners/ -
+        event handlers for loot, rolls, history, or CHAT_MSG_LOOT parsing.
+    - label: options
+      instructions: >-
+        Apply when the PR changes files under DragonLoot_Options/ -
+        config UI widgets, tabs, and layout.
+    - label: ci
+      instructions: >-
+        Apply when the PR changes files under .github/ -
+        workflows, issue templates, or PR templates.
+    - label: localization
+      instructions: >-
+        Apply when the PR changes files under DragonLoot/Locales/ -
+        translation tables for any language.
+
+  path_filters:
+    - "!DragonLoot/Libs/**"
+    - "!**/node_modules/**"
+    - "!**/*.snap"
+
+  path_instructions:
+    - path: "DragonLoot/Core/**/*.lua"
+      instructions: >-
+        Core addon layer - lifecycle, AceDB config, slash commands, minimap icon.
+        Review for correct AceAddon/AceEvent/AceTimer patterns, proper event
+        cleanup on OnDisable, and SavedVariables schema correctness.
+        All files use `local ADDON_NAME, ns = ...` shared namespace.
+    - path: "DragonLoot/Display/**/*.lua"
+      instructions: >-
+        Display layer - UI frames and presentation. Review for frame pool
+        hygiene (acquire/release), proper Show/Hide/SetShown patterns,
+        animation cleanup on hide, nil checks on widget methods, and
+        correct backdrop/border API usage (CreateFrame + BackdropTemplateMixin).
+        Frames must not leak globals. Check for taint risks in combat.
+    - path: "DragonLoot/Listeners/**/*.lua"
+      instructions: >-
+        Event listener layer - version-specific loot/roll/history parsing.
+        Key concerns: proper RegisterEvent/UnregisterEvent pairing, dedup
+        guards for duplicate event fires (e.g. LOOT_OPENED double-fire,
+        LOOT_HISTORY_UPDATE_ENCOUNTER re-fires), nil checks on WoW API
+        returns (GetItemInfo returns nil for uncached items - must handle
+        with retry timers). Retail and Classic listeners exist side-by-side
+        with WOW_PROJECT_ID version guards. Do not flag the guard pattern
+        as dead code.
+    - path: "DragonLoot/Listeners/LootHistoryChat.lua"
+      instructions: >-
+        CHAT_MSG_LOOT parser for direct loot tracking. GlobalString patterns
+        differ across game versions (TBC has trailing periods, Retail does not).
+        Patterns are built from actual GlobalString values at runtime.
+        Review for correct Lua pattern escaping and C_Timer.After retry
+        for uncached GetItemInfo calls.
+    - path: "DragonLoot_Options/**/*.lua"
+      instructions: >-
+        Config UI - custom widget library and option tabs. Review for
+        correct widget lifecycle (OnAcquire/OnRelease if pooled), proper
+        config key paths matching db.profile schema in Core/Config.lua,
+        and callback wiring. Uses CreateFrame-based widgets, not AceGUI.
+    - path: "DragonLoot/Locales/**/*.lua"
+      instructions: >-
+        Localization tables using AceLocale. Only flag missing keys
+        compared to enUS.lua or incorrect format string placeholders
+        (%s, %d, etc). Do not flag translation quality or grammar.
+    - path: ".github/workflows/**/*.yml"
+      instructions: >-
+        CI workflows. Check for correct event triggers (pull_request_target
+        for lint, workflow_dispatch for packager), proper secret references,
+        and action version pinning. BigWigsMods packager workflow has
+        specific requirements - do not flag its patterns.
+    - path: "**/*.md"
+      instructions: >-
+        Documentation. Only flag broken links or factual errors.
+        Do not suggest rewording or restructuring prose.
+    - path: ".luacheckrc"
+      instructions: >-
+        Luacheck configuration. Review for correct globals declarations
+        and rule settings. Do not suggest adding rules for style preferences
+        already handled by project conventions.
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+    simplify:
+      enabled: false
+
+  pre_merge_checks:
+    title:
+      mode: warning
+      requirements: >-
+        PR title must use Conventional Commit format: type(scope): description.
+        Valid types: feat, fix, refactor, docs, chore, ci, test, style, perf.
+
+  tools:
+    # -- Keep universal tools --
+    github-checks:
+      enabled: true
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    actionlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+    markdownlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    languagetool:
+      enabled: false
+
+    # -- Disable: not a JS/TS/Python/Rust project --
+    biome:
+      enabled: false
+    eslint:
+      enabled: false
+    ruff:
+      enabled: false
+    flake8:
+      enabled: false
+    clippy:
+      enabled: false
+    hadolint:
+      enabled: false
+    swiftlint:
+      enabled: false
+    phpstan:
+      enabled: false
+    phpmd:
+      enabled: false
+    phpcs:
+      enabled: false
+    golangci-lint:
+      enabled: false
+    checkov:
+      enabled: false
+    tflint:
+      enabled: false
+    detekt:
+      enabled: false
+    fortitudeLint:
+      enabled: false
+    rubocop:
+      enabled: false
+    buf:
+      enabled: false
+    regal:
+      enabled: false
+    pmd:
+      enabled: false
+    clang:
+      enabled: false
+    cppcheck:
+      enabled: false
+    semgrep:
+      enabled: false
+    circleci:
+      enabled: false
