@@ -524,6 +524,25 @@ local function CreateRollFrame(index)
     frame:SetFrameLevel(110)
     frame:Hide()
 
+    -- Drag: propagate movement to the shared anchor frame
+    frame:EnableMouse(true)
+    frame:SetMovable(false)  -- frame itself doesn't move; anchor does
+    frame:RegisterForDrag("LeftButton")
+
+    frame:SetScript("OnDragStart", function()
+        local db = ns.Addon.db.profile.rollFrame
+        if not db.lock and anchorFrame then
+            anchorFrame:StartMoving()
+        end
+    end)
+
+    frame:SetScript("OnDragStop", function()
+        if anchorFrame then
+            anchorFrame:StopMovingOrSizing()
+            SaveFramePosition()
+        end
+    end)
+
     -- Item icon
     frame.iconFrame = CreateRollIcon(frame)
 
