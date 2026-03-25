@@ -30,6 +30,8 @@ local HELP_ENTRIES = {
     { " reset",       L["Reset loot frame position"] },
     { " test",        L["Show test loot"] },
     { " testroll",    L["Show test roll frames"] },
+    { " testroll loop", L["Start continuous test roll spawning"] },
+    { " testroll stop", L["Stop continuous test roll spawning"] },
     { " history",     L["Toggle loot history"] },
     { " status",      L["Show current settings"] },
     { " help",        L["Show this help"] },
@@ -134,6 +136,20 @@ function ns.HandleSlashCommand(input)
             ns.LootFrame.ShowTestLoot()
         else
             ns.Print(L["Test loot not yet available."])
+        end
+
+    elseif cmd == "testroll loop" then
+        if ns.RollFrame.ShowTestRollLoop then
+            ns.RollFrame.ShowTestRollLoop()
+        else
+            ns.Print(L["Test roll not yet available."])
+        end
+
+    elseif cmd == "testroll stop" then
+        if ns.RollFrame.StopTestRollLoop then
+            ns.RollFrame.StopTestRollLoop()
+        else
+            ns.Print(L["Test roll not yet available."])
         end
 
     elseif cmd == "testroll" then

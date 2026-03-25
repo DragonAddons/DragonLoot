@@ -14,6 +14,14 @@ DragonLoot is a customizable loot addon that replaces the default Blizzard loot 
 
 ---
 
+## Skills
+
+Agents working on this project must load the `wow-addon-dev` skill before writing or reviewing any Lua code that calls WoW APIs. The skill provides access to the `wow-api-lookup` tool for verifying API signatures, return values, widget methods, and enum values.
+
+**Rule**: Never guess at WoW API signatures. Always verify with `wow-api-lookup` first.
+
+---
+
 ## Target Versions
 
 | Version | Interface | TOC Directive |
@@ -140,6 +148,8 @@ All modules attach to `ns`:
 ---
 
 ## Version-Specific API Differences
+
+> **Note**: This table is a quick reference. Always verify exact signatures, parameter counts, and return types using the `wow-api-lookup` tool from the `wow-addon-dev` skill.
 
 | Aspect | Retail | Classic (TBC/Cata/MoP) |
 |--------|--------|------------------------|
@@ -517,6 +527,7 @@ local LSM = LibStub("LibSharedMedia-3.0")
 - Default to plain Lua 5.1 with no annotations
 - Only add LuaLS annotations when the file already uses them or for public library APIs
 - Keep annotations minimal and accurate; do not introduce new tooling
+- LuaLS annotations for WoW APIs are available via the `wow-addon-dev` skill for reference, but do not add them to addon source files unless already present
 
 ### Functions and Structure
 - Keep functions under 50 lines; extract helpers when longer
@@ -530,6 +541,7 @@ local LSM = LibStub("LibSharedMedia-3.0")
 - For version differences, prefer `or` fallbacks over runtime version checks
 - Use `pcall` for user callbacks or APIs that may be missing in some versions
 - Use `error(msg, 2)` for public library input validation (reports at caller site)
+- Always verify API signatures with `wow-api-lookup` before adding defensive checks - know what the API actually returns
 
 ---
 
@@ -635,6 +647,8 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - If only manual tests exist, document what you verified in-game
 - Verify changes in the game client when possible
 - Keep changes small and focused; prefer composition over inheritance
+- Load the `wow-addon-dev` skill before writing or reviewing WoW API calls
+- Use `wow-api-lookup` to verify API signatures - never guess at parameter counts or return types
 
 ---
 

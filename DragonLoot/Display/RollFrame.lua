@@ -120,6 +120,8 @@ local TEST_ROLL_TICK_INTERVAL = 0.1
 local rollFramePool = {}
 local rollFrameCount = 0
 local anchorFrame
+local loopTicker
+local loopRollIndex = 0
 
 -------------------------------------------------------------------------------
 -- Backdrop and font wrappers (delegate to DisplayUtils)
@@ -886,6 +888,35 @@ local function StartTestTimer(frameIndex, duration)
 end
 
 -------------------------------------------------------------------------------
+-- Spawn a single random test roll into the next available slot
+-------------------------------------------------------------------------------
+
+local function SpawnOneTestRoll()
+    local freeIndex
+    for i = 1, MAX_VISIBLE_ROLLS do
+        local f = rollFramePool[i]
+        if not f or not f:IsShown() then
+            freeIndex = i
+            break
+        end
+    end
+    if not freeIndex then return end
+
+    loopRollIndex = loopRollIndex + 1
+    local testData = TEST_ROLLS[((loopRollIndex - 1) % #TEST_ROLLS) + 1]
+
+    local frame = AcquireRollFrame(freeIndex)
+    PopulateTestRollFrame(frame, testData)
+    frame:SetAlpha(0)
+    frame:Show()
+    LayoutRollFrames()
+    ns.RollAnimations.PlayShow(frame)
+
+    local duration = 8 + math.random() * 12
+    StartTestTimer(freeIndex, duration)
+end
+
+-------------------------------------------------------------------------------
 -- Public Interface: ns.RollFrame
 -------------------------------------------------------------------------------
 
@@ -1115,4 +1146,45 @@ function ns.RollFrame.ShowTestRoll()
     end
 
     ns.Print(L["Showing test roll frames."])
+end
+
+function ns.RollFrame.ShowTestRollLoop()
+    if loopTicker then
+        ns.RollFrame.StopTestRollLoop()
+        return
+    end
+
+    if not anchorFrame then
+        ns.RollFrame.Initialize()
+    end
+
+    SpawnOneTestRoll()
+
+    loopTicker = C_Timer.NewTicker(4, function()
+        SpawnOneTestRoll()
+    end)
+
+    ns.Print(L["Test roll loop started. Type /dl testroll stop to end."])
+end
+
+function ns.RollFrame.StopTestRollLoop()
+    if loopTicker then
+        loopTicker:Cancel()
+        loopTicker = nil
+    end
+
+    for i = 1, MAX_VISIBLE_ROLLS do
+        local f = rollFramePool[i]
+        if f and f.isTestMode then
+            if f.testTimer then
+                f.testTimer:Cancel()
+                f.testTimer = nil
+            end
+            ReleaseRollFrame(i)
+        end
+    end
+    LayoutRollFrames()
+
+    loopRollIndex = 0
+    ns.Print(L["Test roll loop stopped."])
 end

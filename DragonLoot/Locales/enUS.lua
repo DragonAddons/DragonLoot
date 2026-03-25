@@ -82,8 +82,15 @@ L["Unknown"] = true
 L["Not available for this item"] = true
 L["Roll"] = true
 L["Showing test roll frames."] = true
+L["Start continuous test roll spawning"] = true
+L["Start or stop continuous test roll spawning"] = true
+L["Stop continuous test roll spawning"] = true
 L["Test Item"] = true
+L["Test Loop"] = true
+L["Test Roll"] = true
 L["Test item: "] = true
+L["Test roll loop started. Type /dl testroll stop to end."] = true
+L["Test roll loop stopped."] = true
 L["Test roll: "] = true
 
 -- Display/HistoryFrame.lua

@@ -71,7 +71,33 @@ local function CreateRollFrameSection(parent, W, db, yOffset, LC)
         get = function() return db.profile.rollFrame.lock end,
         set = function(value) db.profile.rollFrame.lock = value end,
     })
-    yOffset = LC.AnchorWidget(lockToggle, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    yOffset = LC.AnchorWidget(lockToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+
+    local testRollBtn = W.CreateButton(parent, {
+        text = L["Test Roll"],
+        width = 100,
+        tooltip = L["Show test roll frames"],
+        onClick = function()
+            if dlns.RollFrame and dlns.RollFrame.ShowTestRoll then
+                dlns.RollFrame.ShowTestRoll()
+            end
+        end,
+    })
+    testRollBtn:SetPoint("TOPLEFT", parent, "TOPLEFT", LC.PADDING_SIDE, yOffset)
+
+    local testLoopBtn = W.CreateButton(parent, {
+        text = L["Test Loop"],
+        width = 100,
+        tooltip = L["Start or stop continuous test roll spawning"],
+        onClick = function()
+            if dlns.RollFrame and dlns.RollFrame.ShowTestRollLoop then
+                dlns.RollFrame.ShowTestRollLoop()
+            end
+        end,
+    })
+    testLoopBtn:SetPoint("LEFT", testRollBtn, "RIGHT", 8, 0)
+
+    yOffset = yOffset - testRollBtn:GetHeight() - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
