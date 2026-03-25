@@ -13,7 +13,9 @@ local _, ns = ...
 
 local GetItemInfoInstant = GetItemInfoInstant
 local GetItemInfo = GetItemInfo
+local GetLootRollItemInfo = GetLootRollItemInfo
 local StaticPopup_Show = StaticPopup_Show
+local ITEM_QUALITY_COLORS = ITEM_QUALITY_COLORS
 
 -------------------------------------------------------------------------------
 -- Module table
@@ -114,7 +116,12 @@ function LS.OnCancelLootRoll(isRollActive, rollID)
 end
 
 function LS.OnConfirmRoll(rollID, rollType)
-    local dialog = StaticPopup_Show("DRAGONLOOT_CONFIRM_LOOT_ROLL")
+    local _, name, _, quality = GetLootRollItemInfo(rollID)
+    local coloredName = name or "Unknown"
+    if name and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[quality] then
+        coloredName = ITEM_QUALITY_COLORS[quality].hex .. name .. "|r"
+    end
+    local dialog = StaticPopup_Show("DRAGONLOOT_CONFIRM_LOOT_ROLL", coloredName)
     if dialog then
         dialog.data = { rollID = rollID, rollType = rollType }
     end

@@ -107,6 +107,7 @@ end
 -- Events the default group roll frames listen for
 local ROLL_FRAME_EVENTS = {
     "START_LOOT_ROLL", "CANCEL_LOOT_ROLL",
+    "CONFIRM_LOOT_ROLL", "CONFIRM_DISENCHANT_ROLL",
 }
 
 local lootFrameHooked = false
@@ -136,6 +137,8 @@ local function SuppressBlizzardRollFrames()
     -- GroupLootContainer_AddRoll(), which re-shows GroupLootFrame1-4.
     UIParent:UnregisterEvent("START_LOOT_ROLL")
     UIParent:UnregisterEvent("CANCEL_LOOT_ROLL")
+    UIParent:UnregisterEvent("CONFIRM_LOOT_ROLL")
+    UIParent:UnregisterEvent("CONFIRM_DISENCHANT_ROLL")
 
     -- Belt-and-suspenders: also suppress the individual roll frames and container
     for i = 1, 4 do
@@ -164,6 +167,8 @@ local function RestoreBlizzardRollFrames()
     -- Restore UIParent dispatch so Blizzard roll frames work again
     UIParent:RegisterEvent("START_LOOT_ROLL")
     UIParent:RegisterEvent("CANCEL_LOOT_ROLL")
+    UIParent:RegisterEvent("CONFIRM_LOOT_ROLL")
+    UIParent:RegisterEvent("CONFIRM_DISENCHANT_ROLL")
 
     for i = 1, 4 do
         local frame = _G["GroupLootFrame" .. i]
