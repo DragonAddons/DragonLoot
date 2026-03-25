@@ -36,11 +36,11 @@ local ITEM_HEIGHT = 20
 local MAX_LIST_HEIGHT = 200
 local FRAME_HEIGHT = 42
 
-local BG_COLOR = { 0.1, 0.1, 0.1, 0.9 }
-local BORDER_COLOR = { 0.4, 0.4, 0.4, 1 }
-local LIST_BG_COLOR = { 0.08, 0.08, 0.08, 0.95 }
-local HIGHLIGHT_COLOR = { 1, 1, 1, 0.08 }
-local SELECTED_COLOR = { 1, 0.82, 0, 0.15 }
+local BG_COLOR = WC.WIDGET_BG
+local BORDER_COLOR = WC.SECTION_BORDER
+local LIST_BG_COLOR = WC.SECTION_BG
+local HIGHLIGHT_COLOR = { 1, 1, 1, 0.12 }
+local SELECTED_COLOR = { 1, 0.82, 0, 0.20 }
 
 local PREVIEW_WIDTH = 40
 local PREVIEW_HEIGHT = 14
@@ -397,6 +397,18 @@ function ns.Widgets.CreateDropdown(parent, opts)
         ToggleList(frame, opts)
     end)
 
+    -- Hover highlight on main button
+    button:SetScript("OnEnter", function()
+        if disabled then return end
+        button:SetBackdropColor(
+            WC.WIDGET_BG_HOVER[1], WC.WIDGET_BG_HOVER[2],
+            WC.WIDGET_BG_HOVER[3], WC.WIDGET_BG_HOVER[4]
+        )
+    end)
+    button:SetScript("OnLeave", function()
+        button:SetBackdropColor(BG_COLOR[1], BG_COLOR[2], BG_COLOR[3], BG_COLOR[4])
+    end)
+
     -- Initialize selected text
     local initValues = ResolveValues(opts)
     local initKey = opts.get and opts.get() or nil
@@ -417,6 +429,7 @@ function ns.Widgets.CreateDropdown(parent, opts)
 
     function frame:SetDisabled(state)
         disabled = state
+        button:SetBackdropColor(BG_COLOR[1], BG_COLOR[2], BG_COLOR[3], BG_COLOR[4])
         if disabled then
             label:SetTextColor(DISABLED_COLOR[1], DISABLED_COLOR[2], DISABLED_COLOR[3])
             selectedText:SetTextColor(DISABLED_COLOR[1], DISABLED_COLOR[2], DISABLED_COLOR[3])

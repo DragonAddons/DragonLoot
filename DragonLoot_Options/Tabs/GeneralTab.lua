@@ -32,15 +32,14 @@ local function CreateContent(parent)
     local yOffset = LC.PADDING_TOP
 
     ---------------------------------------------------------------------------
-    -- Header: General
+    -- Section: General
     ---------------------------------------------------------------------------
-    local header = W.CreateHeader(parent, L["General"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["General"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
-    ---------------------------------------------------------------------------
     -- Toggle: Enable DragonLoot
-    ---------------------------------------------------------------------------
-    local enableToggle = W.CreateToggle(parent, {
+    local enableToggle = W.CreateToggle(content, {
         label = L["Enable DragonLoot"],
         tooltip = L["Enable or disable the DragonLoot addon"],
         get = function() return db.profile.enabled end,
@@ -53,12 +52,10 @@ local function CreateContent(parent)
             end
         end,
     })
-    yOffset = LC.AnchorWidget(enableToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(enableToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    ---------------------------------------------------------------------------
     -- Toggle: Show Minimap Icon
-    ---------------------------------------------------------------------------
-    local minimapToggle = W.CreateToggle(parent, {
+    local minimapToggle = W.CreateToggle(content, {
         label = L["Show Minimap Icon"],
         tooltip = L["Show or hide the minimap button"],
         get = function() return not db.profile.minimap.hide end,
@@ -69,12 +66,10 @@ local function CreateContent(parent)
             end
         end,
     })
-    yOffset = LC.AnchorWidget(minimapToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(minimapToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    ---------------------------------------------------------------------------
     -- Toggle: Debug Mode
-    ---------------------------------------------------------------------------
-    local debugToggle = W.CreateToggle(parent, {
+    local debugToggle = W.CreateToggle(content, {
         label = L["Debug Mode"],
         tooltip = L["Enable verbose debug output in chat"],
         get = function() return db.profile.debug end,
@@ -82,7 +77,10 @@ local function CreateContent(parent)
             db.profile.debug = value
         end,
     })
-    yOffset = LC.AnchorWidget(debugToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(debugToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     ---------------------------------------------------------------------------
     -- Set content height for scroll frame

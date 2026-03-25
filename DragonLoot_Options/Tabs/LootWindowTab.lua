@@ -42,15 +42,14 @@ local function CreateContent(parent)
     local yOffset = LC.PADDING_TOP
 
     ---------------------------------------------------------------------------
-    -- Header: Loot Window
+    -- Section: Loot Window
     ---------------------------------------------------------------------------
-    local header = W.CreateHeader(parent, L["Loot Window"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local lootSection = W.CreateSection(parent, L["Loot Window"])
+    local lootContent = lootSection.content
+    local lootY = -LC.SECTION_PADDING_TOP
 
-    ---------------------------------------------------------------------------
     -- Toggle: Enable Custom Loot Window
-    ---------------------------------------------------------------------------
-    local enableToggle = W.CreateToggle(parent, {
+    local enableToggle = W.CreateToggle(lootContent, {
         label = L["Enable Custom Loot Window"],
         tooltip = L["Replace the default loot window with DragonLoot's custom frame"],
         get = function() return db.profile.lootWindow.enabled end,
@@ -59,12 +58,10 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
-    yOffset = LC.AnchorWidget(enableToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    lootY = LC.AnchorWidget(enableToggle, lootContent, lootY) - LC.SPACING_BETWEEN_WIDGETS
 
-    ---------------------------------------------------------------------------
     -- Toggle: Lock Position
-    ---------------------------------------------------------------------------
-    local lockToggle = W.CreateToggle(parent, {
+    local lockToggle = W.CreateToggle(lootContent, {
         label = L["Lock Position"],
         tooltip = L["Prevent the loot window from being moved"],
         get = function() return db.profile.lootWindow.lock end,
@@ -72,12 +69,10 @@ local function CreateContent(parent)
             db.profile.lootWindow.lock = value
         end,
     })
-    yOffset = LC.AnchorWidget(lockToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    lootY = LC.AnchorWidget(lockToggle, lootContent, lootY) - LC.SPACING_BETWEEN_WIDGETS
 
-    ---------------------------------------------------------------------------
     -- Toggle: Position at Cursor
-    ---------------------------------------------------------------------------
-    local cursorToggle = W.CreateToggle(parent, {
+    local cursorToggle = W.CreateToggle(lootContent, {
         label = L["Position at Cursor"],
         tooltip = L["Open the loot window at the mouse cursor instead of the saved position"],
         get = function() return db.profile.lootWindow.positionAtCursor end,
@@ -85,18 +80,20 @@ local function CreateContent(parent)
             db.profile.lootWindow.positionAtCursor = value
         end,
     })
-    yOffset = LC.AnchorWidget(cursorToggle, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    lootY = LC.AnchorWidget(cursorToggle, lootContent, lootY) - LC.SPACING_BETWEEN_WIDGETS
+
+    lootSection:SetContentHeight(math_abs(lootY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(lootSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     ---------------------------------------------------------------------------
-    -- Header: Layout
+    -- Section: Layout
     ---------------------------------------------------------------------------
-    local layoutHeader = W.CreateHeader(parent, L["Layout"])
-    yOffset = LC.AnchorWidget(layoutHeader, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local layoutSection = W.CreateSection(parent, L["Layout"])
+    local layoutContent = layoutSection.content
+    local layoutY = -LC.SECTION_PADDING_TOP
 
-    ---------------------------------------------------------------------------
     -- Slider: Scale
-    ---------------------------------------------------------------------------
-    local scaleSlider = W.CreateSlider(parent, {
+    local scaleSlider = W.CreateSlider(layoutContent, {
         label = L["Scale"],
         min = 0.5, max = 2, step = 0.05,
         get = function() return db.profile.lootWindow.scale end,
@@ -105,12 +102,10 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
-    yOffset = LC.AnchorWidget(scaleSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    layoutY = LC.AnchorWidget(scaleSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
-    ---------------------------------------------------------------------------
     -- Slider: Width
-    ---------------------------------------------------------------------------
-    local widthSlider = W.CreateSlider(parent, {
+    local widthSlider = W.CreateSlider(layoutContent, {
         label = L["Width"],
         min = 150, max = 400, step = 10,
         format = "%d",
@@ -120,12 +115,10 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
-    yOffset = LC.AnchorWidget(widthSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    layoutY = LC.AnchorWidget(widthSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
-    ---------------------------------------------------------------------------
     -- Slider: Height
-    ---------------------------------------------------------------------------
-    local heightSlider = W.CreateSlider(parent, {
+    local heightSlider = W.CreateSlider(layoutContent, {
         label = L["Height"],
         min = 150, max = 600, step = 10,
         format = "%d",
@@ -135,12 +128,10 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
-    yOffset = LC.AnchorWidget(heightSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    layoutY = LC.AnchorWidget(heightSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
-    ---------------------------------------------------------------------------
     -- Slider: Slot Spacing
-    ---------------------------------------------------------------------------
-    local slotSpacingSlider = W.CreateSlider(parent, {
+    local slotSpacingSlider = W.CreateSlider(layoutContent, {
         label = L["Slot Spacing"],
         min = 0, max = 12, step = 1,
         format = "%d",
@@ -150,12 +141,11 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
-    yOffset = LC.AnchorWidget(slotSpacingSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    layoutY = LC.AnchorWidget(slotSpacingSlider, layoutContent, layoutY)
+        - LC.SPACING_BETWEEN_WIDGETS
 
-    ---------------------------------------------------------------------------
     -- Slider: Content Padding
-    ---------------------------------------------------------------------------
-    local contentPaddingSlider = W.CreateSlider(parent, {
+    local contentPaddingSlider = W.CreateSlider(layoutContent, {
         label = L["Content Padding"],
         min = 0, max = 12, step = 1,
         format = "%d",
@@ -165,7 +155,11 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
-    yOffset = LC.AnchorWidget(contentPaddingSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    layoutY = LC.AnchorWidget(contentPaddingSlider, layoutContent, layoutY)
+        - LC.SPACING_BETWEEN_WIDGETS
+
+    layoutSection:SetContentHeight(math_abs(layoutY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(layoutSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     ---------------------------------------------------------------------------
     -- Set content height for scroll frame

@@ -14,6 +14,7 @@ Widgets\ScrollFrame.lua
 Widgets\TabGroup.lua
 Widgets\Header.lua
 Widgets\Description.lua
+Widgets\Section.lua
 Widgets\Toggle.lua
 Widgets\Slider.lua
 Widgets\Dropdown.lua
@@ -26,6 +27,7 @@ LayoutConstants.lua
 Tabs\GeneralTab.lua
 Tabs\LootWindowTab.lua
 Tabs\LootRollTab.lua
+Tabs\NotificationsTab.lua
 Tabs\HistoryTab.lua
 Tabs\AutoLootTab.lua
 Tabs\AppearanceTab.lua

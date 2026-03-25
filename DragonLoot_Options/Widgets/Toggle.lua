@@ -25,8 +25,6 @@ local WHITE_COLOR = WC.WHITE_COLOR
 local DISABLED_COLOR = WC.DISABLED_COLOR
 local WHITE8x8 = WC.WHITE8x8
 local CHECK_TEXTURE = "Interface\\Buttons\\UI-CheckBox-Check"
-local BOX_BG = { 0.1, 0.1, 0.1, 0.9 }
-local BOX_BORDER = { 0.4, 0.4, 0.4, 1 }
 local FRAME_HEIGHT = 24
 local LABEL_OFFSET = 6
 
@@ -42,8 +40,10 @@ local function CreateCheckBox(parent)
         edgeFile = WHITE8x8,
         edgeSize = 1,
     })
-    box:SetBackdropColor(BOX_BG[1], BOX_BG[2], BOX_BG[3], BOX_BG[4])
-    box:SetBackdropBorderColor(BOX_BORDER[1], BOX_BORDER[2], BOX_BORDER[3], BOX_BORDER[4])
+    box:SetBackdropColor(WC.WIDGET_BG[1], WC.WIDGET_BG[2], WC.WIDGET_BG[3], WC.WIDGET_BG[4])
+    box:SetBackdropBorderColor(
+        WC.SECTION_BORDER[1], WC.SECTION_BORDER[2], WC.SECTION_BORDER[3], WC.SECTION_BORDER[4]
+    )
 
     -- Check mark
     local checkMark = box:CreateTexture(nil, "OVERLAY")
@@ -52,13 +52,23 @@ local function CreateCheckBox(parent)
     checkMark:SetSize(BOX_SIZE + 4, BOX_SIZE + 4)
     checkMark:Hide()
 
-    -- Highlight on hover
-    local highlight = box:CreateTexture(nil, "HIGHLIGHT")
-    highlight:SetAllPoints()
-    highlight:SetColorTexture(1, 1, 1, 0.08)
-
     box._checkMark = checkMark
     return box
+end
+
+-------------------------------------------------------------------------------
+-- Update border color: gold tint when checked, default when unchecked
+-------------------------------------------------------------------------------
+
+local function UpdateCheckBorder(box, isChecked)
+    if isChecked then
+        box:SetBackdropBorderColor(WC.GOLD_COLOR[1], WC.GOLD_COLOR[2], WC.GOLD_COLOR[3], 0.5)
+    else
+        box:SetBackdropBorderColor(
+            WC.SECTION_BORDER[1], WC.SECTION_BORDER[2],
+            WC.SECTION_BORDER[3], WC.SECTION_BORDER[4]
+        )
+    end
 end
 
 -------------------------------------------------------------------------------
@@ -86,6 +96,18 @@ function ns.Widgets.CreateToggle(parent, opts)
     -- Tooltip
     frame._tooltipText = opts.tooltip
 
+    -- Hover state on checkbox
+    box:SetScript("OnEnter", function()
+        if disabled then return end
+        box:SetBackdropColor(
+            WC.WIDGET_BG_HOVER[1], WC.WIDGET_BG_HOVER[2],
+            WC.WIDGET_BG_HOVER[3], WC.WIDGET_BG_HOVER[4]
+        )
+    end)
+    box:SetScript("OnLeave", function()
+        box:SetBackdropColor(WC.WIDGET_BG[1], WC.WIDGET_BG[2], WC.WIDGET_BG[3], WC.WIDGET_BG[4])
+    end)
+
     -- Click handler on the entire frame
     frame:EnableMouse(true)
     frame:SetScript("OnEnter", WC.ShowTooltip)
@@ -94,6 +116,7 @@ function ns.Widgets.CreateToggle(parent, opts)
         if disabled then return end
         checked = not checked
         box._checkMark:SetShown(checked)
+        UpdateCheckBorder(box, checked)
         if opts.set then opts.set(checked) end
     end)
 
@@ -101,6 +124,7 @@ function ns.Widgets.CreateToggle(parent, opts)
     if opts.get then
         checked = not not opts.get()
         box._checkMark:SetShown(checked)
+        UpdateCheckBorder(box, checked)
     end
 
     -- Apply initial disabled state
@@ -118,6 +142,7 @@ function ns.Widgets.CreateToggle(parent, opts)
     function frame:SetValue(v)
         checked = not not v
         box._checkMark:SetShown(checked)
+        UpdateCheckBorder(box, checked)
     end
 
     function frame:SetDisabled(state)
@@ -135,6 +160,7 @@ function ns.Widgets.CreateToggle(parent, opts)
         if opts.get then
             checked = not not opts.get()
             box._checkMark:SetShown(checked)
+            UpdateCheckBorder(box, checked)
         end
     end
 

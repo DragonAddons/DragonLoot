@@ -21,6 +21,17 @@ ns.WidgetConstants = {
     DISABLED_COLOR = { 0.5, 0.5, 0.5 },
     GRAY_COLOR = { 0.7, 0.7, 0.7 },
     EMPTY_ICON = "Interface\\PaperDoll\\UI-Backpack-EmptySlot",
+
+    -- Layered UI color palette (deepest -> brightest)
+    PANEL_BG = { 0.06, 0.06, 0.06, 0.95 },
+    SECTION_BG = { 0.10, 0.10, 0.11, 0.80 },
+    SECTION_BORDER = { 0.20, 0.20, 0.22, 0.50 },
+    WIDGET_BG = { 0.18, 0.18, 0.18, 1 },
+    WIDGET_BG_HOVER = { 0.24, 0.24, 0.24, 1 },
+    SLIDER_TRACK = { 0.25, 0.25, 0.25, 1 },
+    SLIDER_FILL = { 0.45, 0.45, 0.45, 1 },
+    HEADER_ACCENT = { 0.80, 0.70, 0.20, 0.15 },
+    GOLD_COLOR = { 1, 0.82, 0 },
 }
 
 -------------------------------------------------------------------------------

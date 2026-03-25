@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- LootRollTab.lua
--- Loot Roll settings tab: roll frame layout, notifications, instance filters
+-- Loot Roll settings tab: roll frame layout and timer bar
 --
 -- Supported versions: Retail, MoP Classic, TBC Anniversary, Cata, Classic
 -------------------------------------------------------------------------------
@@ -13,8 +13,6 @@ local L = ns.L
 -------------------------------------------------------------------------------
 
 local math_abs = math.abs
-local tostring = tostring
-local tonumber = tonumber
 
 -------------------------------------------------------------------------------
 -- Namespace references
@@ -51,10 +49,11 @@ local TIMER_BAR_STYLE_VALUES = {
 -------------------------------------------------------------------------------
 
 local function CreateRollFrameSection(parent, W, db, yOffset, LC)
-    local header = W.CreateHeader(parent, L["Roll Frame"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Roll Frame"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
-    local enableToggle = W.CreateToggle(parent, {
+    local enableToggle = W.CreateToggle(content, {
         label = L["Enable Custom Roll Frame"],
         tooltip = L["Replace the default Blizzard roll frame with DragonLoot's custom version"],
         get = function() return db.profile.rollFrame.enabled end,
@@ -63,26 +62,26 @@ local function CreateRollFrameSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(enableToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(enableToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local lockToggle = W.CreateToggle(parent, {
+    local lockToggle = W.CreateToggle(content, {
         label = L["Lock Position"],
         tooltip = L["Prevent the roll frame from being dragged"],
         get = function() return db.profile.rollFrame.lock end,
         set = function(value) db.profile.rollFrame.lock = value end,
     })
-    yOffset = LC.AnchorWidget(lockToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(lockToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local hideOnVoteToggle = W.CreateToggle(parent, {
+    local hideOnVoteToggle = W.CreateToggle(content, {
         label = L["Hide After Voting"],
         tooltip = L["Hide the roll frame after you cast your vote. The roll continues in the background"
             .. " and notifications still fire."],
         get = function() return db.profile.rollFrame.hideOnVote end,
         set = function(value) db.profile.rollFrame.hideOnVote = value end,
     })
-    yOffset = LC.AnchorWidget(hideOnVoteToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(hideOnVoteToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local testRollBtn = W.CreateButton(parent, {
+    local testRollBtn = W.CreateButton(content, {
         text = L["Test Roll"],
         width = 100,
         tooltip = L["Show test roll frames"],
@@ -92,9 +91,9 @@ local function CreateRollFrameSection(parent, W, db, yOffset, LC)
             end
         end,
     })
-    testRollBtn:SetPoint("TOPLEFT", parent, "TOPLEFT", LC.PADDING_SIDE, yOffset)
+    testRollBtn:SetPoint("TOPLEFT", content, "TOPLEFT", LC.PADDING_SIDE, innerY)
 
-    local testLoopBtn = W.CreateButton(parent, {
+    local testLoopBtn = W.CreateButton(content, {
         text = L["Test Loop"],
         width = 100,
         tooltip = L["Start or stop continuous test roll spawning"],
@@ -106,17 +105,20 @@ local function CreateRollFrameSection(parent, W, db, yOffset, LC)
     })
     testLoopBtn:SetPoint("LEFT", testRollBtn, "RIGHT", 8, 0)
 
-    yOffset = yOffset - testRollBtn:GetHeight() - LC.SPACING_BETWEEN_SECTIONS
+    innerY = innerY - testRollBtn:GetHeight() - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
 
 -------------------------------------------------------------------------------
--- Section: Layout (sliders + texture dropdown)
+-- Helper: create a roll frame layout slider inside the given content frame
 -------------------------------------------------------------------------------
 
-local function CreateLayoutSlider(parent, W, db, yOffset, LC, label, tooltip, key, min, max, step, fmt)
-    local slider = W.CreateSlider(parent, {
+local function CreateLayoutSlider(content, W, db, innerY, LC, label, tooltip, key, min, max, step, fmt)
+    local slider = W.CreateSlider(content, {
         label = label,
         tooltip = tooltip,
         min = min,
@@ -129,19 +131,24 @@ local function CreateLayoutSlider(parent, W, db, yOffset, LC, label, tooltip, ke
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(slider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
-    return yOffset
+    innerY = LC.AnchorWidget(slider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+    return innerY
 end
 
+-------------------------------------------------------------------------------
+-- Section: Layout (sliders + texture dropdown)
+-------------------------------------------------------------------------------
+
 local function CreateLayoutSection(parent, W, db, yOffset, LC)
-    local header = W.CreateHeader(parent, L["Layout"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Layout"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
     local frameMinHeightSlider, rowSpacingSlider  -- forward declare for compact toggle
 
     local isCompact = db.profile.rollFrame.compactTextLayout
 
-    frameMinHeightSlider = W.CreateSlider(parent, {
+    frameMinHeightSlider = W.CreateSlider(content, {
         label = L["Frame Height"],
         tooltip = L["Minimum height of the roll frame"],
         min = 40,
@@ -155,14 +162,14 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
         end,
     })
     frameMinHeightSlider:SetDisabled(isCompact)
-    yOffset = LC.AnchorWidget(frameMinHeightSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(frameMinHeightSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
+    innerY = CreateLayoutSlider(content, W, db, innerY, LC,
         L["Scale"], L["Roll frame scale"], "scale", 0.5, 2, 0.05, "%.2f")
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
+    innerY = CreateLayoutSlider(content, W, db, innerY, LC,
         L["Frame Width"], L["Width of the roll frame"], "frameWidth", 200, 500, 10, "%d")
 
-    rowSpacingSlider = W.CreateSlider(parent, {
+    rowSpacingSlider = W.CreateSlider(content, {
         label = L["Row Spacing"],
         tooltip = L["Vertical spacing between roll rows"],
         min = 0,
@@ -176,11 +183,12 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
         end,
     })
     rowSpacingSlider:SetDisabled(isCompact)
-    yOffset = LC.AnchorWidget(rowSpacingSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(rowSpacingSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
     -- Timer Bar Style dropdown + height sliders
     local timerBarHeightSlider, minimalHeightSlider  -- forward declare
 
-    local styleDropdown = W.CreateDropdown(parent, {
+    local styleDropdown = W.CreateDropdown(content, {
         label = L["Timer Bar Style"],
         values = TIMER_BAR_STYLE_VALUES,
         get = function() return db.profile.rollFrame.timerBarStyle end,
@@ -192,9 +200,9 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(styleDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(styleDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    timerBarHeightSlider = W.CreateSlider(parent, {
+    timerBarHeightSlider = W.CreateSlider(content, {
         label = L["Timer Bar Height"],
         tooltip = L["Height of the countdown timer bar"],
         min = 6,
@@ -208,9 +216,9 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
         end,
     })
     timerBarHeightSlider:SetDisabled(db.profile.rollFrame.timerBarStyle == "minimal")
-    yOffset = LC.AnchorWidget(timerBarHeightSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(timerBarHeightSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    minimalHeightSlider = W.CreateSlider(parent, {
+    minimalHeightSlider = W.CreateSlider(content, {
         label = L["Minimal Height"],
         tooltip = L["Height of the minimal timer bar"],
         min = 1,
@@ -224,20 +232,25 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
         end,
     })
     minimalHeightSlider:SetDisabled(db.profile.rollFrame.timerBarStyle ~= "minimal")
-    yOffset = LC.AnchorWidget(minimalHeightSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(minimalHeightSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
-        L["Timer Bar Spacing"], L["Space between item row and timer bar"], "timerBarSpacing", 0, 16, 1, "%d")
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
-        L["Content Padding"], L["Inner padding of the roll frame"], "contentPadding", 0, 12, 1, "%d")
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
-        L["Button Size"], L["Size of Need/Greed/Pass buttons"], "buttonSize", 16, 36, 1, "%d")
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
-        L["Button Spacing"], L["Spacing between roll buttons"], "buttonSpacing", 0, 12, 1, "%d")
-    yOffset = CreateLayoutSlider(parent, W, db, yOffset, LC,
-        L["Frame Spacing"], L["Spacing between multiple roll frames"], "frameSpacing", 0, 16, 1, "%d")
+    innerY = CreateLayoutSlider(content, W, db, innerY, LC,
+        L["Timer Bar Spacing"], L["Space between item row and timer bar"],
+        "timerBarSpacing", 0, 16, 1, "%d")
+    innerY = CreateLayoutSlider(content, W, db, innerY, LC,
+        L["Content Padding"], L["Inner padding of the roll frame"],
+        "contentPadding", 0, 12, 1, "%d")
+    innerY = CreateLayoutSlider(content, W, db, innerY, LC,
+        L["Button Size"], L["Size of Need/Greed/Pass buttons"],
+        "buttonSize", 16, 36, 1, "%d")
+    innerY = CreateLayoutSlider(content, W, db, innerY, LC,
+        L["Button Spacing"], L["Spacing between roll buttons"],
+        "buttonSpacing", 0, 12, 1, "%d")
+    innerY = CreateLayoutSlider(content, W, db, innerY, LC,
+        L["Frame Spacing"], L["Spacing between multiple roll frames"],
+        "frameSpacing", 0, 16, 1, "%d")
 
-    local compactToggle = W.CreateToggle(parent, {
+    local compactToggle = W.CreateToggle(content, {
         label = L["Compact Text Layout"],
         tooltip = L["Show item name and bind type on the same line"],
         get = function() return db.profile.rollFrame.compactTextLayout end,
@@ -248,9 +261,9 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(compactToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(compactToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local textureDropdown = W.CreateDropdown(parent, {
+    local textureDropdown = W.CreateDropdown(content, {
         label = L["Timer Bar Texture"],
         values = function() return LC.BuildLSMValues("statusbar") end,
         sort = true,
@@ -261,15 +274,15 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(textureDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(textureDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    -- Timer Bar Appearance sub-section
-    local timerBarHeader = W.CreateHeader(parent, L["Timer Bar Appearance"])
-    yOffset = LC.AnchorWidget(timerBarHeader, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    -- Timer Bar Appearance sub-header (visual separator inside section)
+    local timerBarHeader = W.CreateHeader(content, L["Timer Bar Appearance"])
+    innerY = LC.AnchorWidget(timerBarHeader, content, innerY) - LC.SPACING_AFTER_HEADER
 
     local borderColorPicker  -- forward declare
 
-    local borderToggle = W.CreateToggle(parent, {
+    local borderToggle = W.CreateToggle(content, {
         label = L["Timer Bar Border"],
         tooltip = L["Show a border around the timer bar"],
         get = function() return db.profile.rollFrame.timerBarBorder end,
@@ -279,9 +292,9 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(borderToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(borderToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    borderColorPicker = W.CreateColorPicker(parent, {
+    borderColorPicker = W.CreateColorPicker(content, {
         label = L["Timer Bar Border Color"],
         hasAlpha = false,
         get = function()
@@ -296,11 +309,11 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
         end,
     })
     borderColorPicker:SetDisabled(not db.profile.rollFrame.timerBarBorder)
-    yOffset = LC.AnchorWidget(borderColorPicker, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(borderColorPicker, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     local barColorPicker  -- forward declare
 
-    local colorModeDropdown = W.CreateDropdown(parent, {
+    local colorModeDropdown = W.CreateDropdown(content, {
         label = L["Color Mode"],
         values = COLOR_MODE_VALUES,
         get = function() return db.profile.rollFrame.timerBarColorMode end,
@@ -310,9 +323,9 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(colorModeDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(colorModeDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    barColorPicker = W.CreateColorPicker(parent, {
+    barColorPicker = W.CreateColorPicker(content, {
         label = L["Bar Color"],
         hasAlpha = false,
         get = function()
@@ -327,9 +340,9 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
         end,
     })
     barColorPicker:SetDisabled(db.profile.rollFrame.timerBarColorMode ~= "custom")
-    yOffset = LC.AnchorWidget(barColorPicker, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(barColorPicker, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local bgColorPicker = W.CreateColorPicker(parent, {
+    local bgColorPicker = W.CreateColorPicker(content, {
         label = L["Bar Background"],
         hasAlpha = false,
         get = function()
@@ -343,9 +356,9 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(bgColorPicker, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(bgColorPicker, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local bgOpacitySlider = W.CreateSlider(parent, {
+    local bgOpacitySlider = W.CreateSlider(content, {
         label = L["Bar Background Opacity"],
         min = 0,
         max = 1,
@@ -358,114 +371,10 @@ local function CreateLayoutSection(parent, W, db, yOffset, LC)
             NotifyRollManager()
         end,
     })
-    yOffset = LC.AnchorWidget(bgOpacitySlider, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    innerY = LC.AnchorWidget(bgOpacitySlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    return yOffset
-end
-
--------------------------------------------------------------------------------
--- Section: Roll Notifications
--------------------------------------------------------------------------------
-
-local function CreateNotificationSection(parent, W, db, yOffset, LC)
-    local header = W.CreateHeader(parent, L["Roll Notifications"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
-
-    -- Forward declarations for cross-widget disable logic
-    local groupWinsToggle, selfRollsToggle, groupRollsToggle
-
-    local showRollWon = W.CreateToggle(parent, {
-        label = L["Show Roll Won"],
-        tooltip = L["Show a notification when someone wins a roll"],
-        get = function() return db.profile.rollNotifications.showRollWon end,
-        set = function(value)
-            db.profile.rollNotifications.showRollWon = value
-            if groupWinsToggle then groupWinsToggle:SetDisabled(not value) end
-        end,
-    })
-    yOffset = LC.AnchorWidget(showRollWon, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
-
-    groupWinsToggle = W.CreateToggle(parent, {
-        label = L["Show Group Wins"],
-        tooltip = L["Show notifications when other group members win rolls"],
-        get = function() return db.profile.rollNotifications.showGroupWins end,
-        set = function(value) db.profile.rollNotifications.showGroupWins = value end,
-        disabled = not db.profile.rollNotifications.showRollWon,
-    })
-    yOffset = LC.AnchorWidget(groupWinsToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
-
-    local showRollResults = W.CreateToggle(parent, {
-        label = L["Show Roll Results"],
-        tooltip = L["Show individual roll result notifications"],
-        get = function() return db.profile.rollNotifications.showRollResults end,
-        set = function(value)
-            db.profile.rollNotifications.showRollResults = value
-            if selfRollsToggle then selfRollsToggle:SetDisabled(not value) end
-            if groupRollsToggle then groupRollsToggle:SetDisabled(not value) end
-        end,
-    })
-    yOffset = LC.AnchorWidget(showRollResults, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
-
-    selfRollsToggle = W.CreateToggle(parent, {
-        label = L["Show My Rolls"],
-        tooltip = L["Show notifications for your own roll results"],
-        get = function() return db.profile.rollNotifications.showSelfRolls end,
-        set = function(value) db.profile.rollNotifications.showSelfRolls = value end,
-        disabled = not db.profile.rollNotifications.showRollResults,
-    })
-    yOffset = LC.AnchorWidget(selfRollsToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
-
-    groupRollsToggle = W.CreateToggle(parent, {
-        label = L["Show Group Rolls"],
-        tooltip = L["Show notifications for other group members' roll results"],
-        get = function() return db.profile.rollNotifications.showGroupRolls end,
-        set = function(value) db.profile.rollNotifications.showGroupRolls = value end,
-        disabled = not db.profile.rollNotifications.showRollResults,
-    })
-    yOffset = LC.AnchorWidget(groupRollsToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
-
-    local qualityDropdown = W.CreateDropdown(parent, {
-        label = L["Minimum Quality"],
-        values = ns.QualityValues,
-        get = function() return tostring(db.profile.rollNotifications.minQuality) end,
-        set = function(value) db.profile.rollNotifications.minQuality = tonumber(value) or 0 end,
-    })
-    yOffset = LC.AnchorWidget(qualityDropdown, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
-
-    return yOffset
-end
-
--------------------------------------------------------------------------------
--- Section: Instance Filters
--------------------------------------------------------------------------------
-
-local function CreateInstanceFilterSection(parent, W, db, yOffset, LC)
-    local header = W.CreateHeader(parent, L["Instance Filters"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
-
-    local worldToggle = W.CreateToggle(parent, {
-        label = L["Show in Open World"],
-        tooltip = L["Show roll notifications while in the open world"],
-        get = function() return db.profile.rollNotifications.showInWorld end,
-        set = function(value) db.profile.rollNotifications.showInWorld = value end,
-    })
-    yOffset = LC.AnchorWidget(worldToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
-
-    local dungeonToggle = W.CreateToggle(parent, {
-        label = L["Show in Dungeons"],
-        tooltip = L["Show roll notifications while in dungeons"],
-        get = function() return db.profile.rollNotifications.showInDungeon end,
-        set = function(value) db.profile.rollNotifications.showInDungeon = value end,
-    })
-    yOffset = LC.AnchorWidget(dungeonToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
-
-    local raidToggle = W.CreateToggle(parent, {
-        label = L["Show in Raids"],
-        tooltip = L["Show roll notifications while in raids"],
-        get = function() return db.profile.rollNotifications.showInRaid end,
-        set = function(value) db.profile.rollNotifications.showInRaid = value end,
-    })
-    yOffset = LC.AnchorWidget(raidToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
@@ -483,8 +392,6 @@ local function CreateContent(parent)
 
     yOffset = CreateRollFrameSection(parent, W, db, yOffset, LC)
     yOffset = CreateLayoutSection(parent, W, db, yOffset, LC)
-    yOffset = CreateNotificationSection(parent, W, db, yOffset, LC)
-    yOffset = CreateInstanceFilterSection(parent, W, db, yOffset, LC)
 
     parent:SetHeight(math_abs(yOffset) + LC.PADDING_BOTTOM)
 end

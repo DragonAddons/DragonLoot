@@ -53,8 +53,8 @@ end
 -- Create an animation dropdown for a given db key
 -------------------------------------------------------------------------------
 
-local function CreateAnimDropdown(parent, W, db, yOffset, label, key, valuesFn)
-    local dropdown = W.CreateDropdown(parent, {
+local function CreateAnimDropdown(content, W, db, innerY, label, key, valuesFn)
+    local dropdown = W.CreateDropdown(content, {
         label = label,
         values = valuesFn,
         get = function() return db.profile.animation[key] end,
@@ -63,7 +63,7 @@ local function CreateAnimDropdown(parent, W, db, yOffset, label, key, valuesFn)
             LC.NotifyAppearanceChange()
         end,
     })
-    return LC.AnchorWidget(dropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    return LC.AnchorWidget(dropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 end
 
 -------------------------------------------------------------------------------
@@ -79,10 +79,11 @@ local function CreateContent(parent)
     ---------------------------------------------------------------------------
     -- Section: Animation (global toggle + durations)
     ---------------------------------------------------------------------------
-    local header = W.CreateHeader(parent, L["Animation"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local animSection = W.CreateSection(parent, L["Animation"])
+    local animContent = animSection.content
+    local animY = -LC.SECTION_PADDING_TOP
 
-    local enableToggle = W.CreateToggle(parent, {
+    local enableToggle = W.CreateToggle(animContent, {
         label = L["Enable Animations"],
         tooltip = L["Enable or disable all DragonLoot animations"],
         get = function() return db.profile.animation.enabled end,
@@ -91,9 +92,9 @@ local function CreateContent(parent)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(enableToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    animY = LC.AnchorWidget(enableToggle, animContent, animY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local openDuration = W.CreateSlider(parent, {
+    local openDuration = W.CreateSlider(animContent, {
         label = L["Open Duration"],
         tooltip = L["Duration of open/show animations in seconds"],
         min = 0.1,
@@ -106,9 +107,9 @@ local function CreateContent(parent)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(openDuration, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    animY = LC.AnchorWidget(openDuration, animContent, animY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local closeDuration = W.CreateSlider(parent, {
+    local closeDuration = W.CreateSlider(animContent, {
         label = L["Close Duration"],
         tooltip = L["Duration of close/hide animations in seconds"],
         min = 0.1,
@@ -121,36 +122,44 @@ local function CreateContent(parent)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(closeDuration, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    animY = LC.AnchorWidget(closeDuration, animContent, animY) - LC.SPACING_BETWEEN_WIDGETS
+
+    animSection:SetContentHeight(math_abs(animY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(animSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     ---------------------------------------------------------------------------
     -- Section: Loot Window animation types
     ---------------------------------------------------------------------------
-    local lootHeader = W.CreateHeader(parent, L["Loot Window"])
-    yOffset = LC.AnchorWidget(lootHeader, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local lootSection = W.CreateSection(parent, L["Loot Window"])
+    local lootContent = lootSection.content
+    local lootY = -LC.SECTION_PADDING_TOP
 
-    yOffset = CreateAnimDropdown(
-        parent, W, db, yOffset, L["Open Animation"], "lootOpenAnim", GetEntranceValues
+    lootY = CreateAnimDropdown(
+        lootContent, W, db, lootY, L["Open Animation"], "lootOpenAnim", GetEntranceValues
     )
-    yOffset = CreateAnimDropdown(
-        parent, W, db, yOffset, L["Close Animation"], "lootCloseAnim", GetExitValues
+    lootY = CreateAnimDropdown(
+        lootContent, W, db, lootY, L["Close Animation"], "lootCloseAnim", GetExitValues
     )
 
-    -- Extra section spacing before next header
-    yOffset = yOffset - LC.SPACING_BETWEEN_SECTIONS + LC.SPACING_BETWEEN_WIDGETS
+    lootSection:SetContentHeight(math_abs(lootY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(lootSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     ---------------------------------------------------------------------------
     -- Section: Roll Frame animation types
     ---------------------------------------------------------------------------
-    local rollHeader = W.CreateHeader(parent, L["Roll Frame"])
-    yOffset = LC.AnchorWidget(rollHeader, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local rollSection = W.CreateSection(parent, L["Roll Frame"])
+    local rollContent = rollSection.content
+    local rollY = -LC.SECTION_PADDING_TOP
 
-    yOffset = CreateAnimDropdown(
-        parent, W, db, yOffset, L["Show Animation"], "rollShowAnim", GetEntranceValues
+    rollY = CreateAnimDropdown(
+        rollContent, W, db, rollY, L["Show Animation"], "rollShowAnim", GetEntranceValues
     )
-    yOffset = CreateAnimDropdown(
-        parent, W, db, yOffset, L["Hide Animation"], "rollHideAnim", GetExitValues
+    rollY = CreateAnimDropdown(
+        rollContent, W, db, rollY, L["Hide Animation"], "rollHideAnim", GetExitValues
     )
+
+    rollSection:SetContentHeight(math_abs(rollY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(rollSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     ---------------------------------------------------------------------------
     -- Set content height for scroll frame
@@ -166,6 +175,6 @@ ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "animation",
     label = L["Animation"],
-    order = 7,
+    order = 8,
     createFunc = CreateContent,
 }

@@ -64,10 +64,11 @@ local SLOT_BG_VALUES = {
 -------------------------------------------------------------------------------
 
 local function CreateFontSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, L["Font"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Font"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
-    local fontDropdown = W.CreateDropdown(parent, {
+    local fontDropdown = W.CreateDropdown(content, {
         label = L["Font Family"],
         values = GetFontValues,
         sort = true,
@@ -78,9 +79,9 @@ local function CreateFontSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(fontDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(fontDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local fontSizeSlider = W.CreateSlider(parent, {
+    local fontSizeSlider = W.CreateSlider(content, {
         label = L["Font Size"],
         tooltip = L["Base font size for all DragonLoot frames"],
         min = 8,
@@ -93,9 +94,9 @@ local function CreateFontSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(fontSizeSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(fontSizeSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local outlineDropdown = W.CreateDropdown(parent, {
+    local outlineDropdown = W.CreateDropdown(content, {
         label = L["Font Outline"],
         values = FONT_OUTLINE_VALUES,
         get = function() return db.profile.appearance.fontOutline end,
@@ -104,9 +105,9 @@ local function CreateFontSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(outlineDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(outlineDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local fontShadowToggle = W.CreateToggle(parent, {
+    local fontShadowToggle = W.CreateToggle(content, {
         label = L["Text Shadow"],
         tooltip = L["Enable text shadow on all text elements"],
         get = function() return db.profile.appearance.fontShadow end,
@@ -115,7 +116,10 @@ local function CreateFontSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(fontShadowToggle, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    innerY = LC.AnchorWidget(fontShadowToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
@@ -125,10 +129,11 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateIconSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, L["Icon Sizes"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Icon Sizes"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
-    local lootIconSlider = W.CreateSlider(parent, {
+    local lootIconSlider = W.CreateSlider(content, {
         label = L["Loot Icon Size"],
         tooltip = L["Icon size in the loot window"],
         min = 16,
@@ -141,9 +146,9 @@ local function CreateIconSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(lootIconSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(lootIconSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local rollIconSlider = W.CreateSlider(parent, {
+    local rollIconSlider = W.CreateSlider(content, {
         label = L["Roll Icon Size"],
         tooltip = L["Icon size in the roll frame"],
         min = 16,
@@ -156,9 +161,9 @@ local function CreateIconSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(rollIconSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(rollIconSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local historyIconSlider = W.CreateSlider(parent, {
+    local historyIconSlider = W.CreateSlider(content, {
         label = L["History Icon Size"],
         tooltip = L["Icon size in the history frame"],
         min = 16,
@@ -171,9 +176,9 @@ local function CreateIconSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(historyIconSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(historyIconSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local qualityBorderToggle = W.CreateToggle(parent, {
+    local qualityBorderToggle = W.CreateToggle(content, {
         label = L["Quality Border"],
         tooltip = L["Show quality-colored borders on item icons"],
         get = function() return db.profile.appearance.qualityBorder end,
@@ -182,9 +187,9 @@ local function CreateIconSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(qualityBorderToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(qualityBorderToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local slotBgDropdown = W.CreateDropdown(parent, {
+    local slotBgDropdown = W.CreateDropdown(content, {
         label = L["Slot Background"],
         values = SLOT_BG_VALUES,
         get = function() return db.profile.appearance.slotBackground end,
@@ -193,7 +198,10 @@ local function CreateIconSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(slotBgDropdown, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    innerY = LC.AnchorWidget(slotBgDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
@@ -203,10 +211,11 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateBackgroundSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, L["Background"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Background"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
-    local bgColorPicker = W.CreateColorPicker(parent, {
+    local bgColorPicker = W.CreateColorPicker(content, {
         label = L["Background Color"],
         hasAlpha = false,
         get = function()
@@ -220,9 +229,9 @@ local function CreateBackgroundSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(bgColorPicker, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(bgColorPicker, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local bgAlphaSlider = W.CreateSlider(parent, {
+    local bgAlphaSlider = W.CreateSlider(content, {
         label = L["Background Opacity"],
         tooltip = L["Opacity of the frame background"],
         min = 0,
@@ -235,9 +244,9 @@ local function CreateBackgroundSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(bgAlphaSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(bgAlphaSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local bgTextureDropdown = W.CreateDropdown(parent, {
+    local bgTextureDropdown = W.CreateDropdown(content, {
         label = L["Background Texture"],
         values = GetBackgroundValues,
         sort = true,
@@ -248,7 +257,10 @@ local function CreateBackgroundSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(bgTextureDropdown, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    innerY = LC.AnchorWidget(bgTextureDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
@@ -258,10 +270,11 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateBorderSection(parent, W, db, yOffset)
-    local header = W.CreateHeader(parent, L["Border"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Border"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
-    local borderColorPicker = W.CreateColorPicker(parent, {
+    local borderColorPicker = W.CreateColorPicker(content, {
         label = L["Border Color"],
         hasAlpha = false,
         get = function()
@@ -275,9 +288,9 @@ local function CreateBorderSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(borderColorPicker, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(borderColorPicker, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local borderSizeSlider = W.CreateSlider(parent, {
+    local borderSizeSlider = W.CreateSlider(content, {
         label = L["Border Size"],
         tooltip = L["Thickness of the frame border"],
         min = 0,
@@ -290,9 +303,9 @@ local function CreateBorderSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(borderSizeSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(borderSizeSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local borderTextureDropdown = W.CreateDropdown(parent, {
+    local borderTextureDropdown = W.CreateDropdown(content, {
         label = L["Border Texture"],
         values = GetBorderValues,
         sort = true,
@@ -303,7 +316,10 @@ local function CreateBorderSection(parent, W, db, yOffset)
             LC.NotifyAppearanceChange()
         end,
     })
-    yOffset = LC.AnchorWidget(borderTextureDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(borderTextureDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
@@ -334,6 +350,6 @@ ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "appearance",
     label = L["Appearance"],
-    order = 6,
+    order = 7,
     createFunc = CreateContent,
 }

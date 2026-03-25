@@ -34,12 +34,16 @@ local function ApplyHistorySettings()
 end
 
 -------------------------------------------------------------------------------
--- Build toggles and dropdown section
+-- Section: History (toggles, dropdown, roll details)
 -------------------------------------------------------------------------------
 
 local function CreateTogglesSection(parent, W, db, yOffset)
+    local section = W.CreateSection(parent, L["History"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
+
     -- Enable History
-    local enableToggle = W.CreateToggle(parent, {
+    local enableToggle = W.CreateToggle(content, {
         label = L["Enable History"],
         get = function() return db.profile.history.enabled end,
         set = function(value)
@@ -47,23 +51,23 @@ local function CreateTogglesSection(parent, W, db, yOffset)
             ApplyHistorySettings()
         end,
     })
-    yOffset = LC.AnchorWidget(enableToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(enableToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Auto Show on Loot
-    local autoShowToggle = W.CreateToggle(parent, {
+    local autoShowToggle = W.CreateToggle(content, {
         label = L["Auto Show on Loot"],
         get = function() return db.profile.history.autoShow end,
         set = function(value)
             db.profile.history.autoShow = value
         end,
     })
-    yOffset = LC.AnchorWidget(autoShowToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(autoShowToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Forward-declare so the toggle set closure captures the variable
     local qualityDropdown
 
     -- Track Direct Loot (set callback updates dropdown disabled state)
-    local trackToggle = W.CreateToggle(parent, {
+    local trackToggle = W.CreateToggle(content, {
         label = L["Track Direct Loot"],
         tooltip = L["Track items you pick up directly (not from a loot window)"],
         get = function() return db.profile.history.trackDirectLoot end,
@@ -74,10 +78,10 @@ local function CreateTogglesSection(parent, W, db, yOffset)
             end
         end,
     })
-    yOffset = LC.AnchorWidget(trackToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(trackToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Minimum Quality dropdown
-    qualityDropdown = W.CreateDropdown(parent, {
+    qualityDropdown = W.CreateDropdown(content, {
         label = L["Minimum Quality"],
         values = ns.QualityValues,
         get = function() return tostring(db.profile.history.minQuality) end,
@@ -85,20 +89,17 @@ local function CreateTogglesSection(parent, W, db, yOffset)
             db.profile.history.minQuality = tonumber(value)
         end,
     })
-    yOffset = LC.AnchorWidget(qualityDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(qualityDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Apply initial disabled state based on current trackDirectLoot value
     qualityDropdown:SetDisabled(not db.profile.history.trackDirectLoot)
 
-    -- Section gap
-    yOffset = yOffset - LC.SPACING_BETWEEN_SECTIONS + LC.SPACING_BETWEEN_WIDGETS
-
-    -- Roll Details header
-    local detailsHeader = W.CreateHeader(parent, L["Roll Details"])
-    yOffset = LC.AnchorWidget(detailsHeader, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    -- Roll Details sub-header (visual separator inside section)
+    local detailsHeader = W.CreateHeader(content, L["Roll Details"])
+    innerY = LC.AnchorWidget(detailsHeader, content, innerY) - LC.SPACING_AFTER_HEADER
 
     -- Show Roll Details toggle
-    local rollDetailsToggle = W.CreateToggle(parent, {
+    local rollDetailsToggle = W.CreateToggle(content, {
         label = L["Show Roll Details"],
         tooltip = L["Click history entries to expand and see all player rolls"],
         get = function() return db.profile.history.showRollDetails end,
@@ -107,22 +108,25 @@ local function CreateTogglesSection(parent, W, db, yOffset)
             ApplyHistorySettings()
         end,
     })
-    yOffset = LC.AnchorWidget(rollDetailsToggle, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(rollDetailsToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
 
 -------------------------------------------------------------------------------
--- Build layout sliders section
+-- Section: Layout (sliders)
 -------------------------------------------------------------------------------
 
 local function CreateLayoutSection(parent, W, db, yOffset)
-    -- Header: Layout
-    local layoutHeader = W.CreateHeader(parent, L["Layout"])
-    yOffset = LC.AnchorWidget(layoutHeader, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Layout"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
     -- Slider: Max Entries
-    local maxEntriesSlider = W.CreateSlider(parent, {
+    local maxEntriesSlider = W.CreateSlider(content, {
         label = L["Max Entries"],
         min = 10, max = 500, step = 10,
         format = "%d",
@@ -131,10 +135,10 @@ local function CreateLayoutSection(parent, W, db, yOffset)
             db.profile.history.maxEntries = value
         end,
     })
-    yOffset = LC.AnchorWidget(maxEntriesSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(maxEntriesSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Slider: Entry Spacing
-    local entrySpacingSlider = W.CreateSlider(parent, {
+    local entrySpacingSlider = W.CreateSlider(content, {
         label = L["Entry Spacing"],
         min = 0, max = 12, step = 1,
         format = "%d",
@@ -144,10 +148,10 @@ local function CreateLayoutSection(parent, W, db, yOffset)
             ApplyHistorySettings()
         end,
     })
-    yOffset = LC.AnchorWidget(entrySpacingSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(entrySpacingSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Slider: Content Padding
-    local contentPaddingSlider = W.CreateSlider(parent, {
+    local contentPaddingSlider = W.CreateSlider(content, {
         label = L["Content Padding"],
         min = 0, max = 12, step = 1,
         format = "%d",
@@ -157,7 +161,10 @@ local function CreateLayoutSection(parent, W, db, yOffset)
             ApplyHistorySettings()
         end,
     })
-    yOffset = LC.AnchorWidget(contentPaddingSlider, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(contentPaddingSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset
 end
@@ -172,15 +179,8 @@ local function CreateContent(parent)
     local db = dlns.Addon.db
     local yOffset = LC.PADDING_TOP
 
-    -- Header: History
-    local header = W.CreateHeader(parent, L["History"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
-
-    -- Toggles and dropdown section
+    -- History toggles and dropdown section
     yOffset = CreateTogglesSection(parent, W, db, yOffset)
-
-    -- Section gap before layout
-    yOffset = yOffset - LC.SPACING_BETWEEN_SECTIONS + LC.SPACING_BETWEEN_WIDGETS
 
     -- Layout sliders section
     yOffset = CreateLayoutSection(parent, W, db, yOffset)

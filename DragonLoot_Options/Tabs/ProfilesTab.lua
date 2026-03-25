@@ -92,14 +92,15 @@ local function GetOtherProfileValues(db)
 end
 
 -------------------------------------------------------------------------------
--- Section: Current Profile header + active dropdown + new profile input
+-- Section: Current Profile - active dropdown + new profile input
 -------------------------------------------------------------------------------
 
 local function CreateCurrentProfileSection(parent, W, db, yOffset, refreshAll)
-    local header = W.CreateHeader(parent, L["Current Profile"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Current Profile"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
-    local activeDropdown = W.CreateDropdown(parent, {
+    local activeDropdown = W.CreateDropdown(content, {
         label = L["Active Profile"],
         values = function() return GetProfileValues(db) end,
         get = function() return db:GetCurrentProfile() end,
@@ -108,18 +109,18 @@ local function CreateCurrentProfileSection(parent, W, db, yOffset, refreshAll)
             refreshAll()
         end,
     })
-    yOffset = LC.AnchorWidget(activeDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(activeDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- New profile: text input on the left, create button to its right
-    local newProfileInput = W.CreateTextInput(parent, {
+    local newProfileInput = W.CreateTextInput(content, {
         label = L["New Profile"],
         width = NEW_PROFILE_INPUT_WIDTH,
         maxLength = 64,
     })
-    newProfileInput:SetPoint("TOPLEFT", parent, "TOPLEFT", LC.PADDING_SIDE, yOffset)
-    newProfileInput:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -LC.PADDING_SIDE, yOffset)
+    newProfileInput:SetPoint("TOPLEFT", content, "TOPLEFT", LC.PADDING_SIDE, innerY)
+    newProfileInput:SetPoint("TOPRIGHT", content, "TOPRIGHT", -LC.PADDING_SIDE, innerY)
 
-    local createBtn = W.CreateButton(parent, {
+    local createBtn = W.CreateButton(content, {
         text = L["Create"],
         width = 80,
         tooltip = L["Create a new profile with the entered name and switch to it"],
@@ -134,7 +135,10 @@ local function CreateCurrentProfileSection(parent, W, db, yOffset, refreshAll)
     createBtn:ClearAllPoints()
     createBtn:SetPoint("LEFT", newProfileInput._editBox, "RIGHT", 8, 0)
 
-    yOffset = yOffset - newProfileInput:GetHeight() - LC.SPACING_BETWEEN_SECTIONS
+    innerY = innerY - newProfileInput:GetHeight() - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset, activeDropdown
 end
@@ -144,11 +148,12 @@ end
 -------------------------------------------------------------------------------
 
 local function CreateActionsSection(parent, W, db, yOffset, refreshAll)
-    local header = W.CreateHeader(parent, L["Profile Actions"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    local section = W.CreateSection(parent, L["Profile Actions"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
     -- Copy From dropdown
-    local copyDropdown = W.CreateDropdown(parent, {
+    local copyDropdown = W.CreateDropdown(content, {
         label = L["Copy From"],
         values = function() return GetOtherProfileValues(db) end,
         get = function() return nil end,
@@ -157,10 +162,10 @@ local function CreateActionsSection(parent, W, db, yOffset, refreshAll)
             refreshAll()
         end,
     })
-    yOffset = LC.AnchorWidget(copyDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(copyDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Reset Current Profile button
-    local resetBtn = W.CreateButton(parent, {
+    local resetBtn = W.CreateButton(content, {
         text = L["Reset Current Profile"],
         width = 160,
         tooltip = L["Reset all settings in the current profile to their default values"],
@@ -168,11 +173,11 @@ local function CreateActionsSection(parent, W, db, yOffset, refreshAll)
             StaticPopup_Show("DRAGONLOOT_RESET_PROFILE")
         end,
     })
-    resetBtn:SetPoint("TOPLEFT", parent, "TOPLEFT", LC.PADDING_SIDE, yOffset)
-    yOffset = yOffset - resetBtn:GetHeight() - LC.SPACING_BETWEEN_WIDGETS
+    resetBtn:SetPoint("TOPLEFT", content, "TOPLEFT", LC.PADDING_SIDE, innerY)
+    innerY = innerY - resetBtn:GetHeight() - LC.SPACING_BETWEEN_WIDGETS
 
     -- Delete Profile dropdown
-    local deleteDropdown = W.CreateDropdown(parent, {
+    local deleteDropdown = W.CreateDropdown(content, {
         label = L["Delete Profile"],
         values = function() return GetOtherProfileValues(db) end,
         get = function() return nil end,
@@ -184,7 +189,10 @@ local function CreateActionsSection(parent, W, db, yOffset, refreshAll)
             StaticPopup_Show("DRAGONLOOT_DELETE_PROFILE", value)
         end,
     })
-    yOffset = LC.AnchorWidget(deleteDropdown, parent, yOffset) - LC.SPACING_BETWEEN_WIDGETS
+    innerY = LC.AnchorWidget(deleteDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     return yOffset, copyDropdown, deleteDropdown
 end
@@ -208,14 +216,18 @@ local function CreateContent(parent)
         if deleteDropdown then deleteDropdown:Refresh() end
     end
 
-    -- Header + description
-    local header = W.CreateHeader(parent, L["Profiles"])
-    yOffset = LC.AnchorWidget(header, parent, yOffset) - LC.SPACING_AFTER_HEADER
+    -- Profiles overview section
+    local profilesSection = W.CreateSection(parent, L["Profiles"])
+    local profilesContent = profilesSection.content
+    local profilesY = -LC.SECTION_PADDING_TOP
 
-    local desc = W.CreateDescription(parent,
+    local desc = W.CreateDescription(profilesContent,
         L["Profiles allow you to save different settings configurations. You can switch between"
         .. " profiles, copy settings from another profile, or reset to defaults."])
-    yOffset = LC.AnchorWidget(desc, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+    profilesY = LC.AnchorWidget(desc, profilesContent, profilesY) - LC.SPACING_BETWEEN_WIDGETS
+
+    profilesSection:SetContentHeight(math_abs(profilesY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(profilesSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     -- Current Profile section
     yOffset, activeDropdown = CreateCurrentProfileSection(
@@ -238,6 +250,6 @@ ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "profiles",
     label = L["Profiles"],
-    order = 8,
+    order = 9,
     createFunc = CreateContent,
 }

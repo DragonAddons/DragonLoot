@@ -22,6 +22,10 @@ local LC = {
     SPACING_AFTER_HEADER = 8,
     SPACING_BETWEEN_WIDGETS = 6,
     SPACING_BETWEEN_SECTIONS = 16,
+    SECTION_PADDING_TOP = 8,
+    SECTION_PADDING_BOTTOM = 12,
+    SECTION_PADDING_SIDE = 12,
+    SUB_OPTION_INDENT = 16,
 }
 
 -------------------------------------------------------------------------------
@@ -37,6 +41,19 @@ function LC.AnchorWidget(widget, parent, yOffset, xLeft, xRight)
     widget:SetPoint("TOPLEFT", parent, "TOPLEFT", xLeft, yOffset)
     widget:SetPoint("TOPRIGHT", parent, "TOPRIGHT", xRight, yOffset)
     return yOffset - widget:GetHeight()
+end
+
+-------------------------------------------------------------------------------
+-- Anchor a Section card to the parent at the current yOffset
+--
+-- Sets TOPLEFT and TOPRIGHT anchors with PADDING_SIDE insets.
+-- Returns the new yOffset (section bottom edge).
+-------------------------------------------------------------------------------
+
+function LC.AnchorSection(section, parent, yOffset)
+    section:SetPoint("TOPLEFT", parent, "TOPLEFT", LC.PADDING_SIDE, yOffset)
+    section:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -LC.PADDING_SIDE, yOffset)
+    return yOffset - section:GetHeight()
 end
 
 -------------------------------------------------------------------------------
