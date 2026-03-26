@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- Header.lua
--- Section header with bold gold text and horizontal separator
+-- Sub-header with gold text and subtle horizontal separator
 --
 -- Supported versions: Retail, MoP Classic, TBC Anniversary, Cata, Classic
 -------------------------------------------------------------------------------
@@ -19,9 +19,9 @@ local CreateFrame = CreateFrame
 -------------------------------------------------------------------------------
 
 local FONT_PATH = WC.FONT_PATH
-local FONT_SIZE = 14
+local FONT_SIZE = 12
 local SEPARATOR_HEIGHT = 1
-local FRAME_HEIGHT = 28
+local FRAME_HEIGHT = 20
 
 -------------------------------------------------------------------------------
 -- Factory: CreateHeader
@@ -31,32 +31,24 @@ function ns.Widgets.CreateHeader(parent, text)
     local frame = CreateFrame("Frame", nil, parent)
     frame:SetHeight(FRAME_HEIGHT)
 
-    -- Accent background bar
-    local accent = frame:CreateTexture(nil, "BACKGROUND")
-    accent:SetAllPoints()
-    accent:SetColorTexture(
-        WC.HEADER_ACCENT[1], WC.HEADER_ACCENT[2], WC.HEADER_ACCENT[3], WC.HEADER_ACCENT[4]
-    )
-
-    -- Gold bold text with left padding
+    -- Gold text with left padding, vertically centered
     local fontString = frame:CreateFontString(nil, "OVERLAY")
-    fontString:SetFont(FONT_PATH, FONT_SIZE, "OUTLINE")
+    fontString:SetFont(FONT_PATH, FONT_SIZE)
     fontString:SetTextColor(WC.GOLD_COLOR[1], WC.GOLD_COLOR[2], WC.GOLD_COLOR[3])
-    fontString:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, 0)
-    fontString:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, 0)
+    fontString:SetPoint("LEFT", frame, "LEFT", 4, 0)
+    fontString:SetPoint("RIGHT", frame, "RIGHT", 0, 0)
     fontString:SetJustifyH("LEFT")
     fontString:SetText(text)
 
-    -- Gold separator below text
+    -- Subtle gold separator below text
     local separator = frame:CreateTexture(nil, "ARTWORK")
     separator:SetHeight(SEPARATOR_HEIGHT)
     separator:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
     separator:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
-    separator:SetColorTexture(WC.GOLD_COLOR[1], WC.GOLD_COLOR[2], WC.GOLD_COLOR[3], 0.3)
+    separator:SetColorTexture(WC.GOLD_COLOR[1], WC.GOLD_COLOR[2], WC.GOLD_COLOR[3], 0.2)
 
     frame._fontString = fontString
     frame._separator = separator
-    frame._accent = accent
 
     return frame
 end
