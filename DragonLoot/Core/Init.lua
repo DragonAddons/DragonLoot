@@ -135,10 +135,12 @@ end
 local function SuppressBlizzardRollFrames()
     -- UIParent is the primary dispatch: it receives START_LOOT_ROLL and calls
     -- GroupLootContainer_AddRoll(), which re-shows GroupLootFrame1-4.
-    UIParent:UnregisterEvent("START_LOOT_ROLL")
-    UIParent:UnregisterEvent("CANCEL_LOOT_ROLL")
-    UIParent:UnregisterEvent("CONFIRM_LOOT_ROLL")
-    UIParent:UnregisterEvent("CONFIRM_DISENCHANT_ROLL")
+    -- Guard each event: not all versions register every roll event on UIParent.
+    for _, event in ipairs(ROLL_FRAME_EVENTS) do
+        if UIParent:IsEventRegistered(event) then
+            UIParent:UnregisterEvent(event)
+        end
+    end
 
     -- Belt-and-suspenders: also suppress the individual roll frames and container
     for i = 1, 4 do
@@ -164,11 +166,13 @@ local function RestoreBlizzardLootFrame()
 end
 
 local function RestoreBlizzardRollFrames()
-    -- Restore UIParent dispatch so Blizzard roll frames work again
-    UIParent:RegisterEvent("START_LOOT_ROLL")
-    UIParent:RegisterEvent("CANCEL_LOOT_ROLL")
-    UIParent:RegisterEvent("CONFIRM_LOOT_ROLL")
-    UIParent:RegisterEvent("CONFIRM_DISENCHANT_ROLL")
+    -- Restore UIParent dispatch so Blizzard roll frames work again.
+    -- Guard each event to match the suppress logic.
+    for _, event in ipairs(ROLL_FRAME_EVENTS) do
+        if not UIParent:IsEventRegistered(event) then
+            UIParent:RegisterEvent(event)
+        end
+    end
 
     for i = 1, 4 do
         local frame = _G["GroupLootFrame" .. i]
