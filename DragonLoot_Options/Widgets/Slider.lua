@@ -223,6 +223,11 @@ function ns.Widgets.CreateSlider(parent, opts)
         end
     end)
 
+    -- Update fill when layout resolves the slider's anchor-based width
+    slider:SetScript("OnSizeChanged", function()
+        UpdateFillWidth(currentValue)
+    end)
+
     -- EditBox OnEnterPressed
     editBox:SetScript("OnEnterPressed", function(self)
         local text = self:GetText()
