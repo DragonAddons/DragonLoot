@@ -554,8 +554,8 @@ Create issues using the repo's issue templates (`.github/ISSUE_TEMPLATE/`):
 
 Create via CLI:
 ```bash
-gh issue create --repo <ORG>/<REPO> --label "bug" --title "[Bug]: <title>" --body "<body matching template fields>"
-gh issue create --repo <ORG>/<REPO> --label "enhancement" --title "[Feature]: <title>" --body "<body matching template fields>"
+gh issue create --repo <ORG>/<REPO> --label "C-Bug" --title "[Bug]: <title>" --body "<body matching template fields>"
+gh issue create --repo <ORG>/<REPO> --label "C-Feature" --title "[Feature]: <title>" --body "<body matching template fields>"
 ```
 
 ### Branches

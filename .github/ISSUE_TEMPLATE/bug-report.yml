@@ -2,7 +2,7 @@ name: Bug Report
 description: Report a bug with DragonLoot
 title: "[Bug]: "
 labels:
-  - bug
+  - C-Bug
 body:
   - type: textarea
     id: description
@@ -43,8 +43,9 @@ body:
       description: Which version of World of Warcraft are you playing?
       options:
         - Retail
-        - TBC Anniversary
+        - Cata Classic
         - MoP Classic
+        - TBC Anniversary
     validations:
       required: true
   - type: input
