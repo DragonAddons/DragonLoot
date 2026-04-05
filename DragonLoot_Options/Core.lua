@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 -- Core.lua
--- Entry point for DragonLoot_Options companion addon
+-- DragonLoot_Options bootstrap - bridges DragonWidgets for DragonLoot config
 --
--- Supported versions: Retail, MoP Classic, TBC Anniversary, Cata, Classic
+-- Supported versions: Retail, MoP Classic, TBC Anniversary, Cata
 -------------------------------------------------------------------------------
 
 local _, ns = ...
@@ -14,55 +14,55 @@ local _, ns = ...
 local tinsert = table.insert
 
 -------------------------------------------------------------------------------
--- Locale bridge from main addon
+-- DragonWidgets bridge
 -------------------------------------------------------------------------------
 
-ns.L = LibStub("AceLocale-3.0"):GetLocale("DragonLoot")
+local DW = DragonWidgetsNS
+if not DW then
+    error("[DragonLoot_Options] DragonWidgets is not loaded. Ensure DragonWidgets is installed and enabled.", 2)
+end
+
+ns.DW = DW
 
 -------------------------------------------------------------------------------
--- Widget and tab registries (populated by subsequent files)
+-- Tab registry (populated by subsequent tab files)
 -------------------------------------------------------------------------------
 
-ns.Widgets = {}
 ns.Tabs = {}
 
 -------------------------------------------------------------------------------
 -- Shared dropdown values (used by multiple tab files)
 -------------------------------------------------------------------------------
 
-local L = ns.L
-
 ns.QualityValues = {
-    { value = "0", text = "|cff9d9d9d" .. L["Poor"] .. "|r" },
-    { value = "1", text = "|cffffffff" .. L["Common"] .. "|r" },
-    { value = "2", text = "|cff1eff00" .. L["Uncommon"] .. "|r" },
-    { value = "3", text = "|cff0070dd" .. L["Rare"] .. "|r" },
-    { value = "4", text = "|cffa335ee" .. L["Epic"] .. "|r" },
-    { value = "5", text = "|cffff8000" .. L["Legendary"] .. "|r" },
+    { value = "0", text = "|cff9d9d9dPoor|r" },
+    { value = "1", text = "|cffffffffCommon|r" },
+    { value = "2", text = "|cff1eff00Uncommon|r" },
+    { value = "3", text = "|cff0070ddRare|r" },
+    { value = "4", text = "|cffa335eeEpic|r" },
+    { value = "5", text = "|cffff8000Legendary|r" },
 }
+
+-------------------------------------------------------------------------------
+-- Appearance-change listener
+--
+-- When DragonWidgets fires OnAppearanceChanged, propagate to all DragonLoot
+-- display modules that are currently loaded.
+-------------------------------------------------------------------------------
+
+DW.On("OnAppearanceChanged", function()
+    local dl = ns.dlns
+    if not dl then return end
+    if dl.LootFrame and dl.LootFrame.ApplySettings then dl.LootFrame.ApplySettings() end
+    if dl.RollManager and dl.RollManager.ApplySettings then dl.RollManager.ApplySettings() end
+    if dl.HistoryFrame and dl.HistoryFrame.ApplySettings then dl.HistoryFrame.ApplySettings() end
+end)
 
 -------------------------------------------------------------------------------
 -- Panel state
 -------------------------------------------------------------------------------
 
-local optionsPanel
-local tabGroup
-
--------------------------------------------------------------------------------
--- Refresh all visible widget values from db
--------------------------------------------------------------------------------
-
-local function RefreshVisibleWidgets()
-    if not tabGroup then return end
-    local selectedId = tabGroup:GetSelectedTab()
-    if not selectedId then return end
-    for _, tab in ipairs(ns.Tabs) do
-        if tab.id == selectedId and tab.refreshFunc then
-            tab.refreshFunc()
-            break
-        end
-    end
-end
+local panelResult
 
 -------------------------------------------------------------------------------
 -- Create the options panel (called lazily on first Open)
@@ -71,21 +71,22 @@ end
 local function CreateOptionsPanel()
     ns.dlns = _G.DragonLootNS
     if not ns.dlns then
-        print("|cffff6600[DragonLoot_Options]|r " .. L["DragonLoot namespace not found."])
+        print("|cffff6600[DragonLoot_Options]|r DragonLoot namespace not found.")
         return
     end
 
-    local panel = ns.Widgets.CreatePanel("DragonLootOptionsFrame", 800, 600)
+    local tabDefs = {}
+    for i = 1, #ns.Tabs do
+        tinsert(tabDefs, ns.Tabs[i])
+    end
 
-    -- Tab group below title bar
-    tabGroup = ns.Widgets.CreateTabGroup(panel, ns.Tabs)
-    tabGroup:SetPoint("TOPLEFT", panel, "TOPLEFT", 8, -32)
-    tabGroup:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -8, 8)
-
-    -- ESC-closable
-    tinsert(UISpecialFrames, "DragonLootOptionsFrame")
-
-    optionsPanel = panel
+    panelResult = DW.CreateOptionsPanel({
+        name = "DragonLootOptionsFrame",
+        title = "DragonLoot Options",
+        width = 800,
+        height = 600,
+        tabs = tabDefs,
+    })
 end
 
 -------------------------------------------------------------------------------
@@ -95,29 +96,22 @@ end
 DragonLoot_Options = {}
 
 function DragonLoot_Options.Open()
-    if not optionsPanel then
+    if not panelResult then
         CreateOptionsPanel()
     end
-    if not optionsPanel then return end
-    optionsPanel:Show()
-    RefreshVisibleWidgets()
+    if not panelResult then return end
+    panelResult.Open()
 end
 
 function DragonLoot_Options.Close()
-    if not optionsPanel then return end
-    optionsPanel:Hide()
+    if not panelResult then return end
+    panelResult.Close()
 end
 
 function DragonLoot_Options.Toggle()
-    if optionsPanel and optionsPanel:IsShown() then
-        DragonLoot_Options.Close()
-    else
-        DragonLoot_Options.Open()
+    if not panelResult then
+        CreateOptionsPanel()
     end
+    if not panelResult then return end
+    panelResult.Toggle()
 end
-
--------------------------------------------------------------------------------
--- Expose namespace bridge for widgets/tabs
--------------------------------------------------------------------------------
-
-ns.RefreshVisibleWidgets = RefreshVisibleWidgets

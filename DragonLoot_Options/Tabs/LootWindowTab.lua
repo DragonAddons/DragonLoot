@@ -6,13 +6,19 @@
 -------------------------------------------------------------------------------
 
 local _, ns = ...
-local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached globals
 -------------------------------------------------------------------------------
 
 local math_abs = math.abs
+
+-------------------------------------------------------------------------------
+-- DragonWidgets references
+-------------------------------------------------------------------------------
+
+local W  = ns.DW.Widgets
+local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
 -- Namespace references
@@ -36,22 +42,20 @@ end
 
 local function CreateContent(parent)
     dlns = ns.dlns
-    local LC = ns.LayoutConstants
-    local W = ns.Widgets
     local db = dlns.Addon.db
     local yOffset = LC.PADDING_TOP
 
     ---------------------------------------------------------------------------
     -- Section: Loot Window
     ---------------------------------------------------------------------------
-    local lootSection = W.CreateSection(parent, L["Loot Window"])
+    local lootSection = W.CreateSection(parent, "Loot Window")
     local lootContent = lootSection.content
     local lootY = -LC.SECTION_PADDING_TOP
 
     -- Toggle: Enable Custom Loot Window
     local enableToggle = W.CreateToggle(lootContent, {
-        label = L["Enable Custom Loot Window"],
-        tooltip = L["Replace the default loot window with DragonLoot's custom frame"],
+        label = "Enable Custom Loot Window",
+        tooltip = "Replace the default loot window with DragonLoot's custom frame",
         get = function() return db.profile.lootWindow.enabled end,
         set = function(value)
             db.profile.lootWindow.enabled = value
@@ -62,8 +66,8 @@ local function CreateContent(parent)
 
     -- Toggle: Lock Position
     local lockToggle = W.CreateToggle(lootContent, {
-        label = L["Lock Position"],
-        tooltip = L["Prevent the loot window from being moved"],
+        label = "Lock Position",
+        tooltip = "Prevent the loot window from being moved",
         get = function() return db.profile.lootWindow.lock end,
         set = function(value)
             db.profile.lootWindow.lock = value
@@ -73,8 +77,8 @@ local function CreateContent(parent)
 
     -- Toggle: Position at Cursor
     local cursorToggle = W.CreateToggle(lootContent, {
-        label = L["Position at Cursor"],
-        tooltip = L["Open the loot window at the mouse cursor instead of the saved position"],
+        label = "Position at Cursor",
+        tooltip = "Open the loot window at the mouse cursor instead of the saved position",
         get = function() return db.profile.lootWindow.positionAtCursor end,
         set = function(value)
             db.profile.lootWindow.positionAtCursor = value
@@ -88,13 +92,13 @@ local function CreateContent(parent)
     ---------------------------------------------------------------------------
     -- Section: Layout
     ---------------------------------------------------------------------------
-    local layoutSection = W.CreateSection(parent, L["Layout"])
+    local layoutSection = W.CreateSection(parent, "Layout")
     local layoutContent = layoutSection.content
     local layoutY = -LC.SECTION_PADDING_TOP
 
     -- Slider: Scale
     local scaleSlider = W.CreateSlider(layoutContent, {
-        label = L["Scale"],
+        label = "Scale",
         min = 0.5, max = 2, step = 0.05,
         get = function() return db.profile.lootWindow.scale end,
         set = function(value)
@@ -106,7 +110,7 @@ local function CreateContent(parent)
 
     -- Slider: Width
     local widthSlider = W.CreateSlider(layoutContent, {
-        label = L["Width"],
+        label = "Width",
         min = 150, max = 400, step = 10,
         format = "%d",
         get = function() return db.profile.lootWindow.width end,
@@ -119,7 +123,7 @@ local function CreateContent(parent)
 
     -- Slider: Height
     local heightSlider = W.CreateSlider(layoutContent, {
-        label = L["Height"],
+        label = "Height",
         min = 150, max = 600, step = 10,
         format = "%d",
         get = function() return db.profile.lootWindow.height end,
@@ -132,7 +136,7 @@ local function CreateContent(parent)
 
     -- Slider: Slot Spacing
     local slotSpacingSlider = W.CreateSlider(layoutContent, {
-        label = L["Slot Spacing"],
+        label = "Slot Spacing",
         min = 0, max = 12, step = 1,
         format = "%d",
         get = function() return db.profile.lootWindow.slotSpacing end,
@@ -146,7 +150,7 @@ local function CreateContent(parent)
 
     -- Slider: Content Padding
     local contentPaddingSlider = W.CreateSlider(layoutContent, {
-        label = L["Content Padding"],
+        label = "Content Padding",
         min = 0, max = 12, step = 1,
         format = "%d",
         get = function() return db.profile.lootWindow.contentPadding end,
@@ -171,10 +175,9 @@ end
 -- Register tab
 -------------------------------------------------------------------------------
 
-ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "lootWindow",
-    label = L["Loot Window"],
+    label = "Loot Window",
     order = 2,
     createFunc = CreateContent,
 }

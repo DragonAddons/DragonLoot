@@ -6,13 +6,19 @@
 -------------------------------------------------------------------------------
 
 local _, ns = ...
-local L = ns.L
 
 -------------------------------------------------------------------------------
 -- Cached globals
 -------------------------------------------------------------------------------
 
 local math_abs = math.abs
+
+-------------------------------------------------------------------------------
+-- DragonWidgets references
+-------------------------------------------------------------------------------
+
+local W  = ns.DW.Widgets
+local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
 -- Namespace references
@@ -26,22 +32,20 @@ local dlns
 
 local function CreateContent(parent)
     dlns = ns.dlns
-    local LC = ns.LayoutConstants
-    local W = ns.Widgets
     local db = dlns.Addon.db
     local yOffset = LC.PADDING_TOP
 
     ---------------------------------------------------------------------------
     -- Section: General
     ---------------------------------------------------------------------------
-    local section = W.CreateSection(parent, L["General"])
+    local section = W.CreateSection(parent, "General")
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
 
     -- Toggle: Enable DragonLoot
     local enableToggle = W.CreateToggle(content, {
-        label = L["Enable DragonLoot"],
-        tooltip = L["Enable or disable the DragonLoot addon"],
+        label = "Enable DragonLoot",
+        tooltip = "Enable or disable the DragonLoot addon",
         get = function() return db.profile.enabled end,
         set = function(value)
             db.profile.enabled = value
@@ -56,8 +60,8 @@ local function CreateContent(parent)
 
     -- Toggle: Show Minimap Icon
     local minimapToggle = W.CreateToggle(content, {
-        label = L["Show Minimap Icon"],
-        tooltip = L["Show or hide the minimap button"],
+        label = "Show Minimap Icon",
+        tooltip = "Show or hide the minimap button",
         get = function() return not db.profile.minimap.hide end,
         set = function(value)
             db.profile.minimap.hide = not value
@@ -70,8 +74,8 @@ local function CreateContent(parent)
 
     -- Toggle: Debug Mode
     local debugToggle = W.CreateToggle(content, {
-        label = L["Debug Mode"],
-        tooltip = L["Enable verbose debug output in chat"],
+        label = "Debug Mode",
+        tooltip = "Enable verbose debug output in chat",
         get = function() return db.profile.debug end,
         set = function(value)
             db.profile.debug = value
@@ -92,10 +96,9 @@ end
 -- Register tab
 -------------------------------------------------------------------------------
 
-ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "general",
-    label = L["General"],
+    label = "General",
     order = 1,
     createFunc = CreateContent,
 }

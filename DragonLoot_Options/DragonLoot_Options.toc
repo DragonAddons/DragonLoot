@@ -4,26 +4,30 @@
 ## Title: DragonLoot Options
 ## Author: Xerrion
 ## Notes: Custom configuration UI for DragonLoot
+## Version: @project-version@
 ## Dependencies: DragonLoot
 ## LoadOnDemand: 1
 
+## DragonWidgets embedded library
+Libs\DragonWidgets\DragonWidgets.lua
+Libs\DragonWidgets\LayoutConstants.lua
+Libs\DragonWidgets\Widgets\WidgetConstants.lua
+Libs\DragonWidgets\Widgets\Panel.lua
+Libs\DragonWidgets\Widgets\ScrollFrame.lua
+Libs\DragonWidgets\Widgets\TabGroup.lua
+Libs\DragonWidgets\Widgets\Header.lua
+Libs\DragonWidgets\Widgets\Description.lua
+Libs\DragonWidgets\Widgets\Section.lua
+Libs\DragonWidgets\Widgets\Toggle.lua
+Libs\DragonWidgets\Widgets\Slider.lua
+Libs\DragonWidgets\Widgets\Dropdown.lua
+Libs\DragonWidgets\Widgets\ColorPicker.lua
+Libs\DragonWidgets\Widgets\TextInput.lua
+Libs\DragonWidgets\Widgets\Button.lua
+Libs\DragonWidgets\Widgets\ItemSlot.lua
+Libs\DragonWidgets\Widgets\ItemList.lua
+
 Core.lua
-Widgets\WidgetConstants.lua
-Widgets\Panel.lua
-Widgets\ScrollFrame.lua
-Widgets\TabGroup.lua
-Widgets\Header.lua
-Widgets\Description.lua
-Widgets\Section.lua
-Widgets\Toggle.lua
-Widgets\Slider.lua
-Widgets\Dropdown.lua
-Widgets\ColorPicker.lua
-Widgets\TextInput.lua
-Widgets\Button.lua
-Widgets\ItemSlot.lua
-Widgets\ItemList.lua
-LayoutConstants.lua
 Tabs\GeneralTab.lua
 Tabs\LootWindowTab.lua
 Tabs\LootRollTab.lua

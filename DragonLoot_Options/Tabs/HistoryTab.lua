@@ -6,8 +6,6 @@
 -------------------------------------------------------------------------------
 
 local _, ns = ...
-local L = ns.L
-local LC = ns.LayoutConstants
 
 -------------------------------------------------------------------------------
 -- Cached globals
@@ -16,6 +14,13 @@ local LC = ns.LayoutConstants
 local math_abs = math.abs
 local tostring = tostring
 local tonumber = tonumber
+
+-------------------------------------------------------------------------------
+-- DragonWidgets references
+-------------------------------------------------------------------------------
+
+local W  = ns.DW.Widgets
+local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
 -- Namespace references
@@ -37,14 +42,14 @@ end
 -- Section: History (toggles, dropdown, roll details)
 -------------------------------------------------------------------------------
 
-local function CreateTogglesSection(parent, W, db, yOffset)
-    local section = W.CreateSection(parent, L["History"])
+local function CreateTogglesSection(parent, db, yOffset)
+    local section = W.CreateSection(parent, "History")
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
 
     -- Enable History
     local enableToggle = W.CreateToggle(content, {
-        label = L["Enable History"],
+        label = "Enable History",
         get = function() return db.profile.history.enabled end,
         set = function(value)
             db.profile.history.enabled = value
@@ -55,7 +60,7 @@ local function CreateTogglesSection(parent, W, db, yOffset)
 
     -- Auto Show on Loot
     local autoShowToggle = W.CreateToggle(content, {
-        label = L["Auto Show on Loot"],
+        label = "Auto Show on Loot",
         get = function() return db.profile.history.autoShow end,
         set = function(value)
             db.profile.history.autoShow = value
@@ -68,8 +73,8 @@ local function CreateTogglesSection(parent, W, db, yOffset)
 
     -- Track Direct Loot (set callback updates dropdown disabled state)
     local trackToggle = W.CreateToggle(content, {
-        label = L["Track Direct Loot"],
-        tooltip = L["Track items you pick up directly (not from a loot window)"],
+        label = "Track Direct Loot",
+        tooltip = "Track items you pick up directly (not from a loot window)",
         get = function() return db.profile.history.trackDirectLoot end,
         set = function(value)
             db.profile.history.trackDirectLoot = value
@@ -82,11 +87,11 @@ local function CreateTogglesSection(parent, W, db, yOffset)
 
     -- Minimum Quality dropdown
     qualityDropdown = W.CreateDropdown(content, {
-        label = L["Minimum Quality"],
+        label = "Minimum Quality",
         values = ns.QualityValues,
         get = function() return tostring(db.profile.history.minQuality) end,
         set = function(value)
-            db.profile.history.minQuality = tonumber(value)
+            db.profile.history.minQuality = tonumber(value) or 0
         end,
     })
     innerY = LC.AnchorWidget(qualityDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
@@ -95,13 +100,13 @@ local function CreateTogglesSection(parent, W, db, yOffset)
     qualityDropdown:SetDisabled(not db.profile.history.trackDirectLoot)
 
     -- Roll Details sub-header (visual separator inside section)
-    local detailsHeader = W.CreateHeader(content, L["Roll Details"])
+    local detailsHeader = W.CreateHeader(content, "Roll Details")
     innerY = LC.AnchorWidget(detailsHeader, content, innerY) - LC.SPACING_AFTER_HEADER
 
     -- Show Roll Details toggle
     local rollDetailsToggle = W.CreateToggle(content, {
-        label = L["Show Roll Details"],
-        tooltip = L["Click history entries to expand and see all player rolls"],
+        label = "Show Roll Details",
+        tooltip = "Click history entries to expand and see all player rolls",
         get = function() return db.profile.history.showRollDetails end,
         set = function(value)
             db.profile.history.showRollDetails = value
@@ -120,14 +125,14 @@ end
 -- Section: Layout (sliders)
 -------------------------------------------------------------------------------
 
-local function CreateLayoutSection(parent, W, db, yOffset)
-    local section = W.CreateSection(parent, L["Layout"])
+local function CreateLayoutSection(parent, db, yOffset)
+    local section = W.CreateSection(parent, "Layout")
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
 
     -- Slider: Max Entries
     local maxEntriesSlider = W.CreateSlider(content, {
-        label = L["Max Entries"],
+        label = "Max Entries",
         min = 10, max = 500, step = 10,
         format = "%d",
         get = function() return db.profile.history.maxEntries end,
@@ -139,7 +144,7 @@ local function CreateLayoutSection(parent, W, db, yOffset)
 
     -- Slider: Entry Spacing
     local entrySpacingSlider = W.CreateSlider(content, {
-        label = L["Entry Spacing"],
+        label = "Entry Spacing",
         min = 0, max = 12, step = 1,
         format = "%d",
         get = function() return db.profile.history.entrySpacing end,
@@ -152,7 +157,7 @@ local function CreateLayoutSection(parent, W, db, yOffset)
 
     -- Slider: Content Padding
     local contentPaddingSlider = W.CreateSlider(content, {
-        label = L["Content Padding"],
+        label = "Content Padding",
         min = 0, max = 12, step = 1,
         format = "%d",
         get = function() return db.profile.history.contentPadding end,
@@ -175,15 +180,14 @@ end
 
 local function CreateContent(parent)
     dlns = ns.dlns
-    local W = ns.Widgets
     local db = dlns.Addon.db
     local yOffset = LC.PADDING_TOP
 
     -- History toggles and dropdown section
-    yOffset = CreateTogglesSection(parent, W, db, yOffset)
+    yOffset = CreateTogglesSection(parent, db, yOffset)
 
     -- Layout sliders section
-    yOffset = CreateLayoutSection(parent, W, db, yOffset)
+    yOffset = CreateLayoutSection(parent, db, yOffset)
 
     -- Set content height for scroll frame
     parent:SetHeight(math_abs(yOffset) + LC.PADDING_BOTTOM)
@@ -193,10 +197,9 @@ end
 -- Register tab
 -------------------------------------------------------------------------------
 
-ns.Tabs = ns.Tabs or {}
 ns.Tabs[#ns.Tabs + 1] = {
     id = "history",
-    label = L["History"],
+    label = "History",
     order = 4,
     createFunc = CreateContent,
 }

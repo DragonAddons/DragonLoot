@@ -12,6 +12,7 @@ externals:
   DragonLoot/Libs/LibDBIcon-1.0: https://repos.wowace.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
   DragonLoot/Libs/LibSharedMedia-3.0: https://repos.wowace.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
   DragonLoot/Libs/LibAnimate: https://github.com/Xerrion/LibAnimate
+  DragonLoot/DragonLoot_Options/Libs/DragonWidgets: https://github.com/Xerrion/DragonWidgets
 
 ignore:
   - ".git*"
