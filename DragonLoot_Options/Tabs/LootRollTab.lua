@@ -157,8 +157,8 @@ local function CreateLayoutSection(parent, db, yOffset)
 
     frameMinHeightSlider = W.CreateSlider(content, {
         label = L["Frame Height"],
-        tooltip = L["Minimum height of the roll frame"],
-        min = 40,
+        tooltip = L["Minimum height of the roll frame (effective height may be higher based on icon size)"],
+        min = 24,
         max = 120,
         step = 1,
         format = "%d",
