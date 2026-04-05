@@ -106,10 +106,13 @@ end
 -------------------------------------------------------------------------------
 
 -- Events the default group roll frames listen for
+-- CONFIRM_DISENCHANT_ROLL is Retail-only; Classic clients reject it
 local ROLL_FRAME_EVENTS = {
-    "START_LOOT_ROLL", "CANCEL_LOOT_ROLL",
-    "CONFIRM_LOOT_ROLL", "CONFIRM_DISENCHANT_ROLL",
+    "START_LOOT_ROLL", "CANCEL_LOOT_ROLL", "CONFIRM_LOOT_ROLL",
 }
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+    ROLL_FRAME_EVENTS[#ROLL_FRAME_EVENTS + 1] = "CONFIRM_DISENCHANT_ROLL"
+end
 
 local lootFrameHooked = false
 
