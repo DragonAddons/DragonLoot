@@ -104,19 +104,16 @@ files["DragonLoot_Options/"] = {
     globals = {
         "DragonLoot_Options",
         "StaticPopupDialogs",
-        "ColorPickerFrame",
     },
 
     read_globals = {
-        -- WoW API
-        "GetCursorInfo", "ClearCursor", "ShowUIPanel",
-
         -- WoW Globals
-        "UISpecialFrames", "YES", "NO",
-        "GameFontNormal", "GameFontNormalSmall", "GameFontNormalLarge",
-        "GameFontHighlight", "GameFontHighlightSmall",
+        "YES", "NO",
 
         -- DragonLoot bridge
         "DragonLootNS",
+
+        -- DragonWidgets shared library
+        "DragonWidgetsNS",
     },
 }
