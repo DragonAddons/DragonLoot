@@ -117,8 +117,10 @@ local lootFrameHooked = false
 -- Called before any suppression so LootFrame exists and can be hooked at
 -- OnEnable time, closing the race where the LoD addon processes LOOT_OPENED
 -- and shows LootFrame before our ADDON_LOADED watcher fires.
+-- On Classic, LootFrame is part of the base UI and no force-load is needed.
 local function EnsureBlizzardLootFrameLoaded()
     if LootFrame then return end
+    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
     if C_AddOns and C_AddOns.LoadAddOn then
         C_AddOns.LoadAddOn("Blizzard_LootUI")
     elseif LoadAddOn then
