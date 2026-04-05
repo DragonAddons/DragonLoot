@@ -20,6 +20,7 @@ local GetLootRollItemLink = GetLootRollItemLink
 local RollOnLoot = RollOnLoot
 local HandleModifiedItemClick = HandleModifiedItemClick
 local C_Texture = C_Texture
+local C_Item = C_Item
 
 local LSM = LibStub("LibSharedMedia-3.0")
 local L = ns.L
@@ -777,6 +778,38 @@ local function RenderRollFrame(frame, data, rollID, isTest)
         frame.iconFrame.count:Hide()
     end
 
+    -- Item level overlay on icon (bottom-left corner)
+    if ns.Addon.db.profile.appearance.showItemLevel and not isTest then
+        local link = GetLootRollItemLink(rollID)
+        local ilvl = link and C_Item and C_Item.GetDetailedItemLevelInfo and
+            C_Item.GetDetailedItemLevelInfo(link)
+        if not frame.iconFrame.ilvl then
+            frame.iconFrame.ilvl = frame.iconFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+            frame.iconFrame.ilvl:SetPoint("BOTTOMLEFT", frame.iconFrame, "BOTTOMLEFT", 2, 2)
+        end
+        if ilvl then
+            frame.iconFrame.ilvl:SetText(ilvl)
+            frame.iconFrame.ilvl:Show()
+        else
+            -- Item data not cached yet; retry after a short delay
+            frame.iconFrame.ilvl:Hide()
+            local capturedRollID = rollID
+            C_Timer.After(0.5, function()
+                if not frame or not frame:IsShown() then return end
+                if frame.rollID ~= capturedRollID then return end
+                local retryLink = GetLootRollItemLink(capturedRollID)
+                local retryIlvl = retryLink and C_Item and C_Item.GetDetailedItemLevelInfo and
+                    C_Item.GetDetailedItemLevelInfo(retryLink)
+                if retryIlvl and frame.iconFrame.ilvl then
+                    frame.iconFrame.ilvl:SetText(retryIlvl)
+                    frame.iconFrame.ilvl:Show()
+                end
+            end)
+        end
+    elseif frame.iconFrame.ilvl then
+        frame.iconFrame.ilvl:Hide()
+    end
+
     -- Button states
     SetButtonState(frame.needButton, data.canNeed, data.reasonNeed)
     SetButtonState(frame.greedButton, data.canGreed, data.reasonGreed)
@@ -1131,6 +1164,23 @@ function ns.RollFrame.ApplySettings()
                     frame.iconFrame.border:Show()
                 else
                     frame.iconFrame.border:Hide()
+                end
+            end
+
+            -- Update item level overlay visibility
+            if frame.iconFrame.ilvl then
+                if appearance.showItemLevel and frame.rollID and frame:IsShown() then
+                    local link = GetLootRollItemLink(frame.rollID)
+                    local ilvl = link and C_Item and C_Item.GetDetailedItemLevelInfo and
+                        C_Item.GetDetailedItemLevelInfo(link)
+                    if ilvl then
+                        frame.iconFrame.ilvl:SetText(ilvl)
+                        frame.iconFrame.ilvl:Show()
+                    else
+                        frame.iconFrame.ilvl:Hide()
+                    end
+                else
+                    frame.iconFrame.ilvl:Hide()
                 end
             end
         end

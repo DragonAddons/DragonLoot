@@ -78,6 +78,7 @@ local defaults = {
             rollIconSize = 36,
             historyIconSize = 24,
             qualityBorder = true,
+            showItemLevel = true,
             slotBackground = "gradient",
             backgroundColor = { r = 0.05, g = 0.05, b = 0.05 },
             backgroundAlpha = 0.9,

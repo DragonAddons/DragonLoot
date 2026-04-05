@@ -195,6 +195,17 @@ local function CreateIconSection(parent, db, yOffset)
     })
     innerY = LC.AnchorWidget(qualityBorderToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
+    local itemLevelToggle = W.CreateToggle(content, {
+        label = L["Show Item Level"],
+        tooltip = L["Show item level overlay on roll frame icon"],
+        get = function() return db.profile.appearance.showItemLevel end,
+        set = function(value)
+            db.profile.appearance.showItemLevel = value
+            LC.NotifyAppearanceChange()
+        end,
+    })
+    innerY = LC.AnchorWidget(itemLevelToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
     local slotBgDropdown = W.CreateDropdown(content, {
         label = L["Slot Background"],
         values = SLOT_BG_VALUES,

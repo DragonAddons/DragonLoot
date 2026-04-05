@@ -69,6 +69,8 @@ L["Quest"] = true
 L["Showing test loot window."] = true
 L["Test slot clicked: "] = true
 L["iLvl"] = true
+L["Show Item Level"] = true
+L["Show item level overlay on roll frame icon"] = true
 
 -- Display/RollManager.lua (shared roll-type labels via ns.RollTypeNames)
 L["Disenchant"] = true
