@@ -56,6 +56,13 @@ local BIND_LABELS = {
 local TITLE_BAR_HEIGHT = 24
 local MIN_QUALITY_RARE = 3
 local ICON_GLOW_PADDING = 25
+local SLOT_ICON_LEFT_INSET = 4    -- icon frame left offset from slot LEFT edge
+local ICON_BORDER_INSET = 2       -- icon border bleed beyond icon frame edge (each side)
+local SLOT_TEXT_LEFT_GAP = 6      -- gap between icon right edge and item name left
+local SLOT_TEXT_TOP_OFFSET = 2    -- item name top inset below icon frame top
+local SLOT_SUBTEXT_GAP = 1        -- vertical gap between item name bottom and sub-text top
+local SLOT_TEXT_RIGHT_INSET = 4   -- text right offset from slot RIGHT edge
+local SLOT_QUANTITY_OFFSET = 2    -- quantity badge bleed beyond icon frame corner
 
 local function GetSlotSpacing()
     return ns.Addon.db.profile.lootWindow.slotSpacing or 2
@@ -334,7 +341,7 @@ local function CreateSlotFrame()
     -- Icon container (child frame renders above parent's HIGHLIGHT layer)
     slot.iconFrame = CreateFrame("Frame", nil, slot)
     slot.iconFrame:SetSize(36, 36)
-    slot.iconFrame:SetPoint("LEFT", slot, "LEFT", 4, 0)
+    slot.iconFrame:SetPoint("LEFT", slot, "LEFT", SLOT_ICON_LEFT_INSET, 0)
     slot.iconFrame:SetFrameLevel(slot:GetFrameLevel() + 2)
     slot.iconFrame:EnableMouse(false)
 
@@ -348,8 +355,8 @@ local function CreateSlotFrame()
     -- Icon border (quality-colored frame, draws UNDER icon via sublevel)
     slot.iconBorder = slot.iconFrame:CreateTexture(nil, "ARTWORK")
     slot.iconBorder:SetDrawLayer("ARTWORK", 0)
-    slot.iconBorder:SetPoint("TOPLEFT", slot.iconFrame, "TOPLEFT", -2, 2)
-    slot.iconBorder:SetPoint("BOTTOMRIGHT", slot.iconFrame, "BOTTOMRIGHT", 2, -2)
+    slot.iconBorder:SetPoint("TOPLEFT", slot.iconFrame, "TOPLEFT", -ICON_BORDER_INSET, ICON_BORDER_INSET)
+    slot.iconBorder:SetPoint("BOTTOMRIGHT", slot.iconFrame, "BOTTOMRIGHT", ICON_BORDER_INSET, -ICON_BORDER_INSET)
     slot.iconBorder:SetColorTexture(0.3, 0.3, 0.3, 0.8)
 
     -- Icon (draws ON TOP of border at sublevel 1)
@@ -360,21 +367,21 @@ local function CreateSlotFrame()
 
     -- Quantity badge
     slot.quantity = slot.iconFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    slot.quantity:SetPoint("BOTTOMRIGHT", slot.iconFrame, "BOTTOMRIGHT", 2, -2)
+    slot.quantity:SetPoint("BOTTOMRIGHT", slot.iconFrame, "BOTTOMRIGHT", SLOT_QUANTITY_OFFSET, -SLOT_QUANTITY_OFFSET)
     slot.quantity:SetJustifyH("RIGHT")
     slot.quantity:SetTextColor(1, 1, 1)
 
     -- Item name (top-aligned to leave room for sub-text)
     slot.itemName = slot:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    slot.itemName:SetPoint("TOPLEFT", slot.iconFrame, "TOPRIGHT", 6, -2)
-    slot.itemName:SetPoint("RIGHT", slot, "RIGHT", -4, 0)
+    slot.itemName:SetPoint("TOPLEFT", slot.iconFrame, "TOPRIGHT", SLOT_TEXT_LEFT_GAP, -SLOT_TEXT_TOP_OFFSET)
+    slot.itemName:SetPoint("RIGHT", slot, "RIGHT", -SLOT_TEXT_RIGHT_INSET, 0)
     slot.itemName:SetJustifyH("LEFT")
     slot.itemName:SetWordWrap(false)
 
     -- Sub-text (iLvl, bind type, item type / or Currency / Money)
     slot.subText = slot:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    slot.subText:SetPoint("TOPLEFT", slot.itemName, "BOTTOMLEFT", 0, -1)
-    slot.subText:SetPoint("RIGHT", slot, "RIGHT", -4, 0)
+    slot.subText:SetPoint("TOPLEFT", slot.itemName, "BOTTOMLEFT", 0, -SLOT_SUBTEXT_GAP)
+    slot.subText:SetPoint("RIGHT", slot, "RIGHT", -SLOT_TEXT_RIGHT_INSET, 0)
     slot.subText:SetJustifyH("LEFT")
     slot.subText:SetWordWrap(false)
     slot.subText:SetTextColor(0.6, 0.6, 0.6)
