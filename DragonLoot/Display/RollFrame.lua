@@ -27,12 +27,20 @@ local L = ns.L
 local DU = ns.DisplayUtils
 
 -------------------------------------------------------------------------------
+-- Safe config accessor
+-------------------------------------------------------------------------------
+
+local function GetRollFrameDB()
+    return ns.Addon.db and ns.Addon.db.profile and ns.Addon.db.profile.rollFrame
+end
+
+-------------------------------------------------------------------------------
 -- Timer bar border helper
 -------------------------------------------------------------------------------
 
 local function ApplyTimerBarBorder(container)
-    local db = ns.Addon.db.profile
-    local rollCfg = db.rollFrame
+    local rollCfg = GetRollFrameDB()
+    if not rollCfg then return end
     if rollCfg.timerBarBorder then
         container:SetBackdrop({
             edgeFile = DU.WHITE8x8,
@@ -46,7 +54,8 @@ local function ApplyTimerBarBorder(container)
 end
 
 local function ApplyTimerBarInset(bar, container)
-    local hasBorder = ns.Addon.db.profile.rollFrame.timerBarBorder
+    local db = GetRollFrameDB()
+    local hasBorder = db and db.timerBarBorder
     bar:ClearAllPoints()
     if hasBorder then
         bar:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1)
@@ -163,43 +172,53 @@ local function GetRollIconSize()
 end
 
 local function GetFrameWidth()
-    return ns.Addon.db.profile.rollFrame.frameWidth or 328
+    local db = GetRollFrameDB() or {}
+    return db.frameWidth or 328
 end
 
 local function GetContentPadding()
-    return ns.Addon.db.profile.rollFrame.contentPadding or 4
+    local db = GetRollFrameDB() or {}
+    return db.contentPadding or 4
 end
 
 local function GetButtonSize()
-    return ns.Addon.db.profile.rollFrame.buttonSize or 24
+    local db = GetRollFrameDB() or {}
+    return db.buttonSize or 24
 end
 
 local function GetButtonSpacing()
-    return ns.Addon.db.profile.rollFrame.buttonSpacing or 4
+    local db = GetRollFrameDB() or {}
+    return db.buttonSpacing or 4
 end
 
 local function GetFrameSpacing()
-    return ns.Addon.db.profile.rollFrame.frameSpacing or 4
+    local db = GetRollFrameDB() or {}
+    return db.frameSpacing or 4
 end
 
 local function GetRowSpacing()
-    return ns.Addon.db.profile.rollFrame.rowSpacing or 4
+    local db = GetRollFrameDB() or {}
+    return db.rowSpacing or 4
 end
 
 local function GetTimerBarSpacing()
-    return ns.Addon.db.profile.rollFrame.timerBarSpacing or 4
+    local db = GetRollFrameDB() or {}
+    return db.timerBarSpacing or 4
 end
 
 local function GetFrameMinHeight()
-    return ns.Addon.db.profile.rollFrame.frameMinHeight or 68
+    local db = GetRollFrameDB() or {}
+    return db.frameMinHeight or 68
 end
 
 local function GetTimerBarStyle()
-    return ns.Addon.db.profile.rollFrame.timerBarStyle or "normal"
+    local db = GetRollFrameDB() or {}
+    return db.timerBarStyle or "normal"
 end
 
 local function GetTimerBarMinimalHeight()
-    return ns.Addon.db.profile.rollFrame.timerBarMinimalHeight or 3
+    local db = GetRollFrameDB() or {}
+    return db.timerBarMinimalHeight or 3
 end
 
 local function CalculateFrameHeight(iconSize)
@@ -315,8 +334,8 @@ end
 -------------------------------------------------------------------------------
 
 local function GetTimerBarColor(timeLeft, rollTime)
-    local db = ns.Addon.db.profile.rollFrame
-    if db.timerBarColorMode == "custom" then
+    local db = GetRollFrameDB()
+    if db and db.timerBarColorMode == "custom" then
         local c = db.timerBarColor
         return c.r, c.g, c.b
     end
@@ -340,7 +359,8 @@ end
 
 local function SaveFramePosition()
     if not anchorFrame then return end
-    local db = ns.Addon.db.profile.rollFrame
+    local db = GetRollFrameDB()
+    if not db then return end
     local point, _, relativePoint, x, y = anchorFrame:GetPoint()
     if point then
         db.point = point
@@ -352,7 +372,8 @@ end
 
 local function RestoreFramePosition()
     if not anchorFrame then return end
-    local db = ns.Addon.db.profile.rollFrame
+    local db = GetRollFrameDB()
+    if not db then return end
     anchorFrame:ClearAllPoints()
     if db.point then
         anchorFrame:SetPoint(db.point, UIParent, db.relativePoint, db.x or 0, db.y or 0)
@@ -566,8 +587,8 @@ local function CreateRollFrame(index)
     frame:RegisterForDrag("LeftButton")
 
     frame:SetScript("OnDragStart", function()
-        local db = ns.Addon.db.profile.rollFrame
-        if not db.lock and anchorFrame then
+        local db = GetRollFrameDB()
+        if db and not db.lock and anchorFrame then
             anchorFrame:StartMoving()
         end
     end)
@@ -910,8 +931,8 @@ local function CreateAnchorFrame()
     frame:RegisterForDrag("LeftButton")
 
     frame:SetScript("OnDragStart", function(self)
-        local db = ns.Addon.db.profile.rollFrame
-        if not db.lock then
+        local db = GetRollFrameDB()
+        if db and not db.lock then
             self:StartMoving()
         end
     end)
@@ -989,6 +1010,14 @@ local function SpawnOneTestRoll()
 
     local duration = 8 + math.random() * 12
     StartTestTimer(freeIndex, duration)
+end
+
+-- Returns the vertical component of a WoW anchor point string (strips LEFT/RIGHT).
+-- Used by CenterHorizontally to normalize the saved anchor before zeroing x.
+local function VerticalComponent(p)
+    if p:find("TOP") then return "TOP"
+    elseif p:find("BOTTOM") then return "BOTTOM"
+    else return "CENTER" end
 end
 
 -------------------------------------------------------------------------------
@@ -1191,13 +1220,44 @@ end
 
 function ns.RollFrame.ResetAnchor()
     if not anchorFrame then return end
-    local db = ns.Addon.db.profile.rollFrame
+    local db = GetRollFrameDB()
+    if not db then return end
     db.point = nil
     db.relativePoint = nil
     db.x = nil
     db.y = nil
     anchorFrame:ClearAllPoints()
     anchorFrame:SetPoint("TOP", UIParent, "TOP", 0, DEFAULT_ROLL_ANCHOR_Y)
+end
+
+function ns.RollFrame.CenterHorizontally()
+    if not anchorFrame then return end
+    local db = GetRollFrameDB()
+    if not db then return end
+    local y = db.y or DEFAULT_ROLL_ANCHOR_Y
+    -- Normalize anchor to strip any LEFT/RIGHT component so x=0 truly centers
+    local newPoint = VerticalComponent(db.point or "TOP")
+    local newRelPoint = VerticalComponent(db.relativePoint or "TOP")
+    db.point = newPoint
+    db.relativePoint = newRelPoint
+    db.x = 0
+    anchorFrame:ClearAllPoints()
+    anchorFrame:SetPoint(newPoint, UIParent, newRelPoint, 0, y)
+    SaveFramePosition()
+end
+
+function ns.RollFrame.CenterVertically()
+    if not anchorFrame then return end
+    local db = GetRollFrameDB()
+    if not db then return end
+    local x = db.x or 0
+    -- Normalize anchor to CENTER/CENTER so y=0 is truly vertical center
+    db.point = "CENTER"
+    db.relativePoint = "CENTER"
+    db.y = 0
+    anchorFrame:ClearAllPoints()
+    anchorFrame:SetPoint("CENTER", UIParent, "CENTER", x, 0)
+    SaveFramePosition()
 end
 
 function ns.RollFrame.ShowTestRoll()

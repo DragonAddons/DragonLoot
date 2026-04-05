@@ -16,9 +16,21 @@ DragonLoot is a customizable loot addon that replaces the default Blizzard loot 
 
 ## Skills
 
-Agents working on this project must load the `wow-addon-dev` skill before writing or reviewing any Lua code that calls WoW APIs. The skill provides access to the `wow-api-lookup` tool for verifying API signatures, return values, widget methods, and enum values.
+Every `coder` delegation on this project must specify which skills to load. Use this matrix:
 
-**Rule**: Never guess at WoW API signatures. Always verify with `wow-api-lookup` first.
+| Skill | When to load |
+|-------|-------------|
+| `code-philosophy` | All code changes (always) |
+| `architecture-philosophy` | New modules, file structure, namespace design, layer boundaries |
+| `wow-lua-patterns` | All WoW addon Lua (always) |
+| `wow-frame-api` | Any UI frame creation, widget layout, anchoring, backdrop, textures |
+| `wow-event-handling` | Any event registration, addon lifecycle, ADDON_LOADED, combat lockdown |
+
+Use the `wow-addon` agent (not `coder`) for WoW API research before implementation when API correctness is uncertain. `wow-addon` is research-only; `coder` does the implementation.
+
+Do **not** tell `coder` to load `wow-addon-dev` - that skill documents research tools only the `wow-addon` agent can use.
+
+Never guess at WoW API signatures. Always verify with the `wow-addon` agent using `wow-api-lookup` first.
 
 ---
 
@@ -548,75 +560,30 @@ local LSM = LibStub("LibSharedMedia-3.0")
 ## GitHub Workflow
 
 ### Issues
-Create issues using the repo's issue templates (`.github/ISSUE_TEMPLATE/`):
-- **Bug reports**: Use `bug-report.yml` template. Title prefix: `[Bug]: `
-- **Feature requests**: Use `feature-request.yml` template. Title prefix: `[Feature]: `
+- Title format: `[Bug]: description` / `[Feature]: description`
+- Always apply: one `C-*` (category), one `A-*` (area), one `D-*` (difficulty), one `P-*` (platform) label
+- Use the repo's GitHub issue templates (bug-report or feature-request)
+- Add new issues to the appropriate project and set status to **"To triage"**
 
-Create via CLI:
-```bash
-gh issue create --repo <ORG>/<REPO> --label "C-Bug" --title "[Bug]: <title>" --body "<body matching template fields>"
-gh issue create --repo <ORG>/<REPO> --label "C-Feature" --title "[Feature]: <title>" --body "<body matching template fields>"
-```
+### GitHub Projects
+- **DragonLoot - Bugs**: project #5 (`C-Bug` issues)
+- **DragonLoot - Feature Requests**: project #4 (`C-Feature` issues)
+- Status columns: **To triage → Backlog → Ready → In progress → In review → Done**
+- Move status as work progresses: filed (To triage) → scoped (Backlog) → branch created (In progress) → PR open (In review) → merged (Done)
 
-### Branches
-Use conventional branch prefixes:
-
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| `feat/` | New feature | `feat/87-mail-toasts` |
-| `fix/` | Bug fix | `fix/99-anchor-zorder` |
-| `refactor/` | Code improvement | `refactor/96-listener-utils` |
-
-Include the issue number in the branch name when linked to an issue.
+### Branching and PRs
+- Branch from `master`: `feat/<number>-short-desc`, `fix/<number>-short-desc`, `refactor/<number>-short-desc`
+- One PR per issue; reference `Closes #N` in the PR body
+- Fill the PR template fully (type of change, testing, checklist)
+- CI must pass (`gh pr checks <N> --repo Xerrion/DragonLoot`) before merging
+- Wait for CodeRabbit AI review to complete and address any findings before merging
+- When replying to CodeRabbit review comments, always use `@coderabbitai` and always reply to the **specific comment thread** (not as a top-level PR comment)
+- Squash merge only: `gh pr merge <N> --squash --delete-branch`
+- **Never merge release-please PRs** (`chore(master): release X.Y.Z`) - the repo owner merges these manually
 
 ### Commits
-Use [Conventional Commits](https://www.conventionalcommits.org/):
-- `feat: <description> (#issue)` - new feature
-- `fix: <description> (#issue)` - bug fix
-- `refactor: <description> (#issue)` - code restructuring
-- `docs: <description>` - documentation only
-
-### Pull Requests
-1. Create PRs via CLI using the repo's `.github/PULL_REQUEST_TEMPLATE.md` format
-2. Set the PR title explicitly with `--title`. Do not rely on `gh pr create` defaults.
-3. PR titles must use Conventional Commit style and should usually match the primary commit intent.
-4. If the branch has multiple commits, write the PR title as a clean Conventional Commit summary of the overall change.
-5. Set the PR body explicitly with `--body` or `--body-file`. Do not leave it empty.
-6. PR bodies should include short `## Summary`, `## Changes`, and `## Testing` sections.
-7. Link to the issue with `Closes #N` in the PR body
-8. PRs require passing status checks (luacheck, test) before merge
-9. Squash merge only: `gh pr merge <number> --squash`
-10. Branches are auto-deleted after merge
-
-
-#### Board Columns
-
-| Column | Purpose |
-|--------|---------|
-| To triage | New issues awaiting review |
-| Backlog | Accepted but not yet scheduled |
-| Ready | Prioritised and ready to pick up |
-| In progress | Actively being worked on |
-| In review | PR submitted, awaiting review |
-| Done | Merged / released |
-
-#### Custom Fields
-
-| Field | Values / Type |
-|-------|---------------|
-| Priority | P0 (critical), P1 (important), P2 (nice-to-have) |
-| Size | XS, S, M, L, XL |
-| Estimate | Story points (number) |
-| Start date | Date |
-| Target date | Date |
-
-#### Workflow
-
-1. **Triage** - New issues land in *To triage*. Assign Priority and Size.
-2. **Plan** - Move to *Backlog* or *Ready* depending on urgency.
-3. **Start** - Move to *In progress*, create a feature branch, add a comment.
-4. **Review** - Open PR, move to *In review*, link the issue.
-5. **Ship** - Squash-merge, auto-move to *Done* on close.
+- Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
+- Reference issue numbers: `feat: add roll frame scaling (#92)`
 
 ---
 
@@ -647,8 +614,8 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - If only manual tests exist, document what you verified in-game
 - Verify changes in the game client when possible
 - Keep changes small and focused; prefer composition over inheritance
-- Load the `wow-addon-dev` skill before writing or reviewing WoW API calls
-- Use `wow-api-lookup` to verify API signatures - never guess at parameter counts or return types
+- Use the `wow-addon` agent to verify WoW API signatures before implementation - never guess at parameter counts or return types
+- See `## Skills` above for the full skill-loading matrix for `coder` delegations
 
 ---
 

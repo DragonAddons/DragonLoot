@@ -81,6 +81,10 @@ L["Transmog"] = true
 L["Unknown"] = true
 
 -- Display/RollFrame.lua
+L["Center Horizontally"] = true
+L["Center roll frame to horizontal center of screen"] = true
+L["Center Vertically"] = true
+L["Center roll frame to vertical center of screen"] = true
 L["Not available for this item"] = true
 L["Roll"] = true
 L["Showing test roll frames."] = true

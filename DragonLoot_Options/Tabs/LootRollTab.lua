@@ -88,6 +88,32 @@ local function CreateRollFrameSection(parent, db, yOffset)
     })
     innerY = LC.AnchorWidget(hideOnVoteToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
+    local centerHBtn = W.CreateButton(content, {
+        text = L["Center Horizontally"],
+        width = 130,
+        tooltip = L["Center roll frame to horizontal center of screen"],
+        onClick = function()
+            if dlns.RollFrame and dlns.RollFrame.CenterHorizontally then
+                dlns.RollFrame.CenterHorizontally()
+            end
+        end,
+    })
+    centerHBtn:SetPoint("TOPLEFT", content, "TOPLEFT", LC.PADDING_SIDE, innerY)
+
+    local centerVBtn = W.CreateButton(content, {
+        text = L["Center Vertically"],
+        width = 130,
+        tooltip = L["Center roll frame to vertical center of screen"],
+        onClick = function()
+            if dlns.RollFrame and dlns.RollFrame.CenterVertically then
+                dlns.RollFrame.CenterVertically()
+            end
+        end,
+    })
+    centerVBtn:SetPoint("LEFT", centerHBtn, "RIGHT", 8, 0)
+
+    innerY = innerY - centerHBtn:GetHeight() - LC.SPACING_BETWEEN_WIDGETS
+
     local testRollBtn = W.CreateButton(content, {
         text = L["Test Roll"],
         width = 100,
