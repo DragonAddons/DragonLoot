@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.10.0](https://github.com/Xerrion/DragonLoot/compare/0.9.0...0.10.0) (2026-04-05)
+
+
+### 🚀 Features
+
+* embed DragonWidgets as shared widget library in DragonLoot_Options ([#108](https://github.com/Xerrion/DragonLoot/issues/108)) ([5e47a53](https://github.com/Xerrion/DragonLoot/commit/5e47a53311080fe70963013da0b0a4e0fd40b053))
+* wire L[...] locale lookups into all DragonLoot_Options tabs ([#109](https://github.com/Xerrion/DragonLoot/issues/109)) ([1308b23](https://github.com/Xerrion/DragonLoot/commit/1308b235cb1c9ea25a06a990ff96eafe5e7ef636))
+
+
+### 🐛 Bug Fixes
+
+* close Blizzard_LootUI LoD timing gap in loot frame suppression ([#107](https://github.com/Xerrion/DragonLoot/issues/107)) ([dde938b](https://github.com/Xerrion/DragonLoot/commit/dde938b806523463766e544f7265858c1ade4d55))
+
+
+### ⚙️ Miscellaneous Tasks
+
+* add mise.toml to pin Lua 5.1 for local dev tooling ([aff184d](https://github.com/Xerrion/DragonLoot/commit/aff184d0dca43a5fc849ea213d56e22e5a49c9e6))
+* migrate to structured label taxonomy ([#105](https://github.com/Xerrion/DragonLoot/issues/105)) ([1921a73](https://github.com/Xerrion/DragonLoot/commit/1921a7308c81ed6c7336787191d425007b65e17c))
+* use [@project-version](https://github.com/project-version)@ token in DragonLoot.toc ([5dc2d87](https://github.com/Xerrion/DragonLoot/commit/5dc2d876edb17f2ec5d55312374b8dce81930ba1))
+
 ## [0.9.0](https://github.com/Xerrion/DragonLoot/compare/0.8.1...0.9.0) (2026-03-28)
 
 
