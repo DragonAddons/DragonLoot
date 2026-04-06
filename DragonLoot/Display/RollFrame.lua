@@ -280,11 +280,8 @@ local function ApplyTextLayoutOffsets(frame, compact, iconSize, padding, borderS
             -(GetRollContentRightInset(iconSize, padding, borderSize)), 0)
         frame.passButton:SetPoint("TOP", frame, "TOP", 0, -(padding + borderSize))
 
-        -- Determine leftmost button
+        -- needButton is always the leftmost button (transmog occupies greed's slot to the right).
         local leftmostButton = frame.needButton
-        if frame.transmogButton and frame.transmogButton:IsShown() then
-            leftmostButton = frame.transmogButton
-        end
 
         if frame.bindText:IsShown() then
             -- bindText sits to the left of the buttons
@@ -687,7 +684,6 @@ local function CreateRollFrame(index)
         frame.transmogButton.icon:SetTexture("Interface\\ICONS\\INV_Enchant_Disenchant")
         frame.transmogButton:SetHighlightTexture("Interface\\ICONS\\INV_Enchant_Disenchant", "ADD")
     end
-    frame.transmogButton:SetPoint("RIGHT", frame.needButton, "LEFT", -GetButtonSpacing(), 0)
     frame.transmogButton:Hide()
 
     frame.frameIndex = index
@@ -773,6 +769,39 @@ local function BuildTestRollData(testEntry)
         reasonDisenchant = nil,
         duration = testEntry.duration,
     }
+end
+
+-------------------------------------------------------------------------------
+-- Re-anchor the roll button chain based on current greed/transmog visibility.
+-- When transmog is shown (greed's slot), the chain is:
+--   need <- transmog <- disenchant <- pass
+-- When greed is shown (normal), the chain is:
+--   need <- greed <- disenchant <- pass
+-------------------------------------------------------------------------------
+
+local function RebuildButtonChain(frame)
+    local btnSpacing = GetButtonSpacing()
+    -- disenchant always anchors off pass
+    frame.disenchantButton:ClearAllPoints()
+    frame.disenchantButton:SetPoint("RIGHT", frame.passButton, "LEFT", -btnSpacing, 0)
+
+    -- greed/transmog share the slot between disenchant and need
+    -- transmogButton is always created in CreateRollFrame; nil guard is unnecessary.
+    -- IsShown() (not IsVisible()) is intentional: parent frame may be hidden,
+    -- but we need to know whether transmog was set for this roll's data.
+    if frame.transmogButton:IsShown() then
+        -- transmog occupies greed's slot
+        frame.transmogButton:ClearAllPoints()
+        frame.transmogButton:SetPoint("RIGHT", frame.disenchantButton, "LEFT", -btnSpacing, 0)
+        frame.needButton:ClearAllPoints()
+        frame.needButton:SetPoint("RIGHT", frame.transmogButton, "LEFT", -btnSpacing, 0)
+    else
+        -- greed in its normal slot
+        frame.greedButton:ClearAllPoints()
+        frame.greedButton:SetPoint("RIGHT", frame.disenchantButton, "LEFT", -btnSpacing, 0)
+        frame.needButton:ClearAllPoints()
+        frame.needButton:SetPoint("RIGHT", frame.greedButton, "LEFT", -btnSpacing, 0)
+    end
 end
 
 -------------------------------------------------------------------------------
@@ -880,17 +909,18 @@ local function RenderRollFrame(frame, data, rollID, isTest)
     SetButtonState(frame.disenchantButton, data.canDisenchant, data.reasonDisenchant)
     SetButtonState(frame.passButton, true, nil)
 
-    if frame.transmogButton then
-        if data.canTransmog then
-            frame.transmogButton:Show()
-            SetButtonState(frame.transmogButton, true, nil)
-            -- Match Blizzard: Transmog replaces Greed
-            frame.greedButton:Hide()
-        else
-            frame.transmogButton:Hide()
-            frame.greedButton:Show()
-        end
+    -- Toggle transmog/greed visibility and rebuild the button chain accordingly.
+    -- transmogButton is always created; when canTransmog is true it occupies greed's slot.
+    if data.canTransmog then
+        frame.transmogButton:Show()
+        SetButtonState(frame.transmogButton, true, nil)
+        -- Match Blizzard: Transmog replaces Greed
+        frame.greedButton:Hide()
+    else
+        frame.transmogButton:Hide()
+        frame.greedButton:Show()
     end
+    RebuildButtonChain(frame)
 
     -- Mode-specific frame state
     if isTest then
@@ -1177,22 +1207,12 @@ function ns.RollFrame.ApplySettings()
             frame.disenchantButton:SetSize(btnSize, btnSize)
             frame.greedButton:SetSize(btnSize, btnSize)
             frame.needButton:SetSize(btnSize, btnSize)
-            if frame.transmogButton then
-                frame.transmogButton:SetSize(btnSize, btnSize)
-            end
+            frame.transmogButton:SetSize(btnSize, btnSize) -- always created in CreateRollFrame
 
-            -- Re-anchor button chain with current spacing
-            local btnSpacing = GetButtonSpacing()
-            frame.disenchantButton:ClearAllPoints()
-            frame.disenchantButton:SetPoint("RIGHT", frame.passButton, "LEFT", -btnSpacing, 0)
-            frame.greedButton:ClearAllPoints()
-            frame.greedButton:SetPoint("RIGHT", frame.disenchantButton, "LEFT", -btnSpacing, 0)
-            frame.needButton:ClearAllPoints()
-            frame.needButton:SetPoint("RIGHT", frame.greedButton, "LEFT", -btnSpacing, 0)
-            if frame.transmogButton then
-                frame.transmogButton:ClearAllPoints()
-                frame.transmogButton:SetPoint("RIGHT", frame.needButton, "LEFT", -btnSpacing, 0)
-            end
+            -- Re-anchor button chain based on current greed/transmog IsShown() state.
+            -- Safe on unrendered frames: greedButton defaults to shown,
+            -- transmogButton defaults to hidden, matching CreateRollFrame state.
+            RebuildButtonChain(frame)
 
             -- Adjust frame height based on icon size
             frame:SetHeight(CalculateFrameHeight(iconSize))
