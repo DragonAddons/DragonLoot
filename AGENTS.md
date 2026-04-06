@@ -14,26 +14,6 @@ DragonLoot is a customizable loot addon that replaces the default Blizzard loot 
 
 ---
 
-## Skills
-
-Every `coder` delegation on this project must specify which skills to load. Use this matrix:
-
-| Skill | When to load |
-|-------|-------------|
-| `code-philosophy` | All code changes (always) |
-| `architecture-philosophy` | New modules, file structure, namespace design, layer boundaries |
-| `wow-lua-patterns` | All WoW addon Lua (always) |
-| `wow-frame-api` | Any UI frame creation, widget layout, anchoring, backdrop, textures |
-| `wow-event-handling` | Any event registration, addon lifecycle, ADDON_LOADED, combat lockdown |
-
-Use the `wow-addon` agent (not `coder`) for WoW API research before implementation when API correctness is uncertain. `wow-addon` is research-only; `coder` does the implementation.
-
-Do **not** tell `coder` to load `wow-addon-dev` - that skill documents research tools only the `wow-addon` agent can use.
-
-Never guess at WoW API signatures. Always verify with the `wow-addon` agent using `wow-api-lookup` first.
-
----
-
 ## Target Versions
 
 | Version | Interface | TOC Directive |
@@ -48,6 +28,8 @@ Version-specific files are loaded via BigWigsMods packager comment directives (`
 ---
 
 ## Architecture
+
+Never guess at WoW API signatures - verify with the `wow-addon` agent using `wow-api-lookup` first.
 
 | Layer | Directory | Responsibility |
 |-------|-----------|----------------|
@@ -146,8 +128,6 @@ All modules attach to `ns`:
 |------------------|--------|-------------|---------------------------------|
 | timerBarTexture  | string | "Blizzard"  | LSM statusbar texture for timer |
 
-> The table above shows a partial list. See `DragonLoot/Config.lua` for the full `rollFrame` schema (~25 keys).
-
 #### History Config (`db.profile.history`)
 
 | Key              | Type    | Default | Description                           |
@@ -181,11 +161,7 @@ All modules attach to `ns`:
 
 ## DragonToast Integration
 
-DragonLoot integrates with DragonToast (sibling addon) via the generic DragonToast messaging API. Messages are fire-and-forget - no detection needed. Neither addon requires the other.
-
 ### Messages Sent by DragonLoot
-
-DragonLoot uses the generic DragonToast messaging API (fire-and-forget, no detection needed):
 
 | Message | Payload | When |
 |---------|---------|------|
@@ -274,10 +250,6 @@ DragonLoot embeds Ace3 via `Libs/embeds.xml`. The full Ace3 library set is avail
 | LibAnimate | Animation library (user-configurable via Animation config tab) |
 | AceGUI-SharedMediaWidgets | SharedMedia dropdowns in AceGUI |
 
-### Local Dev: Ace3 Submodule
-
-`.pkgmeta` externals only work during CI packaging. For local dev, add Ace3 as a git submodule at `DragonLoot/Libs/Ace3/`.
-
 ---
 
 ## CI/CD
@@ -315,116 +287,6 @@ DragonLoot embeds Ace3 via `Libs/embeds.xml`. The full Ace3 library set is avail
 
 ---
 
-## Local Development
-
-### Install Location
-
-Create a directory junction from the WoW addons folder to the `DragonLoot/` subdirectory in the repo (not the repo root):
-```powershell
-New-Item -ItemType Junction -Path "E:\World of Warcraft\_anniversary_\Interface\AddOns\DragonLoot" -Target "F:\Repos\wow-addons\DragonLoot\DragonLoot"
-```
-
----
-
-## Code Style
-
-### Formatting
-- Indent with **4 spaces**, no tabs
-- Max line length **120** unless the addon `.luacheckrc` disables it
-- Spaces around operators: `local x = 1 + 2`
-- No trailing whitespace
-- Use plain hyphens (`-`), **never** em or en dashes
-
-### File Header
-Every Lua file starts with:
-
-```lua
--------------------------------------------------------------------------------
--- FileName.lua
--- Brief description
---
--- Supported versions: Retail, MoP Classic, TBC Anniversary, Cata, Classic
--------------------------------------------------------------------------------
-```
-
-### Imports and Scoping
-- Use the shared namespace: `local ADDON_NAME, ns = ...`
-- Cache WoW API and Lua globals used more than once as locals at the top of the file
-- Keep addon logic in locals; only SavedVariables and `SLASH_*` are global
-- Use `LibStub` for Ace3 or other embedded libs; never global `require`
-
-```lua
-local ADDON_NAME, ns = ...
-local CreateFrame = CreateFrame
-local GetTime = GetTime
-local LSM = LibStub("LibSharedMedia-3.0")
-```
-
-### Naming
-
-| Element | Convention | Example |
-|---------|------------|---------|
-| Files | PascalCase | `MyAddon_Core.lua` |
-| SavedVariables | PascalCase | `MyAddonDB` |
-| Local variables | camelCase | `local currentState` |
-| Functions (public or local) | PascalCase | `local function UpdateState()` |
-| Constants | UPPER_SNAKE | `local MAX_RETRIES = 5` |
-| Slash commands | UPPER_SNAKE | `SLASH_MYADDON1` |
-| Color codes | UPPER_SNAKE | `local COLOR_RED = "\|cffff0000"` |
-| Unused args | underscore prefix | `local _unused` |
-
-### Types
-- Default to plain Lua 5.1 with no annotations
-- Only add LuaLS annotations when the file already uses them or for public library APIs
-- Keep annotations minimal and accurate; do not introduce new tooling
-- LuaLS annotations for WoW APIs are available via the `wow-addon-dev` skill for reference, but do not add them to addon source files unless already present
-
-### Functions and Structure
-- Keep functions under 50 lines; extract helpers when longer
-- Prefer early returns over deep nesting
-- Prefer composition over inheritance
-- Keep logic separated by layer when possible: Core (WoW API), Engine (pure Lua),
-  Data (tables), Presentation (UI)
-
-### Error Handling
-- Use defensive nil checks for optional APIs
-- For version differences, prefer `or` fallbacks over runtime version checks
-- Use `pcall` for user callbacks or APIs that may be missing in some versions
-- Use `error(msg, 2)` for public library input validation (reports at caller site)
-- Always verify API signatures with `wow-api-lookup` before adding defensive checks - know what the API actually returns
-
----
-
-## GitHub Workflow
-
-### Issues
-- Title format: `[Bug]: description` / `[Feature]: description`
-- Always apply: one `C-*` (category), one `A-*` (area), one `D-*` (difficulty), one `P-*` (platform) label
-- Use the repo's GitHub issue templates (bug-report or feature-request)
-- Add new issues to the appropriate project and set status to **"To triage"**
-
-### GitHub Projects
-- **DragonLoot - Bugs**: project #5 (`C-Bug` issues)
-- **DragonLoot - Feature Requests**: project #4 (`C-Feature` issues)
-- Status columns: **To triage → Backlog → Ready → In progress → In review → Done**
-- Move status as work progresses: filed (To triage) → scoped (Backlog) → branch created (In progress) → PR open (In review) → merged (Done)
-
-### Branching and PRs
-- Branch from `master`: `feat/<number>-short-desc`, `fix/<number>-short-desc`, `refactor/<number>-short-desc`
-- One PR per issue; reference `Closes #N` in the PR body
-- Fill the PR template fully (type of change, testing, checklist)
-- CI must pass (`gh pr checks <N> --repo Xerrion/DragonLoot`) before merging
-- Wait for CodeRabbit AI review to complete and address any findings before merging
-- When replying to CodeRabbit review comments, always use `@coderabbitai` and always reply to the **specific comment thread** (not as a top-level PR comment)
-- Squash merge only: `gh pr merge <N> --squash --delete-branch`
-- **Never merge release-please PRs** (`chore(master): release X.Y.Z`) - the repo owner merges these manually
-
-### Commits
-- Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
-- Reference issue numbers: `feat: add roll frame scaling (#92)`
-
----
-
 ## Known Gotchas
 
 1. **GetItemInfo may return nil** on first call if item not cached - handle with retry timers
@@ -443,30 +305,3 @@ local LSM = LibStub("LibSharedMedia-3.0")
 14. **CHAT_MSG_LOOT GlobalStrings differ by version** - TBC self-loot patterns have trailing periods, Retail does not. Build patterns from actual GlobalString values at runtime, never hardcode
 15. **GetItemInfo nil on first call** - LootHistoryChat uses C_Timer.After(0.5) retry to update quality when GetItemInfo returns nil for uncached items
 
----
-
-## Working Agreement for Agents
-- Addon-level AGENTS.md overrides root rules when present
-- Do not add new dependencies without discussing trade-offs
-- Run luacheck before and after changes
-- If only manual tests exist, document what you verified in-game
-- Verify changes in the game client when possible
-- Keep changes small and focused; prefer composition over inheritance
-- Use the `wow-addon` agent to verify WoW API signatures before implementation - never guess at parameter counts or return types
-- See `## Skills` above for the full skill-loading matrix for `coder` delegations
-
----
-
-## Communication Style
-
-When responding to or commenting on issues, always write in **first-person singular** ("I")
-as the repo owner -- never use "we" or "our team". Speak as if you are the developer personally.
-
-**Writing style:**
-- Direct, structured, solution-driven. Get to the point fast. Text is a tool, not decoration.
-- Think in systems. Break things into flows, roles, rules, and frameworks.
-- Bias toward precision. Concrete output, copy-paste-ready solutions, clear constraints. Low
-  tolerance for fluff.
-- Tone is calm and rational with small flashes of humor and self-awareness.
-- When confident in a topic, become more informal and creative.
-- When something matters, become sharp and focused.
