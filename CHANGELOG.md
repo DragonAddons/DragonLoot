@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.11.0](https://github.com/Xerrion/DragonLoot/compare/0.10.0...0.11.0) (2026-04-06)
+
+
+### 🚀 Features
+
+* add busted test infrastructure with Lifecycle and Config tests ([#125](https://github.com/Xerrion/DragonLoot/issues/125)) ([#127](https://github.com/Xerrion/DragonLoot/issues/127)) ([804136a](https://github.com/Xerrion/DragonLoot/commit/804136a955f78a9e3367a8be5dcfa760e9cde745))
+* add Center Horizontally and Center Vertically buttons to roll frame options ([#93](https://github.com/Xerrion/DragonLoot/issues/93)) ([#119](https://github.com/Xerrion/DragonLoot/issues/119)) ([9412532](https://github.com/Xerrion/DragonLoot/commit/9412532371209fc2b0c172dfbd0f6e721170752e))
+* add icon outside/left position option to roll frame ([#91](https://github.com/Xerrion/DragonLoot/issues/91)) ([#120](https://github.com/Xerrion/DragonLoot/issues/120)) ([17c9456](https://github.com/Xerrion/DragonLoot/commit/17c9456b7621fb67767f4a6fd5bf1f02cce711db))
+* lower minimum roll frame height slider to 24px ([#87](https://github.com/Xerrion/DragonLoot/issues/87)) ([#116](https://github.com/Xerrion/DragonLoot/issues/116)) ([d7d887d](https://github.com/Xerrion/DragonLoot/commit/d7d887dddfd1b55a0a99b541c0cc1ccdf4928102))
+* show item level overlay on roll frame icon ([#92](https://github.com/Xerrion/DragonLoot/issues/92)) ([#117](https://github.com/Xerrion/DragonLoot/issues/117)) ([f4a37b5](https://github.com/Xerrion/DragonLoot/commit/f4a37b5b0ad93814d6e4d0a61c914f770e2fdf7c))
+
+
+### 🐛 Bug Fixes
+
+* correct DragonWidgets TOC paths and guard CONFIRM_DISENCHANT_ROLL on Classic ([#118](https://github.com/Xerrion/DragonLoot/issues/118)) ([b0a88c6](https://github.com/Xerrion/DragonLoot/commit/b0a88c6e53dc50fe5b28017dad8f6def12198154))
+* highlight roll button icon on hover instead of grey box ([#86](https://github.com/Xerrion/DragonLoot/issues/86)) ([#115](https://github.com/Xerrion/DragonLoot/issues/115)) ([c270fbe](https://github.com/Xerrion/DragonLoot/commit/c270fbeb812cf9395eacfa7e9ec970860709335f))
+* transmog button now occupies greed slot in roll button chain ([#121](https://github.com/Xerrion/DragonLoot/issues/121)) ([#123](https://github.com/Xerrion/DragonLoot/issues/123)) ([17173ad](https://github.com/Xerrion/DragonLoot/commit/17173ad0f5ed2f93b7029e3d2c0e1107392f2e05))
+
+
+### 🚜 Refactor
+
+* eliminate duplicated anchor formulas and magic offsets in RollFrame ([#111](https://github.com/Xerrion/DragonLoot/issues/111)) ([#113](https://github.com/Xerrion/DragonLoot/issues/113)) ([c046306](https://github.com/Xerrion/DragonLoot/commit/c046306dbac581aa5cb0825668a2cb240f49b296))
+* promote magic layout literals to named constants in LootFrame ([#110](https://github.com/Xerrion/DragonLoot/issues/110)) ([#112](https://github.com/Xerrion/DragonLoot/issues/112)) ([1b91f95](https://github.com/Xerrion/DragonLoot/commit/1b91f956770b638eaa9b7ce79ee3cc2cc3bb1578))
+
 ## [0.10.0](https://github.com/Xerrion/DragonLoot/compare/0.9.0...0.10.0) (2026-04-05)
 
 
