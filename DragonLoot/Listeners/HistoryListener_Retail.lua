@@ -11,7 +11,9 @@ local _, ns = ...
 -- Version guard: only run on Retail
 -------------------------------------------------------------------------------
 
-if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
+if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+    return
+end
 
 -------------------------------------------------------------------------------
 -- Cached WoW API
@@ -41,7 +43,9 @@ local isInitializing = false
 -------------------------------------------------------------------------------
 
 local function GetItemQuality(itemLink)
-    if not itemLink then return 1 end
+    if not itemLink then
+        return 1
+    end
     local _, _, quality = GetItemInfo(itemLink)
     return quality or 1
 end
@@ -52,16 +56,18 @@ end
 -------------------------------------------------------------------------------
 
 local ROLL_STATE_MAP = {
-    [0] = 1,  -- NeedMainSpec -> Need
-    [1] = 1,  -- NeedOffSpec -> Need
-    [2] = 2,  -- Transmog -> Greed
-    [3] = 2,  -- Greed
-    [4] = 0,  -- NoRoll -> Pass
-    [5] = 0,  -- Pass
+    [0] = 1, -- NeedMainSpec -> Need
+    [1] = 1, -- NeedOffSpec -> Need
+    [2] = 2, -- Transmog -> Greed
+    [3] = 2, -- Greed
+    [4] = 0, -- NoRoll -> Pass
+    [5] = 0, -- Pass
 }
 
 local function ConvertRollState(state)
-    if state == nil then return nil end
+    if state == nil then
+        return nil
+    end
     return ROLL_STATE_MAP[state] or 0
 end
 
@@ -70,11 +76,17 @@ end
 -------------------------------------------------------------------------------
 
 local function ProcessRollResults(encounterID, drop)
-    if isInitializing then return end
-    if not drop or not drop.rollInfos then return end
+    if isInitializing then
+        return
+    end
+    if not drop or not drop.rollInfos then
+        return
+    end
 
     local stateMap = ns.NOTIFICATION_STATE_MAP
-    if not stateMap then return end
+    if not stateMap then
+        return
+    end
 
     local itemLink = drop.itemHyperlink
     local itemName = itemLink and itemLink:match("%[(.-)%]")
@@ -83,16 +95,24 @@ local function ProcessRollResults(encounterID, drop)
 
     for _, rollInfo in ipairs(drop.rollInfos) do
         if rollInfo.playerName and rollInfo.state then
-            local dedupKey = encounterID .. "-" .. drop.lootListID .. "-"
+            local dedupKey = encounterID
+                .. "-"
+                .. drop.lootListID
+                .. "-"
                 .. (rollInfo.playerGUID or rollInfo.playerName)
             if not notifiedRollResults[dedupKey] then
                 notifiedRollResults[dedupKey] = true
                 local rollType = stateMap[rollInfo.state]
                 local rollValue = rollInfo.roll
                 ns.RollManager.SendRollResultNotification(
-                    itemLink, itemName, itemQuality, itemIcon,
-                    rollInfo.playerName, rollInfo.playerClass,
-                    rollType, rollValue
+                    itemLink,
+                    itemName,
+                    itemQuality,
+                    itemIcon,
+                    rollInfo.playerName,
+                    rollInfo.playerClass,
+                    rollType,
+                    rollValue
                 )
             end
         end
@@ -104,10 +124,14 @@ end
 -------------------------------------------------------------------------------
 
 local function ProcessDrop(encounterID, drop)
-    if not drop then return end
+    if not drop then
+        return
+    end
 
     local itemLink = drop.itemHyperlink
-    if not itemLink then return end
+    if not itemLink then
+        return
+    end
 
     local dropKey = encounterID .. "-" .. drop.lootListID
 
@@ -128,7 +152,9 @@ local function ProcessDrop(encounterID, drop)
                 }
             end
         end
-        if #rollResults == 0 then rollResults = nil end
+        if #rollResults == 0 then
+            rollResults = nil
+        end
     end
 
     local entry = {
@@ -168,18 +194,21 @@ end
 -------------------------------------------------------------------------------
 
 local function OnHistoryUpdateEncounter(_, encounterID)
-    if not encounterID then return end
+    if not encounterID then
+        return
+    end
     -- Drops arrive individually via LOOT_HISTORY_UPDATE_DROP; just refresh display
     ns.HistoryFrame.Refresh()
     ns.DebugPrint("LOOT_HISTORY_UPDATE_ENCOUNTER: " .. tostring(encounterID))
 end
 
 local function OnHistoryUpdateDrop(_, encounterID, lootListID)
-    if not encounterID or not lootListID then return end
+    if not encounterID or not lootListID then
+        return
+    end
     local dropInfo = C_LootHistory.GetSortedInfoForDrop(encounterID, lootListID)
     ProcessDrop(encounterID, dropInfo)
-    ns.DebugPrint("LOOT_HISTORY_UPDATE_DROP: encounter="
-        .. tostring(encounterID) .. " drop=" .. tostring(lootListID))
+    ns.DebugPrint("LOOT_HISTORY_UPDATE_DROP: encounter=" .. tostring(encounterID) .. " drop=" .. tostring(lootListID))
 end
 
 local function OnHistoryClear()
@@ -194,9 +223,13 @@ end
 -------------------------------------------------------------------------------
 
 local function PopulateExistingHistory()
-    if not C_LootHistory.GetAllEncounterInfos then return end
+    if not C_LootHistory.GetAllEncounterInfos then
+        return
+    end
     local encounters = C_LootHistory.GetAllEncounterInfos()
-    if not encounters then return end
+    if not encounters then
+        return
+    end
     for _, encounter in ipairs(encounters) do
         local drops = C_LootHistory.GetSortedDropsForEncounter(encounter.encounterID)
         if drops then

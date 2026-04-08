@@ -108,7 +108,9 @@ end
 -- Events the default group roll frames listen for
 -- CONFIRM_DISENCHANT_ROLL is Retail-only; Classic clients reject it
 local ROLL_FRAME_EVENTS = {
-    "START_LOOT_ROLL", "CANCEL_LOOT_ROLL", "CONFIRM_LOOT_ROLL",
+    "START_LOOT_ROLL",
+    "CANCEL_LOOT_ROLL",
+    "CONFIRM_LOOT_ROLL",
 }
 if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
     ROLL_FRAME_EVENTS[#ROLL_FRAME_EVENTS + 1] = "CONFIRM_DISENCHANT_ROLL"
@@ -122,8 +124,12 @@ local lootFrameHooked = false
 -- and shows LootFrame before our ADDON_LOADED watcher fires.
 -- On Classic, LootFrame is part of the base UI and no force-load is needed.
 local function EnsureBlizzardLootFrameLoaded()
-    if LootFrame then return end
-    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
+    if LootFrame then
+        return
+    end
+    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+        return
+    end
     if C_AddOns and C_AddOns.LoadAddOn then
         C_AddOns.LoadAddOn("Blizzard_LootUI")
     elseif LoadAddOn then
@@ -136,7 +142,9 @@ end
 
 local function SuppressBlizzardLootFrame()
     EnsureBlizzardLootFrameLoaded()
-    if not LootFrame then return end
+    if not LootFrame then
+        return
+    end
     LootFrame:UnregisterAllEvents()
     LootFrame:Hide()
 
@@ -180,7 +188,9 @@ local function SuppressBlizzardRollFrames()
 end
 
 local function RestoreBlizzardLootFrame()
-    if not LootFrame then return end
+    if not LootFrame then
+        return
+    end
     -- Only restore the base events all versions register at load time.
     -- Dynamic events (LOOT_SLOT_CLEARED, LOOT_SLOT_CHANGED) are re-registered
     -- by Blizzard's own OnShow handler when the frame next shows.
@@ -253,7 +263,9 @@ end
 
 function Addon:OnEnable()
     local db = self.db and self.db.profile
-    if not db or not db.enabled then return end
+    if not db or not db.enabled then
+        return
+    end
 
     -- Suppress Blizzard frames when our replacement is enabled
     if db.lootWindow and db.lootWindow.enabled then

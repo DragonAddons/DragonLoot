@@ -20,7 +20,7 @@ local tonumber = tonumber
 -- DragonWidgets references
 -------------------------------------------------------------------------------
 
-local W  = ns.DW.Widgets
+local W = ns.DW.Widgets
 local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
@@ -51,7 +51,9 @@ local function CreateTogglesSection(parent, db, yOffset)
     -- Enable History
     local enableToggle = W.CreateToggle(content, {
         label = L["Enable History"],
-        get = function() return db.profile.history.enabled end,
+        get = function()
+            return db.profile.history.enabled
+        end,
         set = function(value)
             db.profile.history.enabled = value
             ApplyHistorySettings()
@@ -62,7 +64,9 @@ local function CreateTogglesSection(parent, db, yOffset)
     -- Auto Show on Loot
     local autoShowToggle = W.CreateToggle(content, {
         label = L["Auto Show on Loot"],
-        get = function() return db.profile.history.autoShow end,
+        get = function()
+            return db.profile.history.autoShow
+        end,
         set = function(value)
             db.profile.history.autoShow = value
         end,
@@ -76,7 +80,9 @@ local function CreateTogglesSection(parent, db, yOffset)
     local trackToggle = W.CreateToggle(content, {
         label = L["Track Direct Loot"],
         tooltip = L["Track items you pick up directly (not from a loot window)"],
-        get = function() return db.profile.history.trackDirectLoot end,
+        get = function()
+            return db.profile.history.trackDirectLoot
+        end,
         set = function(value)
             db.profile.history.trackDirectLoot = value
             if qualityDropdown then
@@ -90,7 +96,9 @@ local function CreateTogglesSection(parent, db, yOffset)
     qualityDropdown = W.CreateDropdown(content, {
         label = L["Minimum Quality"],
         values = ns.QualityValues,
-        get = function() return tostring(db.profile.history.minQuality) end,
+        get = function()
+            return tostring(db.profile.history.minQuality)
+        end,
         set = function(value)
             db.profile.history.minQuality = tonumber(value) or 0
         end,
@@ -108,7 +116,9 @@ local function CreateTogglesSection(parent, db, yOffset)
     local rollDetailsToggle = W.CreateToggle(content, {
         label = L["Show Roll Details"],
         tooltip = L["Click history entries to expand and see all player rolls"],
-        get = function() return db.profile.history.showRollDetails end,
+        get = function()
+            return db.profile.history.showRollDetails
+        end,
         set = function(value)
             db.profile.history.showRollDetails = value
             ApplyHistorySettings()
@@ -134,9 +144,13 @@ local function CreateLayoutSection(parent, db, yOffset)
     -- Slider: Max Entries
     local maxEntriesSlider = W.CreateSlider(content, {
         label = L["Max Entries"],
-        min = 10, max = 500, step = 10,
+        min = 10,
+        max = 500,
+        step = 10,
         format = "%d",
-        get = function() return db.profile.history.maxEntries end,
+        get = function()
+            return db.profile.history.maxEntries
+        end,
         set = function(value)
             db.profile.history.maxEntries = value
         end,
@@ -146,9 +160,13 @@ local function CreateLayoutSection(parent, db, yOffset)
     -- Slider: Entry Spacing
     local entrySpacingSlider = W.CreateSlider(content, {
         label = L["Entry Spacing"],
-        min = 0, max = 12, step = 1,
+        min = 0,
+        max = 12,
+        step = 1,
         format = "%d",
-        get = function() return db.profile.history.entrySpacing end,
+        get = function()
+            return db.profile.history.entrySpacing
+        end,
         set = function(value)
             db.profile.history.entrySpacing = value
             ApplyHistorySettings()
@@ -159,9 +177,13 @@ local function CreateLayoutSection(parent, db, yOffset)
     -- Slider: Content Padding
     local contentPaddingSlider = W.CreateSlider(content, {
         label = L["Content Padding"],
-        min = 0, max = 12, step = 1,
+        min = 0,
+        max = 12,
+        step = 1,
         format = "%d",
-        get = function() return db.profile.history.contentPadding end,
+        get = function()
+            return db.profile.history.contentPadding
+        end,
         set = function(value)
             db.profile.history.contentPadding = value
             ApplyHistorySettings()

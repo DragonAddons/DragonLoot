@@ -41,30 +41,37 @@ function LifecycleUtil.Invalidate(state)
 end
 
 function LifecycleUtil.CaptureToken(state)
-    if not state then return nil end
+    if not state then
+        return nil
+    end
     return state.token
 end
 
 function LifecycleUtil.IsTokenCurrent(state, token)
-    if not state then return false end
+    if not state then
+        return false
+    end
     return state.isLive and state.token == token
 end
 
 function LifecycleUtil.Guard(state, token, callback)
     if type(callback) ~= "function" then
-        return function()
-        end
+        return function() end
     end
 
     return function(...)
-        if not LifecycleUtil.IsTokenCurrent(state, token) then return end
+        if not LifecycleUtil.IsTokenCurrent(state, token) then
+            return
+        end
         callback(...)
     end
 end
 
 function LifecycleUtil.After(state, delay, callback)
     local token = LifecycleUtil.CaptureToken(state)
-    if token == nil then return nil end
+    if token == nil then
+        return nil
+    end
 
     C_Timer.After(delay, LifecycleUtil.Guard(state, token, callback))
     return token

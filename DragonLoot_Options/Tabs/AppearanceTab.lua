@@ -18,7 +18,7 @@ local math_abs = math.abs
 -- DragonWidgets references
 -------------------------------------------------------------------------------
 
-local W  = ns.DW.Widgets
+local W = ns.DW.Widgets
 local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
@@ -79,7 +79,9 @@ local function CreateFontSection(parent, db, yOffset)
         values = GetFontValues,
         sort = true,
         mediaType = "font",
-        get = function() return db.profile.appearance.font end,
+        get = function()
+            return db.profile.appearance.font
+        end,
         set = function(value)
             db.profile.appearance.font = value
             LC.NotifyAppearanceChange()
@@ -94,7 +96,9 @@ local function CreateFontSection(parent, db, yOffset)
         max = 20,
         step = 1,
         format = "%d",
-        get = function() return db.profile.appearance.fontSize end,
+        get = function()
+            return db.profile.appearance.fontSize
+        end,
         set = function(value)
             db.profile.appearance.fontSize = value
             LC.NotifyAppearanceChange()
@@ -105,7 +109,9 @@ local function CreateFontSection(parent, db, yOffset)
     local outlineDropdown = W.CreateDropdown(content, {
         label = L["Font Outline"],
         values = FONT_OUTLINE_VALUES,
-        get = function() return db.profile.appearance.fontOutline end,
+        get = function()
+            return db.profile.appearance.fontOutline
+        end,
         set = function(value)
             db.profile.appearance.fontOutline = value
             LC.NotifyAppearanceChange()
@@ -116,7 +122,9 @@ local function CreateFontSection(parent, db, yOffset)
     local fontShadowToggle = W.CreateToggle(content, {
         label = L["Text Shadow"],
         tooltip = L["Enable text shadow on all text elements"],
-        get = function() return db.profile.appearance.fontShadow end,
+        get = function()
+            return db.profile.appearance.fontShadow
+        end,
         set = function(value)
             db.profile.appearance.fontShadow = value
             LC.NotifyAppearanceChange()
@@ -146,7 +154,9 @@ local function CreateIconSection(parent, db, yOffset)
         max = 64,
         step = 2,
         format = "%d",
-        get = function() return db.profile.appearance.lootIconSize end,
+        get = function()
+            return db.profile.appearance.lootIconSize
+        end,
         set = function(value)
             db.profile.appearance.lootIconSize = value
             LC.NotifyAppearanceChange()
@@ -161,7 +171,9 @@ local function CreateIconSection(parent, db, yOffset)
         max = 64,
         step = 2,
         format = "%d",
-        get = function() return db.profile.appearance.rollIconSize end,
+        get = function()
+            return db.profile.appearance.rollIconSize
+        end,
         set = function(value)
             db.profile.appearance.rollIconSize = value
             LC.NotifyAppearanceChange()
@@ -176,7 +188,9 @@ local function CreateIconSection(parent, db, yOffset)
         max = 48,
         step = 2,
         format = "%d",
-        get = function() return db.profile.appearance.historyIconSize end,
+        get = function()
+            return db.profile.appearance.historyIconSize
+        end,
         set = function(value)
             db.profile.appearance.historyIconSize = value
             LC.NotifyAppearanceChange()
@@ -187,7 +201,9 @@ local function CreateIconSection(parent, db, yOffset)
     local qualityBorderToggle = W.CreateToggle(content, {
         label = L["Quality Border"],
         tooltip = L["Show quality-colored borders on item icons"],
-        get = function() return db.profile.appearance.qualityBorder end,
+        get = function()
+            return db.profile.appearance.qualityBorder
+        end,
         set = function(value)
             db.profile.appearance.qualityBorder = value
             LC.NotifyAppearanceChange()
@@ -198,7 +214,9 @@ local function CreateIconSection(parent, db, yOffset)
     local itemLevelToggle = W.CreateToggle(content, {
         label = L["Show Item Level"],
         tooltip = L["Show item level overlay on roll frame icon"],
-        get = function() return db.profile.appearance.showItemLevel end,
+        get = function()
+            return db.profile.appearance.showItemLevel
+        end,
         set = function(value)
             db.profile.appearance.showItemLevel = value
             LC.NotifyAppearanceChange()
@@ -209,7 +227,9 @@ local function CreateIconSection(parent, db, yOffset)
     local slotBgDropdown = W.CreateDropdown(content, {
         label = L["Slot Background"],
         values = SLOT_BG_VALUES,
-        get = function() return db.profile.appearance.slotBackground end,
+        get = function()
+            return db.profile.appearance.slotBackground
+        end,
         set = function(value)
             db.profile.appearance.slotBackground = value
             LC.NotifyAppearanceChange()
@@ -255,7 +275,9 @@ local function CreateBackgroundSection(parent, db, yOffset)
         max = 1,
         step = 0.05,
         isPercent = true,
-        get = function() return db.profile.appearance.backgroundAlpha end,
+        get = function()
+            return db.profile.appearance.backgroundAlpha
+        end,
         set = function(value)
             db.profile.appearance.backgroundAlpha = value
             LC.NotifyAppearanceChange()
@@ -268,7 +290,9 @@ local function CreateBackgroundSection(parent, db, yOffset)
         values = GetBackgroundValues,
         sort = true,
         mediaType = "background",
-        get = function() return db.profile.appearance.backgroundTexture end,
+        get = function()
+            return db.profile.appearance.backgroundTexture
+        end,
         set = function(value)
             db.profile.appearance.backgroundTexture = value
             LC.NotifyAppearanceChange()
@@ -314,7 +338,9 @@ local function CreateBorderSection(parent, db, yOffset)
         max = 4,
         step = 1,
         format = "%d",
-        get = function() return db.profile.appearance.borderSize end,
+        get = function()
+            return db.profile.appearance.borderSize
+        end,
         set = function(value)
             db.profile.appearance.borderSize = value
             LC.NotifyAppearanceChange()
@@ -327,7 +353,9 @@ local function CreateBorderSection(parent, db, yOffset)
         values = GetBorderValues,
         sort = true,
         mediaType = "border",
-        get = function() return db.profile.appearance.borderTexture end,
+        get = function()
+            return db.profile.appearance.borderTexture
+        end,
         set = function(value)
             db.profile.appearance.borderTexture = value
             LC.NotifyAppearanceChange()

@@ -20,7 +20,7 @@ local tonumber = tonumber
 -- DragonWidgets references
 -------------------------------------------------------------------------------
 
-local W  = ns.DW.Widgets
+local W = ns.DW.Widgets
 local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
@@ -44,25 +44,37 @@ local function CreateSettingsSection(parent, db, yOffset)
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
 
-    local desc = W.CreateDescription(content,
-        L["Automatically loot items that meet your criteria. Items on the whitelist are always"
-        .. " picked up. Items on the blacklist are never auto-looted. Everything else is evaluated"
-        .. " against the minimum quality threshold."])
+    -- stylua: ignore
+    local desc = W.CreateDescription(
+        content,
+        L["Automatically loot items that meet your criteria."
+            .. " Items on the whitelist are always picked up."
+            .. " Items on the blacklist are never auto-looted."
+            .. " Everything else is evaluated against the minimum quality threshold."]
+    )
     innerY = LC.AnchorWidget(desc, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     local enableToggle = W.CreateToggle(content, {
         label = L["Enable Smart Auto-Loot"],
         tooltip = L["When enabled, qualifying items are automatically looted based on your filter rules"],
-        get = function() return db.profile.autoLoot.enabled end,
-        set = function(value) db.profile.autoLoot.enabled = value end,
+        get = function()
+            return db.profile.autoLoot.enabled
+        end,
+        set = function(value)
+            db.profile.autoLoot.enabled = value
+        end,
     })
     innerY = LC.AnchorWidget(enableToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     local qualityDropdown = W.CreateDropdown(content, {
         label = L["Minimum Quality"],
         values = ns.QualityValues,
-        get = function() return tostring(db.profile.autoLoot.minQuality) end,
-        set = function(value) db.profile.autoLoot.minQuality = tonumber(value) or 0 end,
+        get = function()
+            return tostring(db.profile.autoLoot.minQuality)
+        end,
+        set = function(value)
+            db.profile.autoLoot.minQuality = tonumber(value) or 0
+        end,
     })
     innerY = LC.AnchorWidget(qualityDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
@@ -81,15 +93,22 @@ local function CreateWhitelistSection(parent, db, yOffset)
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
 
-    local desc = W.CreateDescription(content,
+    -- stylua: ignore
+    local desc = W.CreateDescription(
+        content,
         L["Items on this list are always looted automatically, regardless of quality."
-        .. " Drag an item from your bags onto an empty slot to add it."])
+            .. " Drag an item from your bags onto an empty slot to add it."]
+    )
     innerY = LC.AnchorWidget(desc, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     local itemList = W.CreateItemList(content, {
         label = "",
-        getItems = function() return db.profile.autoLoot.whitelist end,
-        setItems = function(t) db.profile.autoLoot.whitelist = t end,
+        getItems = function()
+            return db.profile.autoLoot.whitelist
+        end,
+        setItems = function(t)
+            db.profile.autoLoot.whitelist = t
+        end,
         emptyText = L["No items - drag items here to add"],
     })
     itemList:SetHeight(ITEM_LIST_HEIGHT)
@@ -110,15 +129,22 @@ local function CreateBlacklistSection(parent, db, yOffset)
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
 
-    local desc = W.CreateDescription(content,
+    -- stylua: ignore
+    local desc = W.CreateDescription(
+        content,
         L["Items on this list are never auto-looted, even if they meet the quality threshold."
-        .. " They will remain in the loot window for manual pickup."])
+            .. " They will remain in the loot window for manual pickup."]
+    )
     innerY = LC.AnchorWidget(desc, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     local itemList = W.CreateItemList(content, {
         label = "",
-        getItems = function() return db.profile.autoLoot.blacklist end,
-        setItems = function(t) db.profile.autoLoot.blacklist = t end,
+        getItems = function()
+            return db.profile.autoLoot.blacklist
+        end,
+        setItems = function(t)
+            db.profile.autoLoot.blacklist = t
+        end,
         emptyText = L["No items - drag items here to add"],
     })
     itemList:SetHeight(ITEM_LIST_HEIGHT)

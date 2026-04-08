@@ -47,7 +47,9 @@ local lootHandleToRollID = {}
 -------------------------------------------------------------------------------
 
 function LS.GetItemTexture(itemLink)
-    if not itemLink then return nil end
+    if not itemLink then
+        return nil
+    end
     if GetItemInfoInstant then
         local _, _, _, _, icon = GetItemInfoInstant(itemLink)
         return icon
@@ -68,12 +70,16 @@ function LS.OnLootSlotCleared(isLootOpen, slotIndex)
 end
 
 function LS.OnLootSlotChanged(isLootOpen, slotIndex)
-    if not isLootOpen or not ns.LootFrame.UpdateSlot then return end
+    if not isLootOpen or not ns.LootFrame.UpdateSlot then
+        return
+    end
     ns.LootFrame.UpdateSlot(slotIndex)
 end
 
 function LS.OnLootClosed(isLootOpen, versionLabel)
-    if not isLootOpen then return false end
+    if not isLootOpen then
+        return false
+    end
 
     local ok, err = pcall(ns.LootFrame.Hide)
     if not ok then
@@ -91,20 +97,25 @@ end
 -------------------------------------------------------------------------------
 
 function LS.OnStartLootRoll(isRollActive, rollID, rollTime, msPerSec, _, lootHandle)
-    if not isRollActive then return end
+    if not isRollActive then
+        return
+    end
     if lootHandle then
         lootHandleToRollID[lootHandle] = rollID
     end
     local rollTimeSec = rollTime / msPerSec
     ns.RollManager.StartRoll(rollID, rollTimeSec)
-    ns.DebugPrint("START_LOOT_ROLL: rollID=" .. tostring(rollID)
-        .. " time=" .. tostring(rollTimeSec) .. "s")
+    ns.DebugPrint("START_LOOT_ROLL: rollID=" .. tostring(rollID) .. " time=" .. tostring(rollTimeSec) .. "s")
 end
 
 function LS.OnCancelLootRoll(isRollActive, rollID)
-    if not isRollActive then return end
+    if not isRollActive then
+        return
+    end
     local rolls = ns.RollManager.GetActiveRolls()
-    if rolls[rollID] and rolls[rollID].completing then return end
+    if rolls[rollID] and rolls[rollID].completing then
+        return
+    end
     for handle, id in pairs(lootHandleToRollID) do
         if id == rollID then
             lootHandleToRollID[handle] = nil
@@ -134,16 +145,19 @@ function LS.OnConfirmRoll(rollID, rollType)
 end
 
 function LS.OnLootRollsComplete(isRollActive, lootHandle)
-    if not isRollActive then return end
+    if not isRollActive then
+        return
+    end
     local rollID = lootHandleToRollID[lootHandle] or lootHandle
     lootHandleToRollID[lootHandle] = nil
     ns.RollManager.OnRollComplete(rollID)
-    ns.DebugPrint("LOOT_ROLLS_COMPLETE: handle=" .. tostring(lootHandle)
-        .. " rollID=" .. tostring(rollID))
+    ns.DebugPrint("LOOT_ROLLS_COMPLETE: handle=" .. tostring(lootHandle) .. " rollID=" .. tostring(rollID))
 end
 
 function LS.OnLootItemRollWon(isRollActive, itemLink, rollType, rollValue)
-    if not isRollActive then return end
+    if not isRollActive then
+        return
+    end
     ns.RollManager.OnLootItemRollWon(itemLink, rollType, rollValue)
 end
 
@@ -157,11 +171,17 @@ end
 function LS.ResolveWinner(getIsActive, lifecycleState, rollID, completionToken, resolveFromHistory)
     local LifecycleUtil = ns.LifecycleUtil
     LifecycleUtil.After(lifecycleState, LS.WINNER_RESOLVE_DELAY, function()
-        if not getIsActive() then return end
+        if not getIsActive() then
+            return
+        end
         local activeRolls = ns.RollManager.GetActiveRolls()
         local roll = activeRolls[rollID]
-        if not roll or not roll.completing then return end
-        if completionToken and roll.completionToken ~= completionToken then return end
+        if not roll or not roll.completing then
+            return
+        end
+        if completionToken and roll.completionToken ~= completionToken then
+            return
+        end
         resolveFromHistory(rollID)
     end)
 end

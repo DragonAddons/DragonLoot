@@ -68,9 +68,9 @@ describe("LifecycleUtil", function()
 
         it("increments the token when called", function()
             local state = LU.CreateState()
-            LU.Activate(state)        -- token = 1
+            LU.Activate(state) -- token = 1
 
-            LU.Invalidate(state)      -- token must be 2
+            LU.Invalidate(state) -- token must be 2
 
             assert.are.equal(2, state.token)
         end)
@@ -132,8 +132,8 @@ describe("LifecycleUtil", function()
 
         it("returns false with the old token after Invalidate (token was incremented)", function()
             local state = LU.CreateState()
-            local token = LU.Activate(state)   -- token = 1, captured
-            LU.Invalidate(state)               -- token becomes 2
+            local token = LU.Activate(state) -- token = 1, captured
+            LU.Invalidate(state) -- token becomes 2
 
             assert.are.equal(2, state.token)
             assert.is_false(LU.IsTokenCurrent(state, token))
@@ -179,7 +179,9 @@ describe("LifecycleUtil", function()
             local guarded = LU.Guard(state, token, "not a function")
 
             assert.is_function(guarded)
-            assert.has_no.errors(function() guarded() end)
+            assert.has_no.errors(function()
+                guarded()
+            end)
         end)
     end)
 
@@ -204,18 +206,22 @@ describe("LifecycleUtil", function()
             local state = LU.CreateState()
             LU.Activate(state)
             local wasCalled = false
-            local savedAfter = C_Timer.After  -- backup before override
+            local savedAfter = C_Timer.After -- backup before override
 
             local savedCb
-            C_Timer.After = function(_, cb)   -- luacheck: ignore 121 122 212
+            C_Timer.After = function(_, cb) -- luacheck: ignore 121 122 212
                 savedCb = cb
             end
 
-            LU.After(state, 1, function() wasCalled = true end)
+            LU.After(state, 1, function()
+                wasCalled = true
+            end)
             LU.Invalidate(state)
-            if savedCb then savedCb() end
+            if savedCb then
+                savedCb()
+            end
 
-            C_Timer.After = savedAfter        -- luacheck: ignore 122
+            C_Timer.After = savedAfter -- luacheck: ignore 122
 
             assert.is_false(wasCalled)
         end)

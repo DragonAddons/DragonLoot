@@ -40,7 +40,9 @@ end
 
 local function ApplyTimerBarBorder(container)
     local rollCfg = GetRollFrameDB()
-    if not rollCfg then return end
+    if not rollCfg then
+        return
+    end
     if rollCfg.timerBarBorder then
         container:SetBackdrop({
             edgeFile = DU.WHITE8x8,
@@ -81,10 +83,10 @@ local ROLL_TRANSMOG = 4
 
 local TEST_ROLLS = {
     {
-        texture = 132447,           -- Gorehowl
+        texture = 132447, -- Gorehowl
         name = "Gorehowl",
         count = 1,
-        quality = 4,                -- Epic
+        quality = 4, -- Epic
         bindOnPickUp = true,
         canNeed = true,
         canGreed = true,
@@ -93,10 +95,10 @@ local TEST_ROLLS = {
         duration = 15,
     },
     {
-        texture = 135506,           -- Sunfury Bow of the Phoenix
+        texture = 135506, -- Sunfury Bow of the Phoenix
         name = "Sunfury Bow of the Phoenix",
         count = 1,
-        quality = 4,                -- Epic
+        quality = 4, -- Epic
         bindOnPickUp = true,
         canNeed = true,
         canGreed = true,
@@ -105,13 +107,13 @@ local TEST_ROLLS = {
         duration = 20,
     },
     {
-        texture = 133280,           -- Blazefury, Reborn (fire sword icon)
+        texture = 133280, -- Blazefury, Reborn (fire sword icon)
         name = "Blazefury, Reborn",
         count = 1,
-        quality = 4,                -- Epic
+        quality = 4, -- Epic
         bindOnPickUp = true,
         canNeed = true,
-        canGreed = false,           -- Greed disabled when Transmog available
+        canGreed = false, -- Greed disabled when Transmog available
         canDisenchant = true,
         canTransmog = true,
         duration = 15,
@@ -135,8 +137,8 @@ local MAX_VISIBLE_ROLLS = 4
 local DEFAULT_ROLL_ANCHOR_Y = -200
 local ROLL_FRAME_EXTRA_HEIGHT = 18
 local TEST_ROLL_TICK_INTERVAL = 0.1
-local ROLL_TEXT_LEFT_GAP = 6      -- gap between icon right edge and text/timer-bar left
-local ROLL_TIMER_RIGHT_GAP = 2    -- timer bar right inset from frame RIGHT edge
+local ROLL_TEXT_LEFT_GAP = 6 -- gap between icon right edge and text/timer-bar left
+local ROLL_TIMER_RIGHT_GAP = 2 -- timer bar right inset from frame RIGHT edge
 
 -- Returns the left content inset (icon width + padding + text gap + border thickness).
 -- Used by both ApplyTextLayoutOffsets and ApplyTimerBarOffsets to keep the left
@@ -242,7 +244,9 @@ end
 local function CalculateFrameHeight(iconSize)
     local db = ns.Addon.db.profile
     local rollFrameDB = GetRollFrameDB()
-    if not rollFrameDB then return GetFrameMinHeight() end
+    if not rollFrameDB then
+        return GetFrameMinHeight()
+    end
     local effectiveIconSize = (rollFrameDB.iconPosition == "outside") and 0 or iconSize
     if rollFrameDB.compactTextLayout then
         local padding = GetContentPadding()
@@ -270,14 +274,18 @@ local function ApplyTextLayoutOffsets(frame, compact, iconSize, padding, borderS
     local contentLeftInset = GetRollContentLeftInset(iconSize, padding, borderSize)
     -- Item name top-left anchor (shared by both modes)
     frame.itemName:ClearAllPoints()
-    frame.itemName:SetPoint("TOPLEFT", frame, "TOPLEFT",
-        contentLeftInset, -(padding + borderSize))
+    frame.itemName:SetPoint("TOPLEFT", frame, "TOPLEFT", contentLeftInset, -(padding + borderSize))
 
     if compact then
         -- Compact: buttons sit on the same row as the item name
         frame.passButton:ClearAllPoints()
-        frame.passButton:SetPoint("RIGHT", frame, "RIGHT",
-            -(GetRollContentRightInset(iconSize, padding, borderSize)), 0)
+        frame.passButton:SetPoint(
+            "RIGHT",
+            frame,
+            "RIGHT",
+            -(GetRollContentRightInset(iconSize, padding, borderSize)),
+            0
+        )
         frame.passButton:SetPoint("TOP", frame, "TOP", 0, -(padding + borderSize))
 
         -- needButton is always the leftmost button (transmog occupies greed's slot to the right).
@@ -297,8 +305,7 @@ local function ApplyTextLayoutOffsets(frame, compact, iconSize, padding, borderS
         end
     else
         -- Normal: stacked rows
-        frame.itemName:SetPoint("RIGHT", frame, "RIGHT",
-            -(GetRollContentRightInset(iconSize, padding, borderSize)), 0)
+        frame.itemName:SetPoint("RIGHT", frame, "RIGHT", -(GetRollContentRightInset(iconSize, padding, borderSize)), 0)
 
         frame.bindText:ClearAllPoints()
         frame.bindText:SetPoint("TOPLEFT", frame.itemName, "BOTTOMLEFT", 0, -rowSpacing)
@@ -324,10 +331,14 @@ local function ApplyTimerBarOffsets(frame, rollFrameDB, iconSize, padding, borde
         -- Normal: indented past icon, configurable height, text visible
         local barHeight = (rollFrameDB and rollFrameDB.timerBarHeight) or 12
         timerBarAnchor:SetHeight(barHeight)
-        timerBarAnchor:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT",
-            contentLeftInset, timerBarSpacing + borderSize)
-        timerBarAnchor:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
-            -(padding + ROLL_TIMER_RIGHT_GAP + borderSize), timerBarSpacing + borderSize)
+        timerBarAnchor:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", contentLeftInset, timerBarSpacing + borderSize)
+        timerBarAnchor:SetPoint(
+            "BOTTOMRIGHT",
+            frame,
+            "BOTTOMRIGHT",
+            -(padding + ROLL_TIMER_RIGHT_GAP + borderSize),
+            timerBarSpacing + borderSize
+        )
         frame.timerBar.text:Show()
     end
 end
@@ -381,7 +392,9 @@ local function GetTimerBarColor(timeLeft, rollTime)
     end
 
     -- Gradient: green -> yellow -> red
-    if rollTime <= 0 then return 1, 0, 0 end
+    if rollTime <= 0 then
+        return 1, 0, 0
+    end
     local ratio = timeLeft / rollTime
 
     if ratio > 0.5 then
@@ -398,9 +411,13 @@ end
 -------------------------------------------------------------------------------
 
 local function SaveFramePosition()
-    if not anchorFrame then return end
+    if not anchorFrame then
+        return
+    end
     local db = GetRollFrameDB()
-    if not db then return end
+    if not db then
+        return
+    end
     local point, _, relativePoint, x, y = anchorFrame:GetPoint()
     if point then
         db.point = point
@@ -411,9 +428,13 @@ local function SaveFramePosition()
 end
 
 local function RestoreFramePosition()
-    if not anchorFrame then return end
+    if not anchorFrame then
+        return
+    end
     local db = GetRollFrameDB()
-    if not db then return end
+    if not db then
+        return
+    end
     anchorFrame:ClearAllPoints()
     if db.point then
         anchorFrame:SetPoint(db.point, UIParent, db.relativePoint, db.x or 0, db.y or 0)
@@ -505,7 +526,9 @@ local function OnIconClick(self, button)
         ns.Print(L["Test item: "] .. (frame.testItemName or L["Test Item"]))
         return
     end
-    if not frame.rollID then return end
+    if not frame.rollID then
+        return
+    end
     if button == "LeftButton" then
         local link = GetLootRollItemLink(frame.rollID)
         if link then
@@ -574,8 +597,7 @@ end
 local function CreateTimerBar(parent)
     local rollFrameDB = GetRollFrameDB() or {}
     local barHeight = rollFrameDB.timerBarHeight or 12
-    local barTexture = LSM:Fetch("statusbar", rollFrameDB.timerBarTexture)
-        or "Interface\\TargetingFrame\\UI-StatusBar"
+    local barTexture = LSM:Fetch("statusbar", rollFrameDB.timerBarTexture) or "Interface\\TargetingFrame\\UI-StatusBar"
 
     -- Container (creation-time stubs; real position set by ApplyTimerBarOffsets)
     local container = CreateFrame("Frame", nil, parent, "BackdropTemplate")
@@ -623,7 +645,7 @@ local function CreateRollFrame(index)
 
     -- Drag: propagate movement to the shared anchor frame
     frame:EnableMouse(true)
-    frame:SetMovable(false)  -- frame itself doesn't move; anchor does
+    frame:SetMovable(false) -- frame itself doesn't move; anchor does
     frame:RegisterForDrag("LeftButton")
 
     frame:SetScript("OnDragStart", function()
@@ -695,7 +717,9 @@ end
 -------------------------------------------------------------------------------
 
 local function SetButtonState(btn, canUse, reason)
-    if not btn then return end
+    if not btn then
+        return
+    end
     if canUse then
         btn:Enable()
         btn.icon:SetDesaturated(false)
@@ -730,11 +754,14 @@ end
 -------------------------------------------------------------------------------
 
 local function BuildRollData(rollID)
-    local texture, name, count, quality, bindOnPickUp, canNeed, canGreed,
-          canDisenchant, reasonNeed, reasonGreed, reasonDisenchant,
-          _, canTransmog = GetLootRollItemInfo(rollID)
+    -- stylua: ignore
+    local texture, name, count, quality, bindOnPickUp, canNeed, canGreed, canDisenchant,
+        reasonNeed, reasonGreed, reasonDisenchant, _, canTransmog =
+        GetLootRollItemInfo(rollID)
 
-    if not texture then return nil end
+    if not texture then
+        return nil
+    end
 
     return {
         texture = texture,
@@ -874,8 +901,7 @@ local function RenderRollFrame(frame, data, rollID, isTest)
     -- Item level overlay on icon (bottom-left corner)
     if ns.Addon.db.profile.appearance.showItemLevel and not isTest then
         local link = GetLootRollItemLink(rollID)
-        local ilvl = link and C_Item and C_Item.GetDetailedItemLevelInfo and
-            C_Item.GetDetailedItemLevelInfo(link)
+        local ilvl = link and C_Item and C_Item.GetDetailedItemLevelInfo and C_Item.GetDetailedItemLevelInfo(link)
         if not frame.iconFrame.ilvl then
             frame.iconFrame.ilvl = frame.iconFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
             frame.iconFrame.ilvl:SetPoint("BOTTOMLEFT", frame.iconFrame, "BOTTOMLEFT", 2, 2)
@@ -888,11 +914,17 @@ local function RenderRollFrame(frame, data, rollID, isTest)
             frame.iconFrame.ilvl:Hide()
             local capturedRollID = rollID
             C_Timer.After(0.5, function()
-                if not frame or not frame:IsShown() then return end
-                if frame.rollID ~= capturedRollID then return end
+                if not frame or not frame:IsShown() then
+                    return
+                end
+                if frame.rollID ~= capturedRollID then
+                    return
+                end
                 local retryLink = GetLootRollItemLink(capturedRollID)
-                local retryIlvl = retryLink and C_Item and C_Item.GetDetailedItemLevelInfo and
-                    C_Item.GetDetailedItemLevelInfo(retryLink)
+                local retryIlvl = retryLink
+                    and C_Item
+                    and C_Item.GetDetailedItemLevelInfo
+                    and C_Item.GetDetailedItemLevelInfo(retryLink)
                 if retryIlvl and frame.iconFrame.ilvl then
                     frame.iconFrame.ilvl:SetText(retryIlvl)
                     frame.iconFrame.ilvl:Show()
@@ -945,7 +977,9 @@ end
 
 local function PopulateRollFrame(frame, rollID)
     local data = BuildRollData(rollID)
-    if not data then return end
+    if not data then
+        return
+    end
     RenderRollFrame(frame, data, rollID, false)
 end
 
@@ -978,7 +1012,9 @@ end
 
 local function ReleaseRollFrame(index)
     local frame = rollFramePool[index]
-    if not frame then return end
+    if not frame then
+        return
+    end
     if frame.testTimer then
         frame.testTimer:Cancel()
         frame.testTimer = nil
@@ -1033,7 +1069,9 @@ end
 
 local function StartTestTimer(frameIndex, duration)
     local frame = rollFramePool[frameIndex]
-    if not frame or not frame:IsShown() then return end
+    if not frame or not frame:IsShown() then
+        return
+    end
 
     local remaining = duration
     local total = duration
@@ -1069,7 +1107,9 @@ local function SpawnOneTestRoll()
             break
         end
     end
-    if not freeIndex then return end
+    if not freeIndex then
+        return
+    end
 
     loopRollIndex = loopRollIndex + 1
     local testData = TEST_ROLLS[((loopRollIndex - 1) % #TEST_ROLLS) + 1]
@@ -1088,9 +1128,13 @@ end
 -- Returns the vertical component of a WoW anchor point string (strips LEFT/RIGHT).
 -- Used by CenterHorizontally to normalize the saved anchor before zeroing x.
 local function VerticalComponent(p)
-    if p:find("TOP") then return "TOP"
-    elseif p:find("BOTTOM") then return "BOTTOM"
-    else return "CENTER" end
+    if p:find("TOP") then
+        return "TOP"
+    elseif p:find("BOTTOM") then
+        return "BOTTOM"
+    else
+        return "CENTER"
+    end
 end
 
 -------------------------------------------------------------------------------
@@ -1109,14 +1153,18 @@ function ns.RollFrame.Initialize()
 end
 
 function ns.RollFrame.Shutdown()
-    if not anchorFrame then return end
+    if not anchorFrame then
+        return
+    end
     ns.RollFrame.HideAllRolls()
     anchorFrame:Hide()
     ns.DebugPrint("RollFrame shut down")
 end
 
 function ns.RollFrame.ShowRoll(frameIndex, rollID)
-    if not anchorFrame then return end
+    if not anchorFrame then
+        return
+    end
 
     local frame = AcquireRollFrame(frameIndex)
     PopulateRollFrame(frame, rollID)
@@ -1133,7 +1181,9 @@ function ns.RollFrame.HideRoll(frameIndex, onComplete)
     local frame = rollFramePool[frameIndex]
     if not frame or not frame:IsShown() then
         ReleaseRollFrame(frameIndex)
-        if onComplete then onComplete() end
+        if onComplete then
+            onComplete()
+        end
         return
     end
 
@@ -1141,7 +1191,9 @@ function ns.RollFrame.HideRoll(frameIndex, onComplete)
     ns.RollAnimations.PlayHide(frame, function()
         ReleaseRollFrame(frameIndex)
         LayoutRollFrames()
-        if onComplete then onComplete() end
+        if onComplete then
+            onComplete()
+        end
     end)
 end
 
@@ -1158,7 +1210,9 @@ end
 
 function ns.RollFrame.UpdateTimer(frameIndex, timeLeft, rollTime)
     local frame = rollFramePool[frameIndex]
-    if not frame or not frame:IsShown() then return end
+    if not frame or not frame:IsShown() then
+        return
+    end
 
     local bar = frame.timerBar
     bar:SetMinMaxValues(0, rollTime)
@@ -1173,9 +1227,13 @@ function ns.RollFrame.UpdateTimer(frameIndex, timeLeft, rollTime)
 end
 
 function ns.RollFrame.ApplySettings()
-    if not anchorFrame then return end
+    if not anchorFrame then
+        return
+    end
     local db = ns.Addon.db.profile
-    if not db then return end
+    if not db then
+        return
+    end
 
     local appearance = db.appearance or {}
     local rollFrame = db.rollFrame or {}
@@ -1184,8 +1242,7 @@ function ns.RollFrame.ApplySettings()
     anchorFrame:SetWidth(GetFrameWidth())
 
     local barHeight = rollFrame.timerBarHeight or 12
-    local barTexture = LSM:Fetch("statusbar", rollFrame.timerBarTexture)
-        or "Interface\\TargetingFrame\\UI-StatusBar"
+    local barTexture = LSM:Fetch("statusbar", rollFrame.timerBarTexture) or "Interface\\TargetingFrame\\UI-StatusBar"
     local fontPath, fontSize, fontOutline = GetFont()
     local iconSize = GetRollIconSize()
 
@@ -1236,8 +1293,7 @@ function ns.RollFrame.ApplySettings()
 
             -- Update timer bar background color
             local bgColor = rollFrame.timerBarBackgroundColor or { r = 0.1, g = 0.1, b = 0.1 }
-            frame.timerBar.bg:SetColorTexture(bgColor.r, bgColor.g, bgColor.b,
-                rollFrame.timerBarBackgroundAlpha or 0.5)
+            frame.timerBar.bg:SetColorTexture(bgColor.r, bgColor.g, bgColor.b, rollFrame.timerBarBackgroundAlpha or 0.5)
 
             -- Update fonts
             frame.itemName:SetFont(fontPath, fontSize, fontOutline)
@@ -1263,8 +1319,10 @@ function ns.RollFrame.ApplySettings()
             if frame.iconFrame.ilvl then
                 if appearance.showItemLevel and frame.rollID and frame:IsShown() then
                     local link = GetLootRollItemLink(frame.rollID)
-                    local ilvl = link and C_Item and C_Item.GetDetailedItemLevelInfo and
-                        C_Item.GetDetailedItemLevelInfo(link)
+                    local ilvl = link
+                        and C_Item
+                        and C_Item.GetDetailedItemLevelInfo
+                        and C_Item.GetDetailedItemLevelInfo(link)
                     if ilvl then
                         frame.iconFrame.ilvl:SetText(ilvl)
                         frame.iconFrame.ilvl:Show()
@@ -1282,9 +1340,13 @@ function ns.RollFrame.ApplySettings()
 end
 
 function ns.RollFrame.ResetAnchor()
-    if not anchorFrame then return end
+    if not anchorFrame then
+        return
+    end
     local db = GetRollFrameDB()
-    if not db then return end
+    if not db then
+        return
+    end
     db.point = nil
     db.relativePoint = nil
     db.x = nil
@@ -1294,9 +1356,13 @@ function ns.RollFrame.ResetAnchor()
 end
 
 function ns.RollFrame.CenterHorizontally()
-    if not anchorFrame then return end
+    if not anchorFrame then
+        return
+    end
     local db = GetRollFrameDB()
-    if not db then return end
+    if not db then
+        return
+    end
     local y = db.y or DEFAULT_ROLL_ANCHOR_Y
     -- Normalize anchor to strip any LEFT/RIGHT component so x=0 truly centers
     local newPoint = VerticalComponent(db.point or "TOP")
@@ -1310,9 +1376,13 @@ function ns.RollFrame.CenterHorizontally()
 end
 
 function ns.RollFrame.CenterVertically()
-    if not anchorFrame then return end
+    if not anchorFrame then
+        return
+    end
     local db = GetRollFrameDB()
-    if not db then return end
+    if not db then
+        return
+    end
     local x = db.x or 0
     -- Normalize anchor to CENTER/CENTER so y=0 is truly vertical center
     db.point = "CENTER"

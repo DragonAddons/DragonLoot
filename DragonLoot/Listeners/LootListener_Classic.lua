@@ -11,7 +11,9 @@ local _, ns = ...
 -- Version guard: skip on Retail (Classic listener runs on everything else)
 -------------------------------------------------------------------------------
 
-if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then return end
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+    return
+end
 
 -------------------------------------------------------------------------------
 -- State
@@ -25,10 +27,14 @@ local isLootOpen = false
 -------------------------------------------------------------------------------
 
 local function OnLootOpened(_, autoLoot)
-    if isLootOpen then return end
+    if isLootOpen then
+        return
+    end
 
     local db = ns.Addon.db.profile
-    if not db.lootWindow.enabled then return end
+    if not db.lootWindow.enabled then
+        return
+    end
 
     isLootOpen = true
     ns.SuppressBlizzardLootFrame()

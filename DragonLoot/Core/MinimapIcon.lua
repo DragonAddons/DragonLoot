@@ -38,16 +38,11 @@ local function OnMinimapClick(_, button)
 end
 
 local function OnMinimapTooltipShow(tooltip)
-    tooltip:AddDoubleLine(
-        "DragonLoot",
-        ns.VERSION or "",
-        1, 0.82, 0, 0.6, 0.6, 0.6
-    )
+    tooltip:AddDoubleLine("DragonLoot", ns.VERSION or "", 1, 0.82, 0, 0.6, 0.6, 0.6)
     tooltip:AddLine(" ")
 
     local db = ns.Addon.db.profile
-    local status = db.enabled
-        and (ns.COLOR_GREEN .. L["Enabled"] .. ns.COLOR_RESET)
+    local status = db.enabled and (ns.COLOR_GREEN .. L["Enabled"] .. ns.COLOR_RESET)
         or (ns.COLOR_RED .. L["Disabled"] .. ns.COLOR_RESET)
     tooltip:AddLine(L["Status:"] .. " " .. status)
     tooltip:AddLine(" ")
@@ -82,7 +77,9 @@ end
 
 function ns.MinimapIcon.Toggle()
     local LDBIcon = LibStub("LibDBIcon-1.0", true)
-    if not LDBIcon then return end
+    if not LDBIcon then
+        return
+    end
 
     local db = ns.Addon.db.profile.minimap
     if db.hide then
@@ -96,7 +93,9 @@ end
 
 function ns.MinimapIcon.Refresh()
     local LDBIcon = LibStub("LibDBIcon-1.0", true)
-    if not LDBIcon then return end
+    if not LDBIcon then
+        return
+    end
 
     LDBIcon:Refresh("DragonLoot", ns.Addon.db.profile.minimap)
 end

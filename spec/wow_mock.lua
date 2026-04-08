@@ -58,10 +58,14 @@ WOW_PROJECT_MAINLINE = 1
 
 C_Timer = {
     After = function(_, cb)
-        if cb then cb() end
+        if cb then
+            cb()
+        end
     end,
     NewTicker = function(_, cb)
-        if cb then cb() end
+        if cb then
+            cb()
+        end
         return { Cancel = function() end }
     end,
 }
@@ -86,7 +90,9 @@ function strsplit(delimiter, str, max)
     for part in string.gmatch(str .. delimiter, pattern) do
         count = count + 1
         parts[count] = part
-        if max and count >= max then break end
+        if max and count >= max then
+            break
+        end
     end
     return unpack(parts)
 end
@@ -114,9 +120,15 @@ local function CreateMockFrame()
 
     function frame.SetPoint() end
     function frame.ClearAllPoints() end
-    function frame:Show() self._shown = true end
-    function frame:Hide() self._shown = false end
-    function frame:IsShown() return self._shown end
+    function frame:Show()
+        self._shown = true
+    end
+    function frame:Hide()
+        self._shown = false
+    end
+    function frame:IsShown()
+        return self._shown
+    end
     function frame.SetSize() end
     function frame.SetHeight() end
     function frame.SetWidth() end
@@ -124,13 +136,25 @@ local function CreateMockFrame()
     function frame.EnableMouse() end
     function frame.SetFrameStrata() end
     function frame.SetScript() end
-    function frame.CreateTexture() return {} end
-    function frame.CreateFontString() return { SetFont = function() end, SetText = function() end } end
+    function frame.CreateTexture()
+        return {}
+    end
+    function frame.CreateFontString()
+        return { SetFont = function() end, SetText = function() end }
+    end
 
-    function frame:RegisterEvent(event) self._events[event] = true end
-    function frame:UnregisterEvent(event) self._events[event] = nil end
-    function frame:UnregisterAllEvents() wipe(self._events) end
-    function frame:IsEventRegistered(event) return self._events[event] or false end
+    function frame:RegisterEvent(event)
+        self._events[event] = true
+    end
+    function frame:UnregisterEvent(event)
+        self._events[event] = nil
+    end
+    function frame:UnregisterAllEvents()
+        wipe(self._events)
+    end
+    function frame:IsEventRegistered(event)
+        return self._events[event] or false
+    end
 
     return frame
 end
@@ -148,7 +172,9 @@ _G = _G or {}
 -------------------------------------------------------------------------------
 
 local function DeepCopyTable(src)
-    if type(src) ~= "table" then return src end
+    if type(src) ~= "table" then
+        return src
+    end
     local copy = {}
     for k, v in pairs(src) do
         copy[k] = DeepCopyTable(v)
@@ -185,7 +211,9 @@ local aceAddonMock = {
         function addon:RegisterEvent() end
         function addon:UnregisterEvent() end
         function addon.ScheduleTimer(_, func, _)
-            if func then func() end
+            if func then
+                func()
+            end
             return {}
         end
         function addon.ScheduleRepeatingTimer()
@@ -207,9 +235,15 @@ local aceLocaleMock = {
 }
 
 function LibStub(name)
-    if name == "AceDB-3.0" then return aceDBMock end
-    if name == "AceAddon-3.0" then return aceAddonMock end
-    if name == "AceLocale-3.0" then return aceLocaleMock end
+    if name == "AceDB-3.0" then
+        return aceDBMock
+    end
+    if name == "AceAddon-3.0" then
+        return aceAddonMock
+    end
+    if name == "AceLocale-3.0" then
+        return aceLocaleMock
+    end
     return nil
 end
 
@@ -258,7 +292,9 @@ end
 function M.LoadLifecycle(ns)
     local path = "DragonLoot/Core/Lifecycle.lua"
     local chunk, err = loadfile(path)
-    if not chunk then error("Failed to load " .. path .. ": " .. tostring(err)) end
+    if not chunk then
+        error("Failed to load " .. path .. ": " .. tostring(err))
+    end
     chunk("DragonLoot", ns)
     return ns.LifecycleUtil
 end
@@ -266,7 +302,9 @@ end
 function M.LoadConfig(ns)
     local path = "DragonLoot/Core/Config.lua"
     local chunk, err = loadfile(path)
-    if not chunk then error("Failed to load " .. path .. ": " .. tostring(err)) end
+    if not chunk then
+        error("Failed to load " .. path .. ": " .. tostring(err))
+    end
     chunk("DragonLoot", ns)
 end
 

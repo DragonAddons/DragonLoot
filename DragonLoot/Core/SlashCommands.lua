@@ -22,19 +22,19 @@ local L = ns.L
 -------------------------------------------------------------------------------
 
 local HELP_ENTRIES = {
-    { "",             L["Toggle addon on/off"] },
-    { " config",      L["Open settings panel"] },
-    { " minimap",     L["Toggle minimap icon"] },
-    { " enable",      L["Enable addon"] },
-    { " disable",     L["Disable addon"] },
-    { " reset",       L["Reset loot frame position"] },
-    { " test",        L["Show test loot"] },
-    { " testroll",    L["Show test roll frames"] },
+    { "", L["Toggle addon on/off"] },
+    { " config", L["Open settings panel"] },
+    { " minimap", L["Toggle minimap icon"] },
+    { " enable", L["Enable addon"] },
+    { " disable", L["Disable addon"] },
+    { " reset", L["Reset loot frame position"] },
+    { " test", L["Show test loot"] },
+    { " testroll", L["Show test roll frames"] },
     { " testroll loop", L["Start continuous test roll spawning"] },
     { " testroll stop", L["Stop continuous test roll spawning"] },
-    { " history",     L["Toggle loot history"] },
-    { " status",      L["Show current settings"] },
-    { " help",        L["Show this help"] },
+    { " history", L["Toggle loot history"] },
+    { " status", L["Show current settings"] },
+    { " help", L["Show this help"] },
 }
 
 local function PrintHelp()
@@ -53,8 +53,7 @@ local function PrintStatus()
 
     print(ns.COLOR_GOLD .. L["--- DragonLoot Status ---"] .. ns.COLOR_RESET)
 
-    local enabledStr = db.enabled
-        and (ns.COLOR_GREEN .. L["Yes"] .. ns.COLOR_RESET)
+    local enabledStr = db.enabled and (ns.COLOR_GREEN .. L["Yes"] .. ns.COLOR_RESET)
         or (ns.COLOR_RED .. L["No"] .. ns.COLOR_RESET)
     print("  " .. L["Enabled:"] .. " " .. enabledStr)
 
@@ -93,20 +92,16 @@ function ns.HandleSlashCommand(input)
 
     if cmd == "" then
         PrintHelp()
-
     elseif cmd == "config" or cmd == "options" or cmd == "settings" then
         if ns.ToggleConfigWindow then
             ns.ToggleConfigWindow()
         end
-
     elseif cmd == "minimap" then
         if ns.MinimapIcon.Toggle then
             ns.MinimapIcon.Toggle()
         end
-
     elseif cmd == "toggle" then
         ToggleAddon()
-
     elseif cmd == "enable" then
         local db = ns.Addon.db.profile
         if not db.enabled then
@@ -114,7 +109,6 @@ function ns.HandleSlashCommand(input)
             ns.Addon:OnEnable()
         end
         ns.Print(L["Addon enabled"])
-
     elseif cmd == "disable" then
         local db = ns.Addon.db.profile
         if db.enabled then
@@ -122,7 +116,6 @@ function ns.HandleSlashCommand(input)
             ns.Addon:OnDisable()
         end
         ns.Print(L["Addon disabled"])
-
     elseif cmd == "reset" then
         if ns.LootFrame.ResetAnchor then
             ns.LootFrame.ResetAnchor()
@@ -130,48 +123,40 @@ function ns.HandleSlashCommand(input)
         else
             ns.Print(L["Loot frame not yet available."])
         end
-
     elseif cmd == "test" then
         if ns.LootFrame.ShowTestLoot then
             ns.LootFrame.ShowTestLoot()
         else
             ns.Print(L["Test loot not yet available."])
         end
-
     elseif cmd == "testroll loop" then
         if ns.RollFrame.ShowTestRollLoop then
             ns.RollFrame.ShowTestRollLoop()
         else
             ns.Print(L["Test roll not yet available."])
         end
-
     elseif cmd == "testroll stop" then
         if ns.RollFrame.StopTestRollLoop then
             ns.RollFrame.StopTestRollLoop()
         else
             ns.Print(L["Test roll not yet available."])
         end
-
     elseif cmd == "testroll" then
         if ns.RollFrame.ShowTestRoll then
             ns.RollFrame.ShowTestRoll()
         else
             ns.Print(L["Test roll not yet available."])
         end
-
     elseif cmd == "history" then
         if ns.HistoryFrame.Toggle then
             ns.HistoryFrame.Toggle()
         else
             ns.Print(L["Loot history not yet available."])
         end
-
     elseif cmd == "status" then
         PrintStatus()
-
     elseif cmd == "help" or cmd == "?" then
         PrintHelp()
-
     else
         ns.Print(L["Unknown command:"] .. " " .. ns.COLOR_WHITE .. cmd .. ns.COLOR_RESET)
         PrintHelp()

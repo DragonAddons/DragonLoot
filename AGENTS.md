@@ -287,6 +287,50 @@ DragonLoot embeds Ace3 via `Libs/embeds.xml`. The full Ace3 library set is avail
 
 ---
 
+## Development Commands
+
+Development tasks are managed via [just](https://github.com/casey/just) (justfile) and [mise](https://mise.jdx.dev/) (.mise.toml).
+
+### Prerequisites
+
+```sh
+# Install mise (if not already installed)
+# See https://mise.jdx.dev/getting-started.html
+
+# Install all project tools (Lua 5.1, StyLua)
+mise install
+```
+
+### Just Recipes
+
+| Command | Description |
+|---------|-------------|
+| `just` | List all available recipes |
+| `just test` | Run busted test suite |
+| `just lint` | Run luacheck linter |
+| `just fmt` | Format Lua files with StyLua |
+| `just fmt-check` | Check formatting without modifying files |
+| `just check` | Run lint + test |
+
+### Mise Tasks
+
+| Command | Description |
+|---------|-------------|
+| `mise run test` | Run `busted --verbose` |
+| `mise run lint` | Run `luacheck .` |
+
+### Code Style
+
+Enforced by `.stylua.toml`:
+
+- 120-character column width
+- 4-space indentation (no tabs)
+- Double quotes preferred
+- Unix line endings
+- Always parenthesized function calls
+
+---
+
 ## Known Gotchas
 
 1. **GetItemInfo may return nil** on first call if item not cached - handle with retry timers

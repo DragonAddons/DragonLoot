@@ -25,7 +25,6 @@ local tostring = tostring
 local L = ns.L
 local DU = ns.DisplayUtils
 
-
 -------------------------------------------------------------------------------
 -- Constants
 -------------------------------------------------------------------------------
@@ -111,17 +110,31 @@ local function ApplyLayoutOffsets(frame)
     -- Scroll frame and scrollbar insets
     if scrollFrame then
         scrollFrame:ClearAllPoints()
-        scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT",
-            padding + borderSize, -(TITLE_BAR_HEIGHT + padding + borderSize))
-        scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
-            -(padding + SCROLLBAR_WIDTH + SCROLLBAR_GAP + borderSize), padding + borderSize)
+        scrollFrame:SetPoint(
+            "TOPLEFT",
+            frame,
+            "TOPLEFT",
+            padding + borderSize,
+            -(TITLE_BAR_HEIGHT + padding + borderSize)
+        )
+        scrollFrame:SetPoint(
+            "BOTTOMRIGHT",
+            frame,
+            "BOTTOMRIGHT",
+            -(padding + SCROLLBAR_WIDTH + SCROLLBAR_GAP + borderSize),
+            padding + borderSize
+        )
     end
     if scrollBar then
         scrollBar:ClearAllPoints()
-        scrollBar:SetPoint("TOPRIGHT", frame, "TOPRIGHT",
-            -(padding + borderSize), -(TITLE_BAR_HEIGHT + padding + borderSize))
-        scrollBar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT",
-            -(padding + borderSize), padding + borderSize)
+        scrollBar:SetPoint(
+            "TOPRIGHT",
+            frame,
+            "TOPRIGHT",
+            -(padding + borderSize),
+            -(TITLE_BAR_HEIGHT + padding + borderSize)
+        )
+        scrollBar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -(padding + borderSize), padding + borderSize)
     end
 end
 
@@ -150,9 +163,13 @@ end
 -------------------------------------------------------------------------------
 
 local function FormatTimeAgo(timestamp)
-    if not timestamp then return "" end
+    if not timestamp then
+        return ""
+    end
     local elapsed = GetTime() - timestamp
-    if elapsed < 0 then elapsed = 0 end
+    if elapsed < 0 then
+        elapsed = 0
+    end
 
     if elapsed < 60 then
         return string_format(L["%ds ago"], math_floor(elapsed))
@@ -321,7 +338,9 @@ local function AcquireEntry()
 end
 
 local function ReleaseEntry(entry)
-    if entry._isPooled then return end
+    if entry._isPooled then
+        return
+    end
     entry._isPooled = true
     ReleaseEntryDetails(entry)
     entry:Hide()
@@ -335,7 +354,9 @@ local function ReleaseEntry(entry)
     entry.winnerName:SetText("")
     entry.rollInfo:SetText("")
     entry.timeText:SetText("")
-    if entry.expandIndicator then entry.expandIndicator:Hide() end
+    if entry.expandIndicator then
+        entry.expandIndicator:Hide()
+    end
     entry:SetScript("OnClick", nil)
     entry:SetScript("OnEnter", nil)
     entry:SetScript("OnLeave", nil)
@@ -366,11 +387,12 @@ local function OnEntryLeave()
 end
 
 local function OnEntryClick(self, _button)
-    if not self.itemLink then return end
+    if not self.itemLink then
+        return
+    end
 
     local db = ns.Addon.db.profile
-    local canExpand = db.history.showRollDetails and self._rollResults
-        and #self._rollResults > 0
+    local canExpand = db.history.showRollDetails and self._rollResults and #self._rollResults > 0
 
     -- Shift-click always inserts item link
     if IsShiftKeyDown() then
@@ -416,8 +438,7 @@ local function PopulateEntryDetails(entry, rollResults)
 
     for idx, result in ipairs(rollResults) do
         local row = AcquireDetailRow(entry.detailContainer)
-        row:SetPoint("TOPLEFT", entry.detailContainer, "TOPLEFT", 0,
-            -((idx - 1) * DETAIL_ROW_HEIGHT))
+        row:SetPoint("TOPLEFT", entry.detailContainer, "TOPLEFT", 0, -((idx - 1) * DETAIL_ROW_HEIGHT))
         row:SetPoint("RIGHT", entry.detailContainer, "RIGHT", 0, 0)
 
         -- Font
@@ -549,11 +570,15 @@ end
 -------------------------------------------------------------------------------
 
 local function UpdateScrollBar()
-    if not scrollBar or not scrollFrame then return end
+    if not scrollBar or not scrollFrame then
+        return
+    end
     local contentHeight = scrollChild:GetHeight()
     local visibleHeight = scrollFrame:GetHeight()
     local maxScroll = contentHeight - visibleHeight
-    if maxScroll < 0 then maxScroll = 0 end
+    if maxScroll < 0 then
+        maxScroll = 0
+    end
 
     scrollBar:SetMinMaxValues(0, maxScroll)
     if maxScroll == 0 then
@@ -568,7 +593,9 @@ end
 -------------------------------------------------------------------------------
 
 RefreshHistory = function()
-    if not containerFrame or not containerFrame:IsShown() then return end
+    if not containerFrame or not containerFrame:IsShown() then
+        return
+    end
 
     ReleaseAllEntries()
 
@@ -587,10 +614,8 @@ RefreshHistory = function()
         -- Variable height: base + expanded detail rows
         local thisHeight = entryHeight
         local entryKey = GetEntryKey(data)
-        if db.history.showRollDetails and expandedEntries[entryKey]
-            and data.rollResults and #data.rollResults > 0 then
-            thisHeight = entryHeight + (#data.rollResults * DETAIL_ROW_HEIGHT)
-                + DETAIL_PADDING
+        if db.history.showRollDetails and expandedEntries[entryKey] and data.rollResults and #data.rollResults > 0 then
+            thisHeight = entryHeight + (#data.rollResults * DETAIL_ROW_HEIGHT) + DETAIL_PADDING
         end
         entry:SetHeight(thisHeight)
         yOffset = yOffset + thisHeight + entrySpacing
@@ -598,7 +623,9 @@ RefreshHistory = function()
 
     -- Resize scroll child to fit all entries (use accumulated yOffset)
     local totalHeight = yOffset
-    if totalHeight < 1 then totalHeight = 1 end
+    if totalHeight < 1 then
+        totalHeight = 1
+    end
     scrollChild:SetHeight(totalHeight)
 
     UpdateScrollBar()
@@ -609,9 +636,13 @@ end
 -------------------------------------------------------------------------------
 
 local function SaveFramePosition()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local db = ns.Addon.db.profile
-    if not db.history then return end
+    if not db.history then
+        return
+    end
     local point, _, relativePoint, x, y = containerFrame:GetPoint()
     if point then
         db.history.point = point
@@ -622,13 +653,22 @@ local function SaveFramePosition()
 end
 
 local function RestoreFramePosition()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local db = ns.Addon.db.profile
-    if not db.history then return end
+    if not db.history then
+        return
+    end
     containerFrame:ClearAllPoints()
     if db.history.point then
-        containerFrame:SetPoint(db.history.point, UIParent, db.history.relativePoint,
-            db.history.x or 0, db.history.y or 0)
+        containerFrame:SetPoint(
+            db.history.point,
+            UIParent,
+            db.history.relativePoint,
+            db.history.x or 0,
+            db.history.y or 0
+        )
     else
         containerFrame:SetPoint("CENTER", UIParent, "CENTER", DEFAULT_HISTORY_X_OFFSET, 0)
     end
@@ -653,14 +693,12 @@ local function CreateTitleBar(parent)
     titleBar.text:SetTextColor(1, 0.82, 0)
 
     -- Close button
-    local ok, closeBtn = pcall(CreateFrame, "Button", nil, titleBar,
-        "UIPanelCloseButtonNoScripts")
+    local ok, closeBtn = pcall(CreateFrame, "Button", nil, titleBar, "UIPanelCloseButtonNoScripts")
     if not ok or not closeBtn then
         closeBtn = CreateFrame("Button", nil, titleBar)
         closeBtn:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
         closeBtn:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
-        closeBtn:SetHighlightTexture(
-            "Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
+        closeBtn:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
     end
     closeBtn:SetSize(24, 24)
     closeBtn:SetPoint("TOPRIGHT", titleBar, "TOPRIGHT", -2, -2)
@@ -777,7 +815,9 @@ local function CreateContainerFrame()
 
     frame:SetScript("OnDragStart", function(self)
         local db = ns.Addon.db.profile
-        if db.history.lock then return end
+        if db.history.lock then
+            return
+        end
         self:StartMoving()
     end)
 
@@ -796,9 +836,13 @@ end
 local timeRefreshHandle
 
 local function StartTimeRefresh()
-    if timeRefreshHandle then return end
+    if timeRefreshHandle then
+        return
+    end
     timeRefreshHandle = ns.Addon:ScheduleRepeatingTimer(function()
-        if not containerFrame or not containerFrame:IsShown() then return end
+        if not containerFrame or not containerFrame:IsShown() then
+            return
+        end
         for _, entry in ipairs(activeEntries) do
             if entry.timestampValue then
                 entry.timeText:SetText(FormatTimeAgo(entry.timestampValue))
@@ -819,7 +863,9 @@ end
 -------------------------------------------------------------------------------
 
 function ns.HistoryFrame.Initialize()
-    if containerFrame then return end
+    if containerFrame then
+        return
+    end
     containerFrame = CreateContainerFrame()
     scrollFrame, scrollChild, scrollBar = CreateScrollComponents(containerFrame)
     ApplyLayoutOffsets(containerFrame)
@@ -830,29 +876,39 @@ end
 
 function ns.HistoryFrame.Shutdown()
     StopTimeRefresh()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     ReleaseAllEntries()
     containerFrame:Hide()
     ns.DebugPrint("HistoryFrame shut down")
 end
 
 function ns.HistoryFrame.Show()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local db = ns.Addon.db.profile
-    if not db.history.enabled then return end
+    if not db.history.enabled then
+        return
+    end
     containerFrame:Show()
     RefreshHistory()
     StartTimeRefresh()
 end
 
 function ns.HistoryFrame.Hide()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     StopTimeRefresh()
     containerFrame:Hide()
 end
 
 function ns.HistoryFrame.Toggle()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     if containerFrame:IsShown() then
         ns.HistoryFrame.Hide()
     else
@@ -865,7 +921,9 @@ function ns.HistoryFrame.Refresh()
 end
 
 function ns.HistoryFrame.ApplySettings()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
 
     -- Update backdrop
     ApplyBackdrop(containerFrame)
@@ -965,7 +1023,9 @@ function ns.HistoryFrame.SetEntries(entries)
     -- Replace all data
     wipe(ns.historyData)
     for i, entry in ipairs(entries) do
-        if i > maxEntries then break end
+        if i > maxEntries then
+            break
+        end
         ns.historyData[i] = entry
     end
 

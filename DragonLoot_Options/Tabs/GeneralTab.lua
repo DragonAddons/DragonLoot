@@ -18,7 +18,7 @@ local math_abs = math.abs
 -- DragonWidgets references
 -------------------------------------------------------------------------------
 
-local W  = ns.DW.Widgets
+local W = ns.DW.Widgets
 local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
@@ -47,7 +47,9 @@ local function CreateContent(parent)
     local enableToggle = W.CreateToggle(content, {
         label = L["Enable DragonLoot"],
         tooltip = L["Enable or disable the DragonLoot addon"],
-        get = function() return db.profile.enabled end,
+        get = function()
+            return db.profile.enabled
+        end,
         set = function(value)
             db.profile.enabled = value
             if value then
@@ -63,7 +65,9 @@ local function CreateContent(parent)
     local minimapToggle = W.CreateToggle(content, {
         label = L["Show Minimap Icon"],
         tooltip = L["Show or hide the minimap button"],
-        get = function() return not db.profile.minimap.hide end,
+        get = function()
+            return not db.profile.minimap.hide
+        end,
         set = function(value)
             db.profile.minimap.hide = not value
             if dlns.MinimapIcon and dlns.MinimapIcon.Refresh then
@@ -77,7 +81,9 @@ local function CreateContent(parent)
     local debugToggle = W.CreateToggle(content, {
         label = L["Debug Mode"],
         tooltip = L["Enable verbose debug output in chat"],
-        get = function() return db.profile.debug end,
+        get = function()
+            return db.profile.debug
+        end,
         set = function(value)
             db.profile.debug = value
         end,
