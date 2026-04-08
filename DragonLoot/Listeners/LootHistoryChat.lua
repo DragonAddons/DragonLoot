@@ -58,7 +58,9 @@ local function EscapeLuaMagic(str)
 end
 
 local function BuildPattern(globalString)
-    if not globalString then return nil end
+    if not globalString then
+        return nil
+    end
     local pattern = EscapeLuaMagic(globalString)
     pattern = pattern:gsub("%%%%s", "(.+)")
     pattern = pattern:gsub("%%%%d", "(%%d+)")
@@ -124,10 +126,14 @@ local function ScheduleQualityRetry(entry, itemLink)
     local retryToken = entry.qualityRetryToken
 
     LifecycleUtil.After(lifecycleState, QUALITY_RETRY_DELAY, function()
-        if entry.qualityRetryToken ~= retryToken then return end
+        if entry.qualityRetryToken ~= retryToken then
+            return
+        end
 
         local _, _, quality = GetItemInfo(itemLink)
-        if not quality then return end
+        if not quality then
+            return
+        end
 
         entry.quality = quality
         entry.qualityRetryToken = nil
@@ -146,17 +152,23 @@ end
 
 local function AddLootEntry(playerName, playerClass, itemLink, _)
     local db = ns.Addon.db
-    if not db or not db.profile then return end
+    if not db or not db.profile then
+        return
+    end
 
     -- Config checks
-    if not db.profile.history.trackDirectLoot then return end
+    if not db.profile.history.trackDirectLoot then
+        return
+    end
 
     local icon = GetItemTexture(itemLink)
     local _, _, quality = GetItemInfo(itemLink)
 
     -- Quality filter (only for direct loot, rolled items are always tracked)
     local minQuality = db.profile.history.minQuality or 2
-    if quality and quality < minQuality then return end
+    if quality and quality < minQuality then
+        return
+    end
 
     local entry = {
         itemLink = itemLink,
@@ -259,7 +271,9 @@ local function ProcessLootMessage(message, _, guid)
         end
     end
 
-    if not itemLink then return end
+    if not itemLink then
+        return
+    end
 
     -- Dedup check
     CleanRecentEntries()

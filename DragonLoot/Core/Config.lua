@@ -68,7 +68,7 @@ local defaults = {
             autoShow = false,
             lock = false,
             trackDirectLoot = true,
-            minQuality = 2,  -- Uncommon
+            minQuality = 2, -- Uncommon
             entrySpacing = 2,
             contentPadding = 6,
             showRollDetails = true,
@@ -117,11 +117,10 @@ local defaults = {
 
         autoLoot = {
             enabled = false,
-            minQuality = 4,  -- Epic
-            whitelist = {},   -- { [itemID] = true }
-            blacklist = {},   -- { [itemID] = true }
+            minQuality = 4, -- Epic
+            whitelist = {}, -- { [itemID] = true }
+            blacklist = {}, -- { [itemID] = true }
         },
-
     },
 }
 
@@ -132,7 +131,9 @@ local defaults = {
 local CURRENT_SCHEMA = 2
 
 local function DeepCopyValue(value)
-    if type(value) ~= "table" then return value end
+    if type(value) ~= "table" then
+        return value
+    end
     local copy = {}
     for k, v in pairs(value) do
         copy[k] = DeepCopyValue(v)
@@ -218,9 +219,15 @@ end
 -------------------------------------------------------------------------------
 
 local function NotifyAppearanceChange()
-    if ns.LootFrame and ns.LootFrame.ApplySettings then ns.LootFrame.ApplySettings() end
-    if ns.RollManager and ns.RollManager.ApplySettings then ns.RollManager.ApplySettings() end
-    if ns.HistoryFrame and ns.HistoryFrame.ApplySettings then ns.HistoryFrame.ApplySettings() end
+    if ns.LootFrame and ns.LootFrame.ApplySettings then
+        ns.LootFrame.ApplySettings()
+    end
+    if ns.RollManager and ns.RollManager.ApplySettings then
+        ns.RollManager.ApplySettings()
+    end
+    if ns.HistoryFrame and ns.HistoryFrame.ApplySettings then
+        ns.HistoryFrame.ApplySettings()
+    end
 end
 
 -------------------------------------------------------------------------------

@@ -40,7 +40,9 @@ ns.LootAnimations.isClosing = false
 --- Restore the frame's anchor to the saved DB position so the next open starts correctly.
 local function RestoreDbAnchor(frame)
     local db = ns.Addon.db and ns.Addon.db.profile.lootWindow
-    if not db then return end
+    if not db then
+        return
+    end
     frame:ClearAllPoints()
     if db.point then
         frame:SetPoint(db.point, UIParent, db.relativePoint, db.x or 0, db.y or 0)
@@ -99,15 +101,16 @@ function ns.LootAnimations.PlayClose(frame, onFinished)
 
     if not db.animation.enabled then
         ns.LootAnimations.isClosing = false
-        if onFinished then onFinished() end
+        if onFinished then
+            onFinished()
+        end
         return
     end
 
     local duration = db.animation.closeDuration or 0.5
 
     -- Snapshot where the frame visually is RIGHT NOW (mid-open-animation or idle).
-    local curAlpha, curScale, curPoint, curRelTo, curRelPoint, curX, curY =
-        DU.CaptureVisualState(frame)
+    local curAlpha, curScale, curPoint, curRelTo, curRelPoint, curX, curY = DU.CaptureVisualState(frame)
 
     -- StopAll restores the frame to its pre-animation state (e.g. alpha=0 if the
     -- open animation was still running). We immediately overwrite with the snapshot
@@ -129,7 +132,9 @@ function ns.LootAnimations.PlayClose(frame, onFinished)
             RestoreDbAnchor(frame)
 
             ns.LootAnimations.isClosing = false
-            if onFinished then onFinished() end
+            if onFinished then
+                onFinished()
+            end
         end,
     })
     if not ok then
@@ -139,7 +144,9 @@ function ns.LootAnimations.PlayClose(frame, onFinished)
         frame:Hide()
         RestoreDbAnchor(frame)
         ns.LootAnimations.isClosing = false
-        if onFinished then onFinished() end
+        if onFinished then
+            onFinished()
+        end
     end
 end
 

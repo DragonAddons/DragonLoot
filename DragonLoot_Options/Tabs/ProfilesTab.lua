@@ -23,7 +23,7 @@ local NO = NO
 -- DragonWidgets references
 -------------------------------------------------------------------------------
 
-local W  = ns.DW.Widgets
+local W = ns.DW.Widgets
 local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
@@ -56,7 +56,9 @@ StaticPopupDialogs["DRAGONLOOT_RESET_PROFILE"] = {
     button2 = NO,
     OnAccept = function()
         local dl = ns.dlns
-        if not dl or not dl.Addon or not dl.Addon.db then return end
+        if not dl or not dl.Addon or not dl.Addon.db then
+            return
+        end
         dl.Addon.db:ResetProfile()
     end,
     timeout = 0,
@@ -66,14 +68,16 @@ StaticPopupDialogs["DRAGONLOOT_RESET_PROFILE"] = {
 }
 
 StaticPopupDialogs["DRAGONLOOT_DELETE_PROFILE"] = {
-    text = L["Are you sure you want to delete profile \"%s\"?"],
+    text = L['Are you sure you want to delete profile "%s"?'],
     button1 = YES,
     button2 = NO,
     OnAccept = function()
         if pendingDeleteProfile and pendingDeleteDb then
             pendingDeleteDb:DeleteProfile(pendingDeleteProfile)
             pendingDeleteProfile = nil
-            if pendingDeleteRefresh then pendingDeleteRefresh() end
+            if pendingDeleteRefresh then
+                pendingDeleteRefresh()
+            end
         end
     end,
     timeout = 0,
@@ -124,8 +128,12 @@ local function CreateCurrentProfileSection(parent, db, yOffset, refreshAll)
 
     local activeDropdown = W.CreateDropdown(content, {
         label = L["Active Profile"],
-        values = function() return GetProfileValues(db) end,
-        get = function() return db:GetCurrentProfile() end,
+        values = function()
+            return GetProfileValues(db)
+        end,
+        get = function()
+            return db:GetCurrentProfile()
+        end,
         set = function(value)
             db:SetProfile(value)
             refreshAll()
@@ -148,7 +156,9 @@ local function CreateCurrentProfileSection(parent, db, yOffset, refreshAll)
         tooltip = L["Create a new profile with the entered name and switch to it"],
         onClick = function()
             local name = newProfileInput:GetValue()
-            if not name or name == "" then return end
+            if not name or name == "" then
+                return
+            end
             db:SetProfile(name)
             newProfileInput:SetValue("")
             refreshAll()
@@ -177,8 +187,12 @@ local function CreateActionsSection(parent, db, yOffset, refreshAll)
     -- Copy From dropdown
     local copyDropdown = W.CreateDropdown(content, {
         label = L["Copy From"],
-        values = function() return GetOtherProfileValues(db) end,
-        get = function() return nil end,
+        values = function()
+            return GetOtherProfileValues(db)
+        end,
+        get = function()
+            return nil
+        end,
         set = function(value)
             db:CopyProfile(value)
             refreshAll()
@@ -201,8 +215,12 @@ local function CreateActionsSection(parent, db, yOffset, refreshAll)
     -- Delete Profile dropdown
     local deleteDropdown = W.CreateDropdown(content, {
         label = L["Delete Profile"],
-        values = function() return GetOtherProfileValues(db) end,
-        get = function() return nil end,
+        values = function()
+            return GetOtherProfileValues(db)
+        end,
+        get = function()
+            return nil
+        end,
         set = function(value)
             pendingDeleteProfile = value
             pendingDeleteDb = db
@@ -231,9 +249,15 @@ local function CreateContent(parent)
     local activeDropdown, copyDropdown, deleteDropdown
 
     local function RefreshProfileWidgets()
-        if activeDropdown then activeDropdown:Refresh() end
-        if copyDropdown then copyDropdown:Refresh() end
-        if deleteDropdown then deleteDropdown:Refresh() end
+        if activeDropdown then
+            activeDropdown:Refresh()
+        end
+        if copyDropdown then
+            copyDropdown:Refresh()
+        end
+        if deleteDropdown then
+            deleteDropdown:Refresh()
+        end
     end
 
     -- Profiles overview section
@@ -241,23 +265,20 @@ local function CreateContent(parent)
     local profilesContent = profilesSection.content
     local profilesY = -LC.SECTION_PADDING_TOP
 
-    local desc = W.CreateDescription(profilesContent,
-        L["Profiles allow you to save different settings configurations. You can switch between"
-        .. " profiles, copy settings from another profile, or reset to defaults."])
+    local desc = W.CreateDescription(
+        profilesContent,
+        L["Profiles allow you to save different settings configurations. You can switch between" .. " profiles, copy settings from another profile, or reset to defaults."]
+    )
     profilesY = LC.AnchorWidget(desc, profilesContent, profilesY) - LC.SPACING_BETWEEN_WIDGETS
 
     profilesSection:SetContentHeight(math_abs(profilesY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(profilesSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
 
     -- Current Profile section
-    yOffset, activeDropdown = CreateCurrentProfileSection(
-        parent, db, yOffset, RefreshProfileWidgets
-    )
+    yOffset, activeDropdown = CreateCurrentProfileSection(parent, db, yOffset, RefreshProfileWidgets)
 
     -- Profile Actions section
-    yOffset, copyDropdown, deleteDropdown = CreateActionsSection(
-        parent, db, yOffset, RefreshProfileWidgets
-    )
+    yOffset, copyDropdown, deleteDropdown = CreateActionsSection(parent, db, yOffset, RefreshProfileWidgets)
 
     parent:SetHeight(math_abs(yOffset) + LC.PADDING_BOTTOM)
 end

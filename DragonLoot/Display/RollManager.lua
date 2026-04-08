@@ -80,14 +80,14 @@ end
 -------------------------------------------------------------------------------
 
 local addon
-local activeRolls = {}      -- rollID -> { rollID, rollTime, startTime, frameIndex }
-local waitingRolls = {}     -- ordered list of { rollID, rollTime }
-local usedFrames = {}       -- frameIndex -> true/false
-local notifiedRolls = {}    -- rollID -> true (prevent duplicate winner notifications)
+local activeRolls = {} -- rollID -> { rollID, rollTime, startTime, frameIndex }
+local waitingRolls = {} -- ordered list of { rollID, rollTime }
+local usedFrames = {} -- frameIndex -> true/false
+local notifiedRolls = {} -- rollID -> true (prevent duplicate winner notifications)
 local activeRollCount = 0
 local timerHandle
 local lifecycleState = LifecycleUtil.CreateState()
-local HideAfterVote         -- forward declaration; defined after helpers
+local HideAfterVote -- forward declaration; defined after helpers
 
 -------------------------------------------------------------------------------
 -- StaticPopup for roll confirmations (shared by Retail and Classic listeners)
@@ -98,7 +98,9 @@ StaticPopupDialogs["DRAGONLOOT_CONFIRM_LOOT_ROLL"] = {
     button1 = YES,
     button2 = NO,
     OnAccept = function(self)
-        if not self.data then return end
+        if not self.data then
+            return
+        end
         ConfirmLootRoll(self.data.rollID, self.data.rollType)
         -- Hide frame after confirming BoP roll if configured
         local db = ns.Addon.db
@@ -157,8 +159,12 @@ local function OnTimerTick()
 end
 
 local function StartTimer()
-    if timerHandle then return end
-    if not addon then return end
+    if timerHandle then
+        return
+    end
+    if not addon then
+        return
+    end
     timerHandle = addon:ScheduleRepeatingTimer(OnTimerTick, TIMER_INTERVAL)
 end
 
@@ -168,7 +174,9 @@ end
 
 local function IsInWaitingQueue(rollID)
     for _, entry in ipairs(waitingRolls) do
-        if entry.rollID == rollID then return true end
+        if entry.rollID == rollID then
+            return true
+        end
     end
     return false
 end
@@ -188,14 +196,22 @@ end
 -------------------------------------------------------------------------------
 
 local function PromoteFromQueue()
-    if #waitingRolls == 0 then return end
-    if activeRollCount >= MAX_VISIBLE_ROLLS then return end
+    if #waitingRolls == 0 then
+        return
+    end
+    if activeRollCount >= MAX_VISIBLE_ROLLS then
+        return
+    end
 
     local entry = table.remove(waitingRolls, 1)
-    if not entry then return end
+    if not entry then
+        return
+    end
 
     local frameIndex = AcquireFrameIndex()
-    if not frameIndex then return end
+    if not frameIndex then
+        return
+    end
 
     activeRolls[entry.rollID] = {
         rollID = entry.rollID,
@@ -229,26 +245,38 @@ end
 -------------------------------------------------------------------------------
 
 local function SendRollWonNotification(rollID, winnerName, _, rollType, rollValue)
-    if notifiedRolls[rollID] then return end
+    if notifiedRolls[rollID] then
+        return
+    end
     notifiedRolls[rollID] = true
 
     local roll = activeRolls[rollID]
-    if not roll or not roll.itemName then return end
+    if not roll or not roll.itemName then
+        return
+    end
 
     local db = ns.Addon.db.profile
-    if not db.rollNotifications.showRollWon then return end
+    if not db.rollNotifications.showRollWon then
+        return
+    end
 
     local playerName = UnitName("player")
     local isSelf = (winnerName == playerName)
 
     -- Check config: skip group wins if not enabled
-    if not isSelf and not db.rollNotifications.showGroupWins then return end
+    if not isSelf and not db.rollNotifications.showGroupWins then
+        return
+    end
 
     -- Instance gating
-    if not IsInstanceAllowed(db.rollNotifications) then return end
+    if not IsInstanceAllowed(db.rollNotifications) then
+        return
+    end
 
     -- Quality filter
-    if roll.itemQuality and roll.itemQuality < db.rollNotifications.minQuality then return end
+    if roll.itemQuality and roll.itemQuality < db.rollNotifications.minQuality then
+        return
+    end
 
     local rollTypeName = ns.RollTypeNames[rollType] or L["Unknown"]
 
@@ -268,8 +296,10 @@ local function SendRollWonNotification(rollID, winnerName, _, rollType, rollValu
         timestamp = GetTime(),
     })
     ns.DebugPrint(
-        "Sent DRAGONTOAST_QUEUE_TOAST (roll won) for " .. (roll.itemName or "unknown")
-        .. " won by " .. (winnerName or "unknown")
+        "Sent DRAGONTOAST_QUEUE_TOAST (roll won) for "
+            .. (roll.itemName or "unknown")
+            .. " won by "
+            .. (winnerName or "unknown")
     )
 end
 
@@ -277,25 +307,45 @@ end
 -- DragonToast integration - individual roll result notification
 -------------------------------------------------------------------------------
 
-function ns.RollManager.SendRollResultNotification(itemLink, itemName, itemQuality, itemIcon,
-                                                    playerName, _, rollType, rollValue)
+function ns.RollManager.SendRollResultNotification(
+    itemLink,
+    itemName,
+    itemQuality,
+    itemIcon,
+    playerName,
+    _,
+    rollType,
+    rollValue
+)
     local db = ns.Addon.db.profile
-    if not db.rollNotifications.showRollResults then return end
+    if not db.rollNotifications.showRollResults then
+        return
+    end
 
     -- Instance gating
-    if not IsInstanceAllowed(db.rollNotifications) then return end
+    if not IsInstanceAllowed(db.rollNotifications) then
+        return
+    end
 
     -- Quality filter
-    if itemQuality and itemQuality < db.rollNotifications.minQuality then return end
+    if itemQuality and itemQuality < db.rollNotifications.minQuality then
+        return
+    end
 
     -- Self vs group filter
     local myName = UnitName("player")
     local isSelf = (playerName == myName)
-    if isSelf and not db.rollNotifications.showSelfRolls then return end
-    if not isSelf and not db.rollNotifications.showGroupRolls then return end
+    if isSelf and not db.rollNotifications.showSelfRolls then
+        return
+    end
+    if not isSelf and not db.rollNotifications.showGroupRolls then
+        return
+    end
 
     -- Skip passes - nobody wants a toast for "Player passed"
-    if rollType == ROLL_TYPE_PASS then return end
+    if rollType == ROLL_TYPE_PASS then
+        return
+    end
 
     local rollTypeName = ns.RollTypeNames[rollType] or L["Unknown"]
     local itemID = itemLink and tonumber(itemLink:match("item:(%d+)"))
@@ -323,7 +373,9 @@ function ns.RollManager.Initialize(addonRef)
     addon = addonRef or ns.Addon
 
     local db = addon.db and addon.db.profile
-    if not db or not db.rollFrame or not db.rollFrame.enabled then return end
+    if not db or not db.rollFrame or not db.rollFrame.enabled then
+        return
+    end
 
     LifecycleUtil.Activate(lifecycleState)
 
@@ -361,7 +413,9 @@ end
 
 function ns.RollManager.StartRoll(rollID, rollTime)
     -- Guard against duplicate events
-    if activeRolls[rollID] or IsInWaitingQueue(rollID) then return end
+    if activeRolls[rollID] or IsInWaitingQueue(rollID) then
+        return
+    end
 
     -- Cache item data now while it is still available
     local texture, name, count, quality = GetLootRollItemInfo(rollID)
@@ -369,7 +423,9 @@ function ns.RollManager.StartRoll(rollID, rollTime)
 
     if activeRollCount < MAX_VISIBLE_ROLLS then
         local frameIndex = AcquireFrameIndex()
-        if not frameIndex then return end
+        if not frameIndex then
+            return
+        end
 
         activeRolls[rollID] = {
             rollID = rollID,
@@ -400,7 +456,9 @@ function ns.RollManager.StartRoll(rollID, rollTime)
 end
 
 function ns.RollManager.RecoverRoll(rollID, totalDuration, timeLeft)
-    if activeRolls[rollID] or IsInWaitingQueue(rollID) then return end
+    if activeRolls[rollID] or IsInWaitingQueue(rollID) then
+        return
+    end
 
     -- Cache item data now while it is still available
     local texture, name, count, quality = GetLootRollItemInfo(rollID)
@@ -453,11 +511,16 @@ function ns.RollManager.CancelRoll(rollID)
             end
 
             -- Defer frame release and queue promotion until hide animation completes
-            ns.RollFrame.HideRoll(frameIndex, LifecycleUtil.Guard(lifecycleState, lifecycleToken, function()
-                if activeRolls[rollID] then return end
-                ReleaseFrameIndex(frameIndex)
-                PromoteFromQueue()
-            end))
+            ns.RollFrame.HideRoll(
+                frameIndex,
+                LifecycleUtil.Guard(lifecycleState, lifecycleToken, function()
+                    if activeRolls[rollID] then
+                        return
+                    end
+                    ReleaseFrameIndex(frameIndex)
+                    PromoteFromQueue()
+                end)
+            )
         else
             -- votedAndHidden: no frame to hide, just clean up state and promote
             PromoteFromQueue()
@@ -486,10 +549,14 @@ function ns.RollManager.CancelAllRolls()
 end
 
 function ns.RollManager.OnRollComplete(rollID)
-    if not rollID then return end
+    if not rollID then
+        return
+    end
 
     local roll = activeRolls[rollID]
-    if roll then roll.completing = true end
+    if roll then
+        roll.completing = true
+    end
 
     local completionToken = nil
     if roll then
@@ -503,9 +570,15 @@ function ns.RollManager.OnRollComplete(rollID)
     -- Delay cancel to keep activeRolls data available for async winner resolution
     LifecycleUtil.After(lifecycleState, ROLL_COMPLETE_CANCEL_DELAY, function()
         local activeRoll = activeRolls[rollID]
-        if not activeRoll then return end
-        if completionToken and activeRoll.completionToken ~= completionToken then return end
-        if not activeRoll.completing then return end
+        if not activeRoll then
+            return
+        end
+        if completionToken and activeRoll.completionToken ~= completionToken then
+            return
+        end
+        if not activeRoll.completing then
+            return
+        end
 
         ns.RollManager.CancelRoll(rollID)
     end)
@@ -533,7 +606,9 @@ end
 
 HideAfterVote = function(rollID)
     local roll = activeRolls[rollID]
-    if not roll or not roll.frameIndex then return end
+    if not roll or not roll.frameIndex then
+        return
+    end
 
     local frameIndex = roll.frameIndex
     roll.frameIndex = nil
@@ -546,21 +621,28 @@ HideAfterVote = function(rollID)
     end
 
     local token = LifecycleUtil.CaptureToken(lifecycleState)
-    ns.RollFrame.HideRoll(frameIndex, LifecycleUtil.Guard(lifecycleState, token, function()
-        ReleaseFrameIndex(frameIndex)
-        PromoteFromQueue()
-    end))
+    ns.RollFrame.HideRoll(
+        frameIndex,
+        LifecycleUtil.Guard(lifecycleState, token, function()
+            ReleaseFrameIndex(frameIndex)
+            PromoteFromQueue()
+        end)
+    )
 end
 
 function ns.RollManager.MarkPendingHide(rollID)
     local roll = activeRolls[rollID]
-    if not roll then return end
+    if not roll then
+        return
+    end
     roll.pendingHideAfterVote = true
 end
 
 function ns.RollManager.TryHideAfterVote(rollID)
     local roll = activeRolls[rollID]
-    if not roll or not roll.pendingHideAfterVote then return end
+    if not roll or not roll.pendingHideAfterVote then
+        return
+    end
     roll.pendingHideAfterVote = nil
     HideAfterVote(rollID)
 end

@@ -56,13 +56,13 @@ local BIND_LABELS = {
 local TITLE_BAR_HEIGHT = 24
 local MIN_QUALITY_RARE = 3
 local ICON_GLOW_PADDING = 25
-local SLOT_ICON_LEFT_INSET = 4    -- icon frame left offset from slot LEFT edge
-local ICON_BORDER_INSET = 2       -- icon border bleed beyond icon frame edge (each side)
-local SLOT_TEXT_LEFT_GAP = 6      -- gap between icon right edge and item name left
-local SLOT_TEXT_TOP_OFFSET = 2    -- item name top inset below icon frame top
-local SLOT_SUBTEXT_GAP = 1        -- vertical gap between item name bottom and sub-text top
-local SLOT_TEXT_RIGHT_INSET = 4   -- text right offset from slot RIGHT edge
-local SLOT_QUANTITY_OFFSET = 2    -- quantity badge bleed beyond icon frame corner
+local SLOT_ICON_LEFT_INSET = 4 -- icon frame left offset from slot LEFT edge
+local ICON_BORDER_INSET = 2 -- icon border bleed beyond icon frame edge (each side)
+local SLOT_TEXT_LEFT_GAP = 6 -- gap between icon right edge and item name left
+local SLOT_TEXT_TOP_OFFSET = 2 -- item name top inset below icon frame top
+local SLOT_SUBTEXT_GAP = 1 -- vertical gap between item name bottom and sub-text top
+local SLOT_TEXT_RIGHT_INSET = 4 -- text right offset from slot RIGHT edge
+local SLOT_QUANTITY_OFFSET = 2 -- quantity badge bleed beyond icon frame corner
 
 local function GetSlotSpacing()
     return ns.Addon.db.profile.lootWindow.slotSpacing or 2
@@ -98,13 +98,11 @@ local containerFrame
 
 local function GetNormalizedSlotInfo(slotIndex)
     if isRetail then
-        local icon, name, quantity, _, quality, locked, isQuestItem =
-            GetLootSlotInfo(slotIndex)
+        local icon, name, quantity, _, quality, locked, isQuestItem = GetLootSlotInfo(slotIndex)
         return icon, name, quantity, quality, locked, isQuestItem
     end
     -- Classic/TBC/MoP: 6 returns with currencyID at position 4, no isQuestItem
-    local icon, name, quantity, _, quality, locked =
-        GetLootSlotInfo(slotIndex)
+    local icon, name, quantity, _, quality, locked = GetLootSlotInfo(slotIndex)
     return icon, name, quantity, quality, locked, nil
 end
 
@@ -114,13 +112,16 @@ end
 
 local function GetItemDetails(slotIndex)
     local lootType = GetLootSlotType(slotIndex)
-    if lootType ~= LOOT_SLOT_ITEM then return nil, nil, nil end
+    if lootType ~= LOOT_SLOT_ITEM then
+        return nil, nil, nil
+    end
 
     local itemLink = GetLootSlotLink(slotIndex)
-    if not itemLink then return nil, nil, nil end
+    if not itemLink then
+        return nil, nil, nil
+    end
 
-    local _, _, _, itemLevel, _, _, itemSubType, _,
-          _, _, _, _, _, bindType = C_Item.GetItemInfo(itemLink)
+    local _, _, _, itemLevel, _, _, itemSubType, _, _, _, _, _, _, bindType = C_Item.GetItemInfo(itemLink)
 
     local bindText = bindType and BIND_LABELS[bindType] or nil
     return itemLevel, bindText, itemSubType
@@ -140,9 +141,7 @@ local function ApplySlotBackground(slot, quality)
 
     if style == "gradient" then
         slot.rowBg:SetColorTexture(1, 1, 1)
-        slot.rowBg:SetGradient("HORIZONTAL",
-            CreateColor(r, g, b, 0.4),
-            CreateColor(r, g, b, 0.1))
+        slot.rowBg:SetGradient("HORIZONTAL", CreateColor(r, g, b, 0.4), CreateColor(r, g, b, 0.1))
         slot.rowBg:Show()
         slot.accentStripe:Hide()
     elseif style == "flat" then
@@ -211,8 +210,13 @@ local function ApplyLayoutOffsets(frame)
     if frame.titleSeparator then
         frame.titleSeparator:ClearAllPoints()
         frame.titleSeparator:SetPoint("TOPLEFT", frame, "TOPLEFT", 6 + borderSize, -(TITLE_BAR_HEIGHT + borderSize))
-        frame.titleSeparator:SetPoint("TOPRIGHT", frame, "TOPRIGHT",
-            -(6 + borderSize), -(TITLE_BAR_HEIGHT + borderSize))
+        frame.titleSeparator:SetPoint(
+            "TOPRIGHT",
+            frame,
+            "TOPRIGHT",
+            -(6 + borderSize),
+            -(TITLE_BAR_HEIGHT + borderSize)
+        )
     end
 end
 
@@ -221,7 +225,9 @@ end
 -------------------------------------------------------------------------------
 
 local function SaveFramePosition()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local db = ns.Addon.db.profile.lootWindow
     local point, _, relativePoint, x, y = containerFrame:GetPoint()
     if point then
@@ -233,7 +239,9 @@ local function SaveFramePosition()
 end
 
 local function RestoreFramePosition()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local db = ns.Addon.db.profile.lootWindow
     containerFrame:ClearAllPoints()
     if db.point then
@@ -244,7 +252,9 @@ local function RestoreFramePosition()
 end
 
 local function PositionAtCursor()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local x, y = GetCursorPosition()
     local scale = containerFrame:GetEffectiveScale()
     containerFrame:ClearAllPoints()
@@ -285,10 +295,7 @@ local function OnSlotEnter(self)
     end
 
     -- Brighten item name
-    self.itemName:SetTextColor(
-        math.min(r + 0.15, 1),
-        math.min(g + 0.15, 1),
-        math.min(b + 0.15, 1))
+    self.itemName:SetTextColor(math.min(r + 0.15, 1), math.min(g + 0.15, 1), math.min(b + 0.15, 1))
 end
 
 local function OnSlotLeave(self)
@@ -413,7 +420,9 @@ local function AcquireSlot()
 end
 
 local function ReleaseSlot(slot)
-    if slot._isPooled then return end
+    if slot._isPooled then
+        return
+    end
     slot._isPooled = true
 
     slot.iconBorder:Hide()
@@ -467,7 +476,9 @@ end
 
 local function BuildSlotData(slotIndex)
     local icon, name, quantity, quality, locked, isQuestItem = GetNormalizedSlotInfo(slotIndex)
-    if not icon then return nil end
+    if not icon then
+        return nil
+    end
 
     local lootType = GetLootSlotType(slotIndex)
     local subText = BuildSubText(slotIndex, lootType)
@@ -621,10 +632,7 @@ local function RenderSlot(slot, data, isTest)
             if self.iconGlow:IsShown() then
                 self.iconGlow:SetAlpha(0.9)
             end
-            self.itemName:SetTextColor(
-                math.min(r + 0.15, 1),
-                math.min(g + 0.15, 1),
-                math.min(b + 0.15, 1))
+            self.itemName:SetTextColor(math.min(r + 0.15, 1), math.min(g + 0.15, 1), math.min(b + 0.15, 1))
         end)
         slot:SetScript("OnLeave", function(self)
             GameTooltip:Hide()
@@ -749,7 +757,9 @@ end
 -------------------------------------------------------------------------------
 
 local function LayoutSlots()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local db = ns.Addon.db.profile
     local iconSize = db.appearance.lootIconSize or 36
     local borderSize = db.appearance.borderSize or 1
@@ -767,10 +777,15 @@ local function LayoutSlots()
     end
 
     -- Auto-resize container height to fit slots
-    local totalHeight = TITLE_BAR_HEIGHT + padding
-        + (#activeSlots * (slotHeight + slotSpacing)) + padding + (borderSize * 2)
+    local totalHeight = TITLE_BAR_HEIGHT
+        + padding
+        + (#activeSlots * (slotHeight + slotSpacing))
+        + padding
+        + (borderSize * 2)
     local minHeight = db.lootWindow.height or 300
-    if totalHeight < minHeight then totalHeight = minHeight end
+    if totalHeight < minHeight then
+        totalHeight = minHeight
+    end
     containerFrame:SetHeight(totalHeight)
 end
 
@@ -787,7 +802,9 @@ end
 -------------------------------------------------------------------------------
 
 function ns.LootFrame.Initialize()
-    if containerFrame then return end
+    if containerFrame then
+        return
+    end
     containerFrame = CreateContainerFrame()
     ns.LootFrame.ApplySettings()
     RestoreFramePosition()
@@ -795,7 +812,9 @@ function ns.LootFrame.Initialize()
 end
 
 function ns.LootFrame.Shutdown()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     ReleaseAllSlots()
     containerFrame:Hide()
     ns.DebugPrint("LootFrame shut down")
@@ -807,10 +826,14 @@ end
 
 local function EvaluateSlot(slotIndex)
     local db = ns.Addon.db
-    if not db then return false end
+    if not db then
+        return false
+    end
 
     local autoLootCfg = db.profile.autoLoot
-    if not autoLootCfg then return false end
+    if not autoLootCfg then
+        return false
+    end
 
     local slotType = GetLootSlotType(slotIndex)
 
@@ -822,32 +845,46 @@ local function EvaluateSlot(slotIndex)
     -- Item evaluation
     if slotType == LOOT_SLOT_ITEM then
         local link = GetLootSlotLink(slotIndex)
-        if not link then return false end
+        if not link then
+            return false
+        end
 
         local itemID = tonumber(link:match("item:(%d+)"))
-        if not itemID then return false end
+        if not itemID then
+            return false
+        end
 
         -- Whitelist always qualifies
-        if autoLootCfg.whitelist[itemID] then return true end
+        if autoLootCfg.whitelist[itemID] then
+            return true
+        end
 
         -- Blacklist never qualifies
-        if autoLootCfg.blacklist[itemID] then return false end
+        if autoLootCfg.blacklist[itemID] then
+            return false
+        end
 
         -- Quality check
         local _, _, _, quality = GetLootSlotInfo(slotIndex)
-        if quality and quality >= autoLootCfg.minQuality then return true end
+        if quality and quality >= autoLootCfg.minQuality then
+            return true
+        end
     end
 
     return false
 end
 
 function ns.LootFrame.Show(autoLoot)
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
 
     ReleaseAllSlots()
 
     local numItems = GetNumLootItems()
-    if numItems == 0 then return end
+    if numItems == 0 then
+        return
+    end
 
     -- Auto-loot: skip UI entirely
     if autoLoot then
@@ -886,7 +923,9 @@ function ns.LootFrame.Show(autoLoot)
             -- Fall through to show UI for remaining items
             -- Re-read numItems since some were looted
             numItems = GetNumLootItems()
-            if numItems == 0 then return end
+            if numItems == 0 then
+                return
+            end
         end
     end
 
@@ -921,7 +960,9 @@ function ns.LootFrame.Show(autoLoot)
 end
 
 function ns.LootFrame.Hide()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
 
     local function DoHide()
         ReleaseAllSlots()
@@ -937,7 +978,9 @@ function ns.LootFrame.Hide()
 end
 
 function ns.LootFrame.UpdateSlot(slotIndex)
-    if not containerFrame or not containerFrame:IsShown() then return end
+    if not containerFrame or not containerFrame:IsShown() then
+        return
+    end
 
     -- Find the active slot matching this index
     for i = #activeSlots, 1, -1 do
@@ -967,7 +1010,9 @@ function ns.LootFrame.UpdateSlot(slotIndex)
 end
 
 function ns.LootFrame.ApplySettings()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local db = ns.Addon.db.profile
 
     containerFrame:SetSize(db.lootWindow.width or 250, db.lootWindow.height or 300)
@@ -1019,7 +1064,9 @@ function ns.LootFrame.ApplySettings()
 end
 
 function ns.LootFrame.ResetAnchor()
-    if not containerFrame then return end
+    if not containerFrame then
+        return
+    end
     local db = ns.Addon.db.profile.lootWindow
     db.point = nil
     db.relativePoint = nil
@@ -1039,29 +1086,59 @@ end
 
 local TEST_ITEMS = {
     {
-        icon = 134762, name = "Super Mana Potion", quantity = 3, quality = 1,
-        slotType = LOOT_SLOT_ITEM, isQuestItem = false,
-        itemLevel = 0, bindType = 0, itemSubType = "Potion",
+        icon = 134762,
+        name = "Super Mana Potion",
+        quantity = 3,
+        quality = 1,
+        slotType = LOOT_SLOT_ITEM,
+        isQuestItem = false,
+        itemLevel = 0,
+        bindType = 0,
+        itemSubType = "Potion",
     },
     {
-        icon = 132608, name = "Bog Walker's Bands", quantity = 1, quality = 2,
-        slotType = LOOT_SLOT_ITEM, isQuestItem = false,
-        itemLevel = 115, bindType = 2, itemSubType = "Leather",
+        icon = 132608,
+        name = "Bog Walker's Bands",
+        quantity = 1,
+        quality = 2,
+        slotType = LOOT_SLOT_ITEM,
+        isQuestItem = false,
+        itemLevel = 115,
+        bindType = 2,
+        itemSubType = "Leather",
     },
     {
-        icon = 132447, name = "Gorehowl", quantity = 1, quality = 4,
-        slotType = LOOT_SLOT_ITEM, isQuestItem = false,
-        itemLevel = 226, bindType = 1, itemSubType = "Swords",
+        icon = 132447,
+        name = "Gorehowl",
+        quantity = 1,
+        quality = 4,
+        slotType = LOOT_SLOT_ITEM,
+        isQuestItem = false,
+        itemLevel = 226,
+        bindType = 1,
+        itemSubType = "Swords",
     },
     {
-        icon = 133784, name = "15 Gold 32 Silver", quantity = 1, quality = 1,
-        slotType = LOOT_SLOT_MONEY, isQuestItem = false,
-        itemLevel = 0, bindType = 0, itemSubType = nil,
+        icon = 133784,
+        name = "15 Gold 32 Silver",
+        quantity = 1,
+        quality = 1,
+        slotType = LOOT_SLOT_MONEY,
+        isQuestItem = false,
+        itemLevel = 0,
+        bindType = 0,
+        itemSubType = nil,
     },
     {
-        icon = 132798, name = "Cenarion Spirits", quantity = 1, quality = 3,
-        slotType = LOOT_SLOT_ITEM, isQuestItem = true,
-        itemLevel = 200, bindType = 1, itemSubType = "Quest",
+        icon = 132798,
+        name = "Cenarion Spirits",
+        quantity = 1,
+        quality = 3,
+        slotType = LOOT_SLOT_ITEM,
+        isQuestItem = true,
+        itemLevel = 200,
+        bindType = 1,
+        itemSubType = "Quest",
     },
 }
 

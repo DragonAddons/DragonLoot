@@ -6,6 +6,8 @@
 -------------------------------------------------------------------------------
 local ADDON_NAME, _ = ... -- luacheck: ignore 211/ns
 local L = LibStub("AceLocale-3.0"):NewLocale(ADDON_NAME, "zhTW")
-if not L then return end
+if not L then
+    return
+end
 
 -- Translations go here

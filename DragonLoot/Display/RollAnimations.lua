@@ -77,15 +77,16 @@ function ns.RollAnimations.PlayHide(frame, onFinished)
 
     if not db.animation.enabled then
         ns.RollAnimations.isClosing = false
-        if onFinished then onFinished() end
+        if onFinished then
+            onFinished()
+        end
         return
     end
 
     local duration = db.animation.closeDuration or 0.5
 
     -- Snapshot where the frame visually is RIGHT NOW (mid-show-animation or idle).
-    local curAlpha, curScale, curPoint, curRelTo, curRelPoint, curX, curY =
-        DU.CaptureVisualState(frame)
+    local curAlpha, curScale, curPoint, curRelTo, curRelPoint, curX, curY = DU.CaptureVisualState(frame)
 
     -- StopAll restores the frame to its pre-animation state (e.g. alpha=0 if the
     -- show animation was still running). We immediately overwrite with the snapshot
@@ -104,7 +105,9 @@ function ns.RollAnimations.PlayHide(frame, onFinished)
             frame:Hide()
 
             ns.RollAnimations.isClosing = false
-            if onFinished then onFinished() end
+            if onFinished then
+                onFinished()
+            end
         end,
     })
     if not ok then
@@ -113,7 +116,9 @@ function ns.RollAnimations.PlayHide(frame, onFinished)
         frame:SetScale(scale)
         frame:Hide()
         ns.RollAnimations.isClosing = false
-        if onFinished then onFinished() end
+        if onFinished then
+            onFinished()
+        end
     end
 end
 

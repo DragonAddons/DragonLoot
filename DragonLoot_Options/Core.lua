@@ -55,10 +55,18 @@ ns.QualityValues = {
 
 DW.On("OnAppearanceChanged", function()
     local dl = ns.dlns
-    if not dl then return end
-    if dl.LootFrame and dl.LootFrame.ApplySettings then dl.LootFrame.ApplySettings() end
-    if dl.RollManager and dl.RollManager.ApplySettings then dl.RollManager.ApplySettings() end
-    if dl.HistoryFrame and dl.HistoryFrame.ApplySettings then dl.HistoryFrame.ApplySettings() end
+    if not dl then
+        return
+    end
+    if dl.LootFrame and dl.LootFrame.ApplySettings then
+        dl.LootFrame.ApplySettings()
+    end
+    if dl.RollManager and dl.RollManager.ApplySettings then
+        dl.RollManager.ApplySettings()
+    end
+    if dl.HistoryFrame and dl.HistoryFrame.ApplySettings then
+        dl.HistoryFrame.ApplySettings()
+    end
 end)
 
 -------------------------------------------------------------------------------
@@ -102,12 +110,16 @@ function DragonLoot_Options.Open()
     if not panelResult then
         CreateOptionsPanel()
     end
-    if not panelResult then return end
+    if not panelResult then
+        return
+    end
     panelResult.Open()
 end
 
 function DragonLoot_Options.Close()
-    if not panelResult then return end
+    if not panelResult then
+        return
+    end
     panelResult.Close()
 end
 
@@ -115,6 +127,8 @@ function DragonLoot_Options.Toggle()
     if not panelResult then
         CreateOptionsPanel()
     end
-    if not panelResult then return end
+    if not panelResult then
+        return
+    end
     panelResult.Toggle()
 end

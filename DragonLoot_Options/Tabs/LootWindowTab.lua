@@ -18,7 +18,7 @@ local math_abs = math.abs
 -- DragonWidgets references
 -------------------------------------------------------------------------------
 
-local W  = ns.DW.Widgets
+local W = ns.DW.Widgets
 local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
@@ -57,7 +57,9 @@ local function CreateContent(parent)
     local enableToggle = W.CreateToggle(lootContent, {
         label = L["Enable Custom Loot Window"],
         tooltip = L["Replace the default loot window with DragonLoot's custom frame"],
-        get = function() return db.profile.lootWindow.enabled end,
+        get = function()
+            return db.profile.lootWindow.enabled
+        end,
         set = function(value)
             db.profile.lootWindow.enabled = value
             ApplyLootSettings()
@@ -69,7 +71,9 @@ local function CreateContent(parent)
     local lockToggle = W.CreateToggle(lootContent, {
         label = L["Lock Position"],
         tooltip = L["Prevent the loot window from being moved"],
-        get = function() return db.profile.lootWindow.lock end,
+        get = function()
+            return db.profile.lootWindow.lock
+        end,
         set = function(value)
             db.profile.lootWindow.lock = value
         end,
@@ -80,7 +84,9 @@ local function CreateContent(parent)
     local cursorToggle = W.CreateToggle(lootContent, {
         label = L["Position at Cursor"],
         tooltip = L["Open the loot window at the mouse cursor instead of the saved position"],
-        get = function() return db.profile.lootWindow.positionAtCursor end,
+        get = function()
+            return db.profile.lootWindow.positionAtCursor
+        end,
         set = function(value)
             db.profile.lootWindow.positionAtCursor = value
         end,
@@ -100,8 +106,12 @@ local function CreateContent(parent)
     -- Slider: Scale
     local scaleSlider = W.CreateSlider(layoutContent, {
         label = L["Scale"],
-        min = 0.5, max = 2, step = 0.05,
-        get = function() return db.profile.lootWindow.scale end,
+        min = 0.5,
+        max = 2,
+        step = 0.05,
+        get = function()
+            return db.profile.lootWindow.scale
+        end,
         set = function(value)
             db.profile.lootWindow.scale = value
             ApplyLootSettings()
@@ -112,9 +122,13 @@ local function CreateContent(parent)
     -- Slider: Width
     local widthSlider = W.CreateSlider(layoutContent, {
         label = L["Width"],
-        min = 150, max = 400, step = 10,
+        min = 150,
+        max = 400,
+        step = 10,
         format = "%d",
-        get = function() return db.profile.lootWindow.width end,
+        get = function()
+            return db.profile.lootWindow.width
+        end,
         set = function(value)
             db.profile.lootWindow.width = value
             ApplyLootSettings()
@@ -125,9 +139,13 @@ local function CreateContent(parent)
     -- Slider: Height
     local heightSlider = W.CreateSlider(layoutContent, {
         label = L["Height"],
-        min = 150, max = 600, step = 10,
+        min = 150,
+        max = 600,
+        step = 10,
         format = "%d",
-        get = function() return db.profile.lootWindow.height end,
+        get = function()
+            return db.profile.lootWindow.height
+        end,
         set = function(value)
             db.profile.lootWindow.height = value
             ApplyLootSettings()
@@ -138,30 +156,36 @@ local function CreateContent(parent)
     -- Slider: Slot Spacing
     local slotSpacingSlider = W.CreateSlider(layoutContent, {
         label = L["Slot Spacing"],
-        min = 0, max = 12, step = 1,
+        min = 0,
+        max = 12,
+        step = 1,
         format = "%d",
-        get = function() return db.profile.lootWindow.slotSpacing end,
+        get = function()
+            return db.profile.lootWindow.slotSpacing
+        end,
         set = function(value)
             db.profile.lootWindow.slotSpacing = value
             ApplyLootSettings()
         end,
     })
-    layoutY = LC.AnchorWidget(slotSpacingSlider, layoutContent, layoutY)
-        - LC.SPACING_BETWEEN_WIDGETS
+    layoutY = LC.AnchorWidget(slotSpacingSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Slider: Content Padding
     local contentPaddingSlider = W.CreateSlider(layoutContent, {
         label = L["Content Padding"],
-        min = 0, max = 12, step = 1,
+        min = 0,
+        max = 12,
+        step = 1,
         format = "%d",
-        get = function() return db.profile.lootWindow.contentPadding end,
+        get = function()
+            return db.profile.lootWindow.contentPadding
+        end,
         set = function(value)
             db.profile.lootWindow.contentPadding = value
             ApplyLootSettings()
         end,
     })
-    layoutY = LC.AnchorWidget(contentPaddingSlider, layoutContent, layoutY)
-        - LC.SPACING_BETWEEN_WIDGETS
+    layoutY = LC.AnchorWidget(contentPaddingSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
     layoutSection:SetContentHeight(math_abs(layoutY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(layoutSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS

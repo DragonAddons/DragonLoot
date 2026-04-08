@@ -20,7 +20,7 @@ local LibStub = LibStub
 -- DragonWidgets references
 -------------------------------------------------------------------------------
 
-local W  = ns.DW.Widgets
+local W = ns.DW.Widgets
 local LC = ns.DW.LayoutConstants
 
 -------------------------------------------------------------------------------
@@ -35,7 +35,9 @@ local dlns
 
 local function GetEntranceValues()
     local lib = LibStub("LibAnimate", true)
-    if not lib then return {} end
+    if not lib then
+        return {}
+    end
     local names = lib:GetEntranceAnimations()
     local values = { { value = "none", text = L["None"] } }
     for _, name in ipairs(names) do
@@ -46,7 +48,9 @@ end
 
 local function GetExitValues()
     local lib = LibStub("LibAnimate", true)
-    if not lib then return {} end
+    if not lib then
+        return {}
+    end
     local names = lib:GetExitAnimations()
     local values = { { value = "none", text = L["None"] } }
     for _, name in ipairs(names) do
@@ -63,7 +67,9 @@ local function CreateAnimDropdown(content, db, innerY, label, key, valuesFn)
     local dropdown = W.CreateDropdown(content, {
         label = label,
         values = valuesFn,
-        get = function() return db.profile.animation[key] end,
+        get = function()
+            return db.profile.animation[key]
+        end,
         set = function(value)
             db.profile.animation[key] = value
             LC.NotifyAppearanceChange()
@@ -91,7 +97,9 @@ local function CreateContent(parent)
     local enableToggle = W.CreateToggle(animContent, {
         label = L["Enable Animations"],
         tooltip = L["Enable or disable all DragonLoot animations"],
-        get = function() return db.profile.animation.enabled end,
+        get = function()
+            return db.profile.animation.enabled
+        end,
         set = function(value)
             db.profile.animation.enabled = value
             LC.NotifyAppearanceChange()
@@ -106,7 +114,9 @@ local function CreateContent(parent)
         max = 1,
         step = 0.05,
         format = "%.2f",
-        get = function() return db.profile.animation.openDuration end,
+        get = function()
+            return db.profile.animation.openDuration
+        end,
         set = function(value)
             db.profile.animation.openDuration = value
             LC.NotifyAppearanceChange()
@@ -121,7 +131,9 @@ local function CreateContent(parent)
         max = 1,
         step = 0.05,
         format = "%.2f",
-        get = function() return db.profile.animation.closeDuration end,
+        get = function()
+            return db.profile.animation.closeDuration
+        end,
         set = function(value)
             db.profile.animation.closeDuration = value
             LC.NotifyAppearanceChange()
@@ -139,12 +151,8 @@ local function CreateContent(parent)
     local lootContent = lootSection.content
     local lootY = -LC.SECTION_PADDING_TOP
 
-    lootY = CreateAnimDropdown(
-        lootContent, db, lootY, L["Open Animation"], "lootOpenAnim", GetEntranceValues
-    )
-    lootY = CreateAnimDropdown(
-        lootContent, db, lootY, L["Close Animation"], "lootCloseAnim", GetExitValues
-    )
+    lootY = CreateAnimDropdown(lootContent, db, lootY, L["Open Animation"], "lootOpenAnim", GetEntranceValues)
+    lootY = CreateAnimDropdown(lootContent, db, lootY, L["Close Animation"], "lootCloseAnim", GetExitValues)
 
     lootSection:SetContentHeight(math_abs(lootY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(lootSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
@@ -156,12 +164,8 @@ local function CreateContent(parent)
     local rollContent = rollSection.content
     local rollY = -LC.SECTION_PADDING_TOP
 
-    rollY = CreateAnimDropdown(
-        rollContent, db, rollY, L["Show Animation"], "rollShowAnim", GetEntranceValues
-    )
-    rollY = CreateAnimDropdown(
-        rollContent, db, rollY, L["Hide Animation"], "rollHideAnim", GetExitValues
-    )
+    rollY = CreateAnimDropdown(rollContent, db, rollY, L["Show Animation"], "rollShowAnim", GetEntranceValues)
+    rollY = CreateAnimDropdown(rollContent, db, rollY, L["Hide Animation"], "rollHideAnim", GetExitValues)
 
     rollSection:SetContentHeight(math_abs(rollY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(rollSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS

@@ -11,7 +11,9 @@ local _, ns = ...
 -- Version guard: only run on Retail
 -------------------------------------------------------------------------------
 
-if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then return end
+if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE then
+    return
+end
 
 -------------------------------------------------------------------------------
 -- Cached WoW API
@@ -49,7 +51,9 @@ local function OnCancelLootRoll(_, rollID)
 end
 
 local function OnCancelAllLootRolls()
-    if not isRollActive then return end
+    if not isRollActive then
+        return
+    end
 
     ns.RollManager.CancelAllRolls()
     ns.DebugPrint("CANCEL_ALL_LOOT_ROLLS")
@@ -72,10 +76,14 @@ end
 -------------------------------------------------------------------------------
 
 local function RecoverActiveRolls()
-    if not GetActiveLootRollIDs then return end
+    if not GetActiveLootRollIDs then
+        return
+    end
 
     local activeRollIDs = GetActiveLootRollIDs()
-    if not activeRollIDs then return end
+    if not activeRollIDs then
+        return
+    end
 
     local GetRollDuration = C_Loot and C_Loot.GetLootRollDuration
     for _, rollID in ipairs(activeRollIDs) do
@@ -99,11 +107,14 @@ local function ResolveWinnerFromHistory(rollID)
     local activeRolls = ns.RollManager.GetActiveRolls()
 
     local roll = activeRolls[rollID]
-    if not roll or not roll.itemLink then return end
+    if not roll or not roll.itemLink then
+        return
+    end
 
-    local encounters = C_LootHistory and C_LootHistory.GetAllEncounterInfos
-        and C_LootHistory.GetAllEncounterInfos()
-    if not encounters then return end
+    local encounters = C_LootHistory and C_LootHistory.GetAllEncounterInfos and C_LootHistory.GetAllEncounterInfos()
+    if not encounters then
+        return
+    end
 
     for i = #encounters, 1, -1 do
         local encounter = encounters[i]
@@ -166,6 +177,7 @@ function ns.RollListener.Shutdown()
 end
 
 function ns.RollListener.ResolveWinner(rollID, completionToken)
-    LS.ResolveWinner(function() return isRollActive end, lifecycleState, rollID, completionToken,
-        ResolveWinnerFromHistory)
+    LS.ResolveWinner(function()
+        return isRollActive
+    end, lifecycleState, rollID, completionToken, ResolveWinnerFromHistory)
 end

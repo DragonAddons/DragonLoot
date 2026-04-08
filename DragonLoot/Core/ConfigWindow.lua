@@ -27,7 +27,9 @@ local function IsOptionsLoaded()
 end
 
 local function LoadOptions()
-    if IsOptionsLoaded() then return true end
+    if IsOptionsLoaded() then
+        return true
+    end
 
     if C_AddOns and C_AddOns.LoadAddOn then
         C_AddOns.LoadAddOn("DragonLoot_Options")

@@ -61,9 +61,13 @@ end
 -------------------------------------------------------------------------------
 
 function DisplayUtils.ApplyFontShadow(fontString, db)
-    if not fontString or not fontString.SetShadowOffset then return end
+    if not fontString or not fontString.SetShadowOffset then
+        return
+    end
     local appearance = db and db.profile and db.profile.appearance
-    if not appearance then return end
+    if not appearance then
+        return
+    end
     if appearance.fontShadow then
         fontString:SetShadowOffset(1, -1)
         fontString:SetShadowColor(0, 0, 0, 1)
@@ -96,15 +100,15 @@ end
 
 function DisplayUtils.ApplyBackdrop(frame, db)
     local appearance = db.profile.appearance
-    if not appearance then return end
+    if not appearance then
+        return
+    end
 
     frame:SetBackdrop(DisplayUtils.GetBackdropSettings(db))
 
     local bg = appearance.backgroundColor
     if bg then
-        frame:SetBackdropColor(
-            bg.r or 0.05, bg.g or 0.05, bg.b or 0.05,
-            appearance.backgroundAlpha or 0.9)
+        frame:SetBackdropColor(bg.r or 0.05, bg.g or 0.05, bg.b or 0.05, appearance.backgroundAlpha or 0.9)
     else
         frame:SetBackdropColor(0.05, 0.05, 0.05, appearance.backgroundAlpha or 0.9)
     end

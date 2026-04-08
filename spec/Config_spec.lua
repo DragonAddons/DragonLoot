@@ -140,19 +140,21 @@ describe("Config", function()
             assert.is_nil(db.profile.appearance.iconSize)
         end)
 
-        it("copies iconSize to lootIconSize when lootIconSize is absent (skips FillMissingDefaults at schema v2)",
+        it(
+            "copies iconSize to lootIconSize when lootIconSize is absent (skips FillMissingDefaults at schema v2)",
             function()
-            local db = initWithSeed(ns, {
-                schemaVersion = 2,
-                appearance = {
-                    iconSize = 48,
-                    -- lootIconSize intentionally absent to test migration propagation
-                },
-            })
+                local db = initWithSeed(ns, {
+                    schemaVersion = 2,
+                    appearance = {
+                        iconSize = 48,
+                        -- lootIconSize intentionally absent to test migration propagation
+                    },
+                })
 
-            assert.are.equal(48, db.profile.appearance.lootIconSize)
-            assert.is_nil(db.profile.appearance.iconSize)
-        end)
+                assert.are.equal(48, db.profile.appearance.lootIconSize)
+                assert.is_nil(db.profile.appearance.iconSize)
+            end
+        )
     end)
 
     ---------------------------------------------------------------------------

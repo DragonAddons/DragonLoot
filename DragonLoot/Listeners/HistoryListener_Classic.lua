@@ -11,7 +11,9 @@ local _, ns = ...
 -- Version guard: skip on Retail (Classic listener runs on everything else)
 -------------------------------------------------------------------------------
 
-if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then return end
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+    return
+end
 
 -------------------------------------------------------------------------------
 -- Cached WoW API
@@ -40,7 +42,9 @@ local notifiedRollResults = {}
 -------------------------------------------------------------------------------
 
 local function RefreshFromAPI()
-    if not C_LootHistory or not C_LootHistory.GetNumItems then return end
+    if not C_LootHistory or not C_LootHistory.GetNumItems then
+        return
+    end
     local numItems = C_LootHistory.GetNumItems()
     if not numItems or numItems == 0 then
         ns.HistoryFrame.SetEntries({})
@@ -50,8 +54,7 @@ local function RefreshFromAPI()
     local now = GetTime()
     local entries = {}
     for i = 1, numItems do
-        local _, itemLink, numPlayers, isDone, winnerIdx, _, _ =
-            C_LootHistory.GetItem(i)
+        local _, itemLink, numPlayers, isDone, winnerIdx, _, _ = C_LootHistory.GetItem(i)
 
         local winner, winnerClass, rollType, roll
         if winnerIdx and winnerIdx > 0 and numPlayers and numPlayers > 0 then
@@ -73,7 +76,9 @@ local function RefreshFromAPI()
                     }
                 end
             end
-            if #rollResults == 0 then rollResults = nil end
+            if #rollResults == 0 then
+                rollResults = nil
+            end
         end
 
         local quality = 1
@@ -105,17 +110,25 @@ end
 
 local function ProcessClassicRollResult(historyIndex, playerIndex)
     local rollID, itemLink = C_LootHistory.GetItem(historyIndex)
-    if not rollID or not itemLink then return end
+    if not rollID or not itemLink then
+        return
+    end
 
     local playerName, _, rollType, roll = C_LootHistory.GetPlayerInfo(historyIndex, playerIndex)
-    if not playerName then return end
+    if not playerName then
+        return
+    end
 
     -- Classic ROLL_CHANGED can fire before roll number is assigned
     -- For non-Pass rolls (rollType ~= 0), wait until roll value is available
-    if roll == nil and rollType and rollType ~= 0 then return end
+    if roll == nil and rollType and rollType ~= 0 then
+        return
+    end
 
     local dedupKey = rollID .. "-" .. playerName
-    if notifiedRollResults[dedupKey] then return end
+    if notifiedRollResults[dedupKey] then
+        return
+    end
     notifiedRollResults[dedupKey] = true
 
     -- Extract item info (may be cached from earlier GetItemInfo calls)
@@ -125,8 +138,14 @@ local function ProcessClassicRollResult(historyIndex, playerIndex)
     end
 
     ns.RollManager.SendRollResultNotification(
-        itemLink, itemName, itemQuality or 0, itemIcon or 0,
-        playerName, nil, rollType, roll
+        itemLink,
+        itemName,
+        itemQuality or 0,
+        itemIcon or 0,
+        playerName,
+        nil,
+        rollType,
+        roll
     )
 end
 

@@ -11,7 +11,9 @@ local _, ns = ...
 -- Version guard: skip on Retail (Classic listener runs on everything else)
 -------------------------------------------------------------------------------
 
-if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then return end
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+    return
+end
 
 -------------------------------------------------------------------------------
 -- Cached WoW API
@@ -65,10 +67,14 @@ end
 -------------------------------------------------------------------------------
 
 local function RecoverActiveRolls()
-    if not GetActiveLootRollIDs then return end
+    if not GetActiveLootRollIDs then
+        return
+    end
 
     local activeRollIDs = GetActiveLootRollIDs()
-    if not activeRollIDs then return end
+    if not activeRollIDs then
+        return
+    end
     for _, rollID in ipairs(activeRollIDs) do
         local timeLeftMs = GetLootRollTimeLeft(rollID)
         if timeLeftMs and timeLeftMs > 0 then
@@ -87,10 +93,11 @@ local function ResolveWinnerFromHistory(rollID)
     local activeRolls = ns.RollManager.GetActiveRolls()
 
     local roll = activeRolls[rollID]
-    if not roll or not roll.itemName then return end
+    if not roll or not roll.itemName then
+        return
+    end
 
-    local numItems = C_LootHistory and C_LootHistory.GetNumItems
-        and C_LootHistory.GetNumItems() or 0
+    local numItems = C_LootHistory and C_LootHistory.GetNumItems and C_LootHistory.GetNumItems() or 0
     for i = numItems, 1, -1 do
         local _, itemName = C_LootHistory.GetItem(i)
         if itemName == roll.itemName then
@@ -143,6 +150,7 @@ function ns.RollListener.Shutdown()
 end
 
 function ns.RollListener.ResolveWinner(rollID, completionToken)
-    LS.ResolveWinner(function() return isRollActive end, lifecycleState, rollID, completionToken,
-        ResolveWinnerFromHistory)
+    LS.ResolveWinner(function()
+        return isRollActive
+    end, lifecycleState, rollID, completionToken, ResolveWinnerFromHistory)
 end
