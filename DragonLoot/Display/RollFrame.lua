@@ -561,6 +561,7 @@ local function CreateRollIcon(parent)
     btn:SetScript("OnEnter", OnIconEnter)
     btn:SetScript("OnLeave", OnIconLeave)
     btn:SetScript("OnClick", OnIconClick)
+    btn:SetScript("UpdateTooltip", OnIconEnter)
 
     return btn
 end

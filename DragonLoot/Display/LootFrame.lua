@@ -320,6 +320,14 @@ local function OnSlotLeave(self)
     self.itemName:SetTextColor(r, g, b)
 end
 
+local function OnSlotUpdateTooltip(self)
+    if self.slotIndex then
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetLootItem(self.slotIndex)
+        GameTooltip:Show()
+    end
+end
+
 -------------------------------------------------------------------------------
 -- Slot frame creation
 -------------------------------------------------------------------------------
@@ -402,6 +410,7 @@ local function CreateSlotFrame()
     slot:SetScript("OnClick", OnSlotClick)
     slot:SetScript("OnEnter", OnSlotEnter)
     slot:SetScript("OnLeave", OnSlotLeave)
+    slot:SetScript("UpdateTooltip", OnSlotUpdateTooltip)
 
     return slot
 end
@@ -448,6 +457,7 @@ local function ReleaseSlot(slot)
     slot:SetScript("OnClick", OnSlotClick)
     slot:SetScript("OnEnter", OnSlotEnter)
     slot:SetScript("OnLeave", OnSlotLeave)
+    slot:SetScript("UpdateTooltip", OnSlotUpdateTooltip)
 
     table.insert(slotPool, slot)
 end
@@ -650,6 +660,7 @@ local function RenderSlot(slot, data, isTest)
         slot:SetScript("OnClick", OnSlotClick)
         slot:SetScript("OnEnter", OnSlotEnter)
         slot:SetScript("OnLeave", OnSlotLeave)
+        slot:SetScript("UpdateTooltip", OnSlotUpdateTooltip)
     end
 
     slot:Show()
