@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/Xerrion/DragonLoot/compare/0.11.1...0.11.2) (2026-04-15)
+
+
+### 🐛 Bug Fixes
+
+* correct DragonWidgets external path in .pkgmeta ([#136](https://github.com/Xerrion/DragonLoot/issues/136)) ([#138](https://github.com/Xerrion/DragonLoot/issues/138)) ([94ce245](https://github.com/Xerrion/DragonLoot/commit/94ce245e6a1fd04b62f524b02c7d35c71fb445b6))
+
 ## [0.11.1](https://github.com/Xerrion/DragonLoot/compare/0.11.0...0.11.1) (2026-04-15)
 
 
