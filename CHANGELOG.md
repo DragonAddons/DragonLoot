@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.11.1](https://github.com/Xerrion/DragonLoot/compare/0.11.0...0.11.1) (2026-04-15)
+
+
+### 🐛 Bug Fixes
+
+* address CodeRabbit code quality findings ([#133](https://github.com/Xerrion/DragonLoot/issues/133)) ([846bc48](https://github.com/Xerrion/DragonLoot/commit/846bc4830e1d0f07a6538b938dc176178c746969))
+* refresh item comparison tooltip on modifier key change ([#135](https://github.com/Xerrion/DragonLoot/issues/135)) ([f780b5c](https://github.com/Xerrion/DragonLoot/commit/f780b5c344fbd990af836dd72a0d0cc47ecf5017))
+
+
+### ⚙️ Miscellaneous Tasks
+
+* add stylua formatting and justfile ([#128](https://github.com/Xerrion/DragonLoot/issues/128)) ([548dfa3](https://github.com/Xerrion/DragonLoot/commit/548dfa36a7f7afd6979fdd7f0617b6b4ae0aba8c))
+
 ## [0.11.0](https://github.com/Xerrion/DragonLoot/compare/0.10.0...0.11.0) (2026-04-06)
 
 
