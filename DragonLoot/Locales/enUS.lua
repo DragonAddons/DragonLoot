@@ -172,6 +172,10 @@ L["Slot Spacing"] = true
 L["Width"] = true
 
 -- DragonLoot_Options/Tabs/LootRollTab.lua
+L["Buttons"] = true
+L["Frame"] = true
+L["Icon"] = true
+L["Timer Bar"] = true
 L["Button Size"] = true
 L["Button Spacing"] = true
 L["Compact Text Layout"] = true
@@ -240,11 +244,14 @@ L["Width of the roll frame"] = true
 L["Notifications"] = true
 
 -- DragonLoot_Options/Tabs/HistoryTab.lua
+L["Display"] = true
+L["Recording"] = true
 L["Auto Show on Loot"] = true
 L["Enable History"] = true
 L["Entry Spacing"] = true
 L["History"] = true
 L["Max Entries"] = true
+L["Prevent the history frame from being moved"] = true
 L["Track Direct Loot"] = true
 L["Track items you pick up directly (not from a loot window)"] = true
 L["Roll Details"] = true
@@ -252,6 +259,7 @@ L["Show Roll Details"] = true
 L["Click history entries to expand and see all player rolls"] = true
 
 -- DragonLoot_Options/Tabs/AutoLootTab.lua
+L["Settings"] = true
 L["Auto-Loot"] = true
 -- stylua: ignore
 L["Automatically loot items that meet your criteria."
@@ -309,6 +317,7 @@ L["Text Shadow"] = true
 L["Enable text shadow on all text elements"] = true
 
 -- DragonLoot_Options/Tabs/AnimationTab.lua
+L["Global Settings"] = true
 L["Animation"] = true
 L["Close Animation"] = true
 L["Close Duration"] = true

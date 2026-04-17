@@ -13,6 +13,7 @@ local L = ns.L
 -------------------------------------------------------------------------------
 
 local math_abs = math.abs
+local ipairs = ipairs
 
 -------------------------------------------------------------------------------
 -- DragonWidgets references
@@ -45,6 +46,7 @@ local function CreateContent(parent)
     dlns = ns.dlns
     local db = dlns.Addon.db
     local yOffset = LC.PADDING_TOP
+    local layoutWidgets = {}
 
     ---------------------------------------------------------------------------
     -- Section: Loot Window
@@ -63,6 +65,9 @@ local function CreateContent(parent)
         set = function(value)
             db.profile.lootWindow.enabled = value
             ApplyLootSettings()
+            for _, widget in ipairs(layoutWidgets) do
+                widget:SetDisabled(not value)
+            end
         end,
     })
     lootY = LC.AnchorWidget(enableToggle, lootContent, lootY) - LC.SPACING_BETWEEN_WIDGETS
@@ -78,6 +83,7 @@ local function CreateContent(parent)
             db.profile.lootWindow.lock = value
         end,
     })
+    layoutWidgets[#layoutWidgets + 1] = lockToggle
     lootY = LC.AnchorWidget(lockToggle, lootContent, lootY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Toggle: Position at Cursor
@@ -91,6 +97,7 @@ local function CreateContent(parent)
             db.profile.lootWindow.positionAtCursor = value
         end,
     })
+    layoutWidgets[#layoutWidgets + 1] = cursorToggle
     lootY = LC.AnchorWidget(cursorToggle, lootContent, lootY) - LC.SPACING_BETWEEN_WIDGETS
 
     lootSection:SetContentHeight(math_abs(lootY) + LC.SECTION_PADDING_BOTTOM)
@@ -117,6 +124,7 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
+    layoutWidgets[#layoutWidgets + 1] = scaleSlider
     layoutY = LC.AnchorWidget(scaleSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Slider: Width
@@ -134,6 +142,7 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
+    layoutWidgets[#layoutWidgets + 1] = widthSlider
     layoutY = LC.AnchorWidget(widthSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Slider: Height
@@ -151,6 +160,7 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
+    layoutWidgets[#layoutWidgets + 1] = heightSlider
     layoutY = LC.AnchorWidget(heightSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Slider: Slot Spacing
@@ -168,6 +178,7 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
+    layoutWidgets[#layoutWidgets + 1] = slotSpacingSlider
     layoutY = LC.AnchorWidget(slotSpacingSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Slider: Content Padding
@@ -185,10 +196,20 @@ local function CreateContent(parent)
             ApplyLootSettings()
         end,
     })
+    layoutWidgets[#layoutWidgets + 1] = contentPaddingSlider
     layoutY = LC.AnchorWidget(contentPaddingSlider, layoutContent, layoutY) - LC.SPACING_BETWEEN_WIDGETS
 
     layoutSection:SetContentHeight(math_abs(layoutY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(layoutSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+
+    ---------------------------------------------------------------------------
+    -- Apply initial disabled state
+    ---------------------------------------------------------------------------
+    if not db.profile.lootWindow.enabled then
+        for _, widget in ipairs(layoutWidgets) do
+            widget:SetDisabled(true)
+        end
+    end
 
     ---------------------------------------------------------------------------
     -- Set content height for scroll frame

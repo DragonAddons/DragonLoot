@@ -40,7 +40,7 @@ local ITEM_LIST_HEIGHT = 220
 -------------------------------------------------------------------------------
 
 local function CreateSettingsSection(parent, db, yOffset)
-    local section = W.CreateSection(parent, L["Smart Auto-Loot"])
+    local section = W.CreateSection(parent, L["Settings"])
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
 
@@ -54,6 +54,9 @@ local function CreateSettingsSection(parent, db, yOffset)
     )
     innerY = LC.AnchorWidget(desc, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
+    -- Forward-declare so the toggle set closure captures the variable
+    local qualityDropdown
+
     local enableToggle = W.CreateToggle(content, {
         label = L["Enable Smart Auto-Loot"],
         tooltip = L["When enabled, qualifying items are automatically looted based on your filter rules"],
@@ -62,11 +65,12 @@ local function CreateSettingsSection(parent, db, yOffset)
         end,
         set = function(value)
             db.profile.autoLoot.enabled = value
+            qualityDropdown:SetDisabled(not value)
         end,
     })
     innerY = LC.AnchorWidget(enableToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
-    local qualityDropdown = W.CreateDropdown(content, {
+    qualityDropdown = W.CreateDropdown(content, {
         label = L["Minimum Quality"],
         values = ns.QualityValues,
         get = function()
@@ -77,6 +81,9 @@ local function CreateSettingsSection(parent, db, yOffset)
         end,
     })
     innerY = LC.AnchorWidget(qualityDropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    -- Apply initial disabled state
+    qualityDropdown:SetDisabled(not db.profile.autoLoot.enabled)
 
     section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS

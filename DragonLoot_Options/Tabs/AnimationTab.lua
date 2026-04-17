@@ -75,7 +75,7 @@ local function CreateAnimDropdown(content, db, innerY, label, key, valuesFn)
             LC.NotifyAppearanceChange()
         end,
     })
-    return LC.AnchorWidget(dropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+    return LC.AnchorWidget(dropdown, content, innerY) - LC.SPACING_BETWEEN_WIDGETS, dropdown
 end
 
 -------------------------------------------------------------------------------
@@ -86,11 +86,12 @@ local function CreateContent(parent)
     dlns = ns.dlns
     local db = dlns.Addon.db
     local yOffset = LC.PADDING_TOP
+    local animWidgets = {}
 
     ---------------------------------------------------------------------------
-    -- Section: Animation (global toggle + durations)
+    -- Section: Global Settings (global toggle + durations)
     ---------------------------------------------------------------------------
-    local animSection = W.CreateSection(parent, L["Animation"])
+    local animSection = W.CreateSection(parent, L["Global Settings"])
     local animContent = animSection.content
     local animY = -LC.SECTION_PADDING_TOP
 
@@ -103,6 +104,9 @@ local function CreateContent(parent)
         set = function(value)
             db.profile.animation.enabled = value
             LC.NotifyAppearanceChange()
+            for _, widget in ipairs(animWidgets) do
+                widget:SetDisabled(not value)
+            end
         end,
     })
     animY = LC.AnchorWidget(enableToggle, animContent, animY) - LC.SPACING_BETWEEN_WIDGETS
@@ -122,6 +126,7 @@ local function CreateContent(parent)
             LC.NotifyAppearanceChange()
         end,
     })
+    animWidgets[#animWidgets + 1] = openDuration
     animY = LC.AnchorWidget(openDuration, animContent, animY) - LC.SPACING_BETWEEN_WIDGETS
 
     local closeDuration = W.CreateSlider(animContent, {
@@ -139,6 +144,7 @@ local function CreateContent(parent)
             LC.NotifyAppearanceChange()
         end,
     })
+    animWidgets[#animWidgets + 1] = closeDuration
     animY = LC.AnchorWidget(closeDuration, animContent, animY) - LC.SPACING_BETWEEN_WIDGETS
 
     animSection:SetContentHeight(math_abs(animY) + LC.SECTION_PADDING_BOTTOM)
@@ -151,8 +157,17 @@ local function CreateContent(parent)
     local lootContent = lootSection.content
     local lootY = -LC.SECTION_PADDING_TOP
 
-    lootY = CreateAnimDropdown(lootContent, db, lootY, L["Open Animation"], "lootOpenAnim", GetEntranceValues)
-    lootY = CreateAnimDropdown(lootContent, db, lootY, L["Close Animation"], "lootCloseAnim", GetExitValues)
+    local lootOpenDropdown
+    lootY, lootOpenDropdown = CreateAnimDropdown(
+        lootContent, db, lootY, L["Open Animation"], "lootOpenAnim", GetEntranceValues
+    )
+    animWidgets[#animWidgets + 1] = lootOpenDropdown
+
+    local lootCloseDropdown
+    lootY, lootCloseDropdown = CreateAnimDropdown(
+        lootContent, db, lootY, L["Close Animation"], "lootCloseAnim", GetExitValues
+    )
+    animWidgets[#animWidgets + 1] = lootCloseDropdown
 
     lootSection:SetContentHeight(math_abs(lootY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(lootSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
@@ -164,11 +179,29 @@ local function CreateContent(parent)
     local rollContent = rollSection.content
     local rollY = -LC.SECTION_PADDING_TOP
 
-    rollY = CreateAnimDropdown(rollContent, db, rollY, L["Show Animation"], "rollShowAnim", GetEntranceValues)
-    rollY = CreateAnimDropdown(rollContent, db, rollY, L["Hide Animation"], "rollHideAnim", GetExitValues)
+    local rollShowDropdown
+    rollY, rollShowDropdown = CreateAnimDropdown(
+        rollContent, db, rollY, L["Show Animation"], "rollShowAnim", GetEntranceValues
+    )
+    animWidgets[#animWidgets + 1] = rollShowDropdown
+
+    local rollHideDropdown
+    rollY, rollHideDropdown = CreateAnimDropdown(
+        rollContent, db, rollY, L["Hide Animation"], "rollHideAnim", GetExitValues
+    )
+    animWidgets[#animWidgets + 1] = rollHideDropdown
 
     rollSection:SetContentHeight(math_abs(rollY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(rollSection, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+
+    ---------------------------------------------------------------------------
+    -- Apply initial disabled state
+    ---------------------------------------------------------------------------
+    if not db.profile.animation.enabled then
+        for _, widget in ipairs(animWidgets) do
+            widget:SetDisabled(true)
+        end
+    end
 
     ---------------------------------------------------------------------------
     -- Set content height for scroll frame

@@ -40,10 +40,10 @@ local function ApplyHistorySettings()
 end
 
 -------------------------------------------------------------------------------
--- Section: History (toggles, dropdown, roll details)
+-- Section: History (master controls)
 -------------------------------------------------------------------------------
 
-local function CreateTogglesSection(parent, db, yOffset)
+local function CreateHistorySection(parent, db, yOffset)
     local section = W.CreateSection(parent, L["History"])
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
@@ -61,6 +61,20 @@ local function CreateTogglesSection(parent, db, yOffset)
     })
     innerY = LC.AnchorWidget(enableToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
+    -- Lock Position
+    local lockToggle = W.CreateToggle(content, {
+        label = L["Lock Position"],
+        tooltip = L["Prevent the history frame from being moved"],
+        get = function()
+            return db.profile.history.lock
+        end,
+        set = function(value)
+            db.profile.history.lock = value
+            ApplyHistorySettings()
+        end,
+    })
+    innerY = LC.AnchorWidget(lockToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
     -- Auto Show on Loot
     local autoShowToggle = W.CreateToggle(content, {
         label = L["Auto Show on Loot"],
@@ -72,6 +86,21 @@ local function CreateTogglesSection(parent, db, yOffset)
         end,
     })
     innerY = LC.AnchorWidget(autoShowToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+
+    return yOffset
+end
+
+-------------------------------------------------------------------------------
+-- Section: Recording (what to capture)
+-------------------------------------------------------------------------------
+
+local function CreateRecordingSection(parent, db, yOffset)
+    local section = W.CreateSection(parent, L["Recording"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
     -- Forward-declare so the toggle set closure captures the variable
     local qualityDropdown
@@ -108,9 +137,20 @@ local function CreateTogglesSection(parent, db, yOffset)
     -- Apply initial disabled state based on current trackDirectLoot value
     qualityDropdown:SetDisabled(not db.profile.history.trackDirectLoot)
 
-    -- Roll Details sub-header (visual separator inside section)
-    local detailsHeader = W.CreateHeader(content, L["Roll Details"])
-    innerY = LC.AnchorWidget(detailsHeader, content, innerY) - LC.SPACING_AFTER_HEADER
+    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
+    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
+
+    return yOffset
+end
+
+-------------------------------------------------------------------------------
+-- Section: Display (how it looks + what to show)
+-------------------------------------------------------------------------------
+
+local function CreateDisplaySection(parent, db, yOffset)
+    local section = W.CreateSection(parent, L["Display"])
+    local content = section.content
+    local innerY = -LC.SECTION_PADDING_TOP
 
     -- Show Roll Details toggle
     local rollDetailsToggle = W.CreateToggle(content, {
@@ -125,21 +165,6 @@ local function CreateTogglesSection(parent, db, yOffset)
         end,
     })
     innerY = LC.AnchorWidget(rollDetailsToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
-
-    section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
-    yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS
-
-    return yOffset
-end
-
--------------------------------------------------------------------------------
--- Section: Layout (sliders)
--------------------------------------------------------------------------------
-
-local function CreateLayoutSection(parent, db, yOffset)
-    local section = W.CreateSection(parent, L["Layout"])
-    local content = section.content
-    local innerY = -LC.SECTION_PADDING_TOP
 
     -- Slider: Max Entries
     local maxEntriesSlider = W.CreateSlider(content, {
@@ -206,11 +231,14 @@ local function CreateContent(parent)
     local db = dlns.Addon.db
     local yOffset = LC.PADDING_TOP
 
-    -- History toggles and dropdown section
-    yOffset = CreateTogglesSection(parent, db, yOffset)
+    -- History master controls section
+    yOffset = CreateHistorySection(parent, db, yOffset)
 
-    -- Layout sliders section
-    yOffset = CreateLayoutSection(parent, db, yOffset)
+    -- Recording section
+    yOffset = CreateRecordingSection(parent, db, yOffset)
+
+    -- Display section
+    yOffset = CreateDisplaySection(parent, db, yOffset)
 
     -- Set content height for scroll frame
     parent:SetHeight(math_abs(yOffset) + LC.PADDING_BOTTOM)
