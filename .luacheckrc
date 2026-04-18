@@ -22,7 +22,7 @@ read_globals = {
 
     -- WoW API - General
     "CreateFrame", "GetTime", "UIParent", "GameTooltip", "_G",
-    "PlaySound", "SOUNDKIT", "GetItemInfo", "C_Timer", "StaticPopup_Show",
+    "PlaySound", "SOUNDKIT", "GetItemInfo", "C_Timer", "StaticPopup_Show", "ReloadUI",
 
     -- Libraries
     "LibStub",

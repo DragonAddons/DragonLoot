@@ -35,6 +35,7 @@ Core\Config.lua
 Core\ConfigWindow.lua
 Core\MinimapIcon.lua
 Core\SlashCommands.lua
+Core\ElvUICompat.lua
 
 # Display (shared)
 Display\DisplayUtils.lua
