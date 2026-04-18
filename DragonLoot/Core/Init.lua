@@ -117,6 +117,8 @@ if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
 end
 
 local lootFrameHooked = false
+local rollFrameHooksInstalled = false
+local suppressRollContainer = false
 
 -- Force-load the LoD addon that provides LootFrame (Retail: Blizzard_LootUI).
 -- Called before any suppression so LootFrame exists and can be hooked at
@@ -185,6 +187,40 @@ local function SuppressBlizzardRollFrames()
         GroupLootContainer:UnregisterAllEvents()
         GroupLootContainer:Hide()
     end
+
+    -- One-time hook installation (hooksecurefunc is permanent, so guard with a
+    -- flag that is never reset). The post-hook hides frames as belt-and-suspenders
+    -- after event unregistration; the boolean toggle controls whether it acts.
+    if not rollFrameHooksInstalled then
+        -- Post-hook GroupLootContainer_AddRoll (taint-safe, Classic nil guard)
+        if _G.GroupLootContainer_AddRoll then
+            hooksecurefunc("GroupLootContainer_AddRoll", function()
+                if suppressRollContainer then
+                    if GroupLootContainer then GroupLootContainer:Hide() end
+                    for i = 1, 4 do
+                        local f = _G["GroupLootFrame" .. i]
+                        if f then f:Hide() end
+                    end
+                end
+            end)
+        end
+
+        -- Hook each GroupLootFrame Show() to re-hide when roll frame is active
+        for i = 1, 4 do
+            local frame = _G["GroupLootFrame" .. i]
+            if frame then
+                hooksecurefunc(frame, "Show", function(self)
+                    if suppressRollContainer then
+                        self:Hide()
+                    end
+                end)
+            end
+        end
+
+        rollFrameHooksInstalled = true
+    end
+
+    suppressRollContainer = true
 end
 
 local function RestoreBlizzardLootFrame()
@@ -219,6 +255,8 @@ local function RestoreBlizzardRollFrames()
         GroupLootContainer:RegisterEvent("START_LOOT_ROLL")
         GroupLootContainer:RegisterEvent("CANCEL_LOOT_ROLL")
     end
+
+    suppressRollContainer = false
 end
 
 -- Expose for use in other modules
