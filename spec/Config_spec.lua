@@ -37,10 +37,10 @@ describe("Config", function()
             assert.are.equal(100, db.profile.history.maxEntries)
         end)
 
-        it("sets schemaVersion to 2", function()
+        it("sets schemaVersion to 3", function()
             local db = initWithSeed(ns, nil)
 
-            assert.are.equal(2, db.profile.schemaVersion)
+            assert.are.equal(3, db.profile.schemaVersion)
         end)
 
         it("has lootIconSize in a fresh profile", function()
@@ -141,10 +141,10 @@ describe("Config", function()
         end)
 
         it(
-            "copies iconSize to lootIconSize when lootIconSize is absent (skips FillMissingDefaults at schema v2)",
+            "copies iconSize to lootIconSize when lootIconSize is absent (skips FillMissingDefaults at schema v3)",
             function()
                 local db = initWithSeed(ns, {
-                    schemaVersion = 2,
+                    schemaVersion = 3,
                     appearance = {
                         iconSize = 48,
                         -- lootIconSize intentionally absent to test migration propagation
@@ -162,12 +162,12 @@ describe("Config", function()
     ---------------------------------------------------------------------------
 
     describe("schemaVersion", function()
-        it("is set to 2 after migration from version 0", function()
+        it("is set to 3 after migration from version 0", function()
             local db = initWithSeed(ns, {
                 -- schemaVersion intentionally missing (defaults to 0)
             })
 
-            assert.are.equal(2, db.profile.schemaVersion)
+            assert.are.equal(3, db.profile.schemaVersion)
         end)
     end)
 end)

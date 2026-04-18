@@ -335,6 +335,11 @@ function Addon:OnEnable()
             end
         end
     end
+
+    -- ElvUI loot-conflict check (prompts once if conflicts detected)
+    if ns.ElvUICompat and ns.ElvUICompat.Initialize then
+        ns.ElvUICompat.Initialize()
+    end
 end
 
 function Addon:OnDisable()

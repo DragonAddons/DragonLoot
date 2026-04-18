@@ -121,6 +121,11 @@ local defaults = {
             whitelist = {}, -- { [itemID] = true }
             blacklist = {}, -- { [itemID] = true }
         },
+
+        elvuiCompat = {
+            dismissed = false,
+            lastConflictSignature = "",
+        },
     },
 }
 
@@ -128,7 +133,7 @@ local defaults = {
 -- Profile Migration
 -------------------------------------------------------------------------------
 
-local CURRENT_SCHEMA = 2
+local CURRENT_SCHEMA = 3
 
 local function DeepCopyValue(value)
     if type(value) ~= "table" then
