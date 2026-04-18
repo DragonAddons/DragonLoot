@@ -215,6 +215,11 @@ StaticPopupDialogs["DRAGONLOOT_ELVUI_CONFLICT"] = {
     text = "", -- set dynamically before each show
     button1 = YES,
     button2 = NO,
+    -- StaticPopup frames are pooled; clear stale accept state so a reused
+    -- frame doesn't carry accepted=true from a previous dialog into OnHide.
+    OnShow = function(self)
+        self.accepted = nil
+    end,
     OnAccept = function(self, data)
         if not data then
             return
