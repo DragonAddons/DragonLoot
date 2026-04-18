@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.12.0](https://github.com/Xerrion/DragonLoot/compare/0.11.2...0.12.0) (2026-04-18)
+
+
+### 🚀 Features
+
+* redesign options UI for natural UX flow ([#124](https://github.com/Xerrion/DragonLoot/issues/124)) ([#144](https://github.com/Xerrion/DragonLoot/issues/144)) ([13cb564](https://github.com/Xerrion/DragonLoot/commit/13cb564f24188f9617c84803d35fee782f7af7bc))
+
+
+### 🐛 Bug Fixes
+
+* prevent Blizzard roll frame showing alongside custom roll frame ([#145](https://github.com/Xerrion/DragonLoot/issues/145)) ([8dd8b5d](https://github.com/Xerrion/DragonLoot/commit/8dd8b5deb98fe2e42c0e70defb0949a1cdcd7355))
+* remove invalid UpdateTooltip script handler on Button frames ([#143](https://github.com/Xerrion/DragonLoot/issues/143)) ([c7c54be](https://github.com/Xerrion/DragonLoot/commit/c7c54befe8dec8119082222630663bd6002d7905))
+* **security:** autofix Using unsafe GitHub Actions trigger may allow privilege escalation via CI/CD ([#137](https://github.com/Xerrion/DragonLoot/issues/137)) ([110d15b](https://github.com/Xerrion/DragonLoot/commit/110d15bb27ad3f37ec632fdcd766022a574ae143))
+
+
+### ⚙️ Miscellaneous Tasks
+
+* auto-assign all new issues to Xerrion ([#141](https://github.com/Xerrion/DragonLoot/issues/141)) ([d614aa2](https://github.com/Xerrion/DragonLoot/commit/d614aa28f500f0e351d93af21bf13cbb8c32bfef))
+
 ## [0.11.2](https://github.com/Xerrion/DragonLoot/compare/0.11.1...0.11.2) (2026-04-15)
 
 
