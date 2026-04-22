@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.0](https://github.com/Xerrion/DragonLoot/compare/0.12.0...0.13.0) (2026-04-22)
+
+
+### 🚀 Features
+
+* detect ElvUI loot conflict and offer to disable ([#147](https://github.com/Xerrion/DragonLoot/issues/147)) ([#148](https://github.com/Xerrion/DragonLoot/issues/148)) ([da18e5b](https://github.com/Xerrion/DragonLoot/commit/da18e5b293c7523a7a297651bcb8bcb56325f1b9))
+
+
+### ⚙️ Miscellaneous Tasks
+
+* update TOC Interface versions ([#151](https://github.com/Xerrion/DragonLoot/issues/151)) ([2893e7b](https://github.com/Xerrion/DragonLoot/commit/2893e7b467adc17903da9783a1bf119f57e7aeaf))
+
 ## [0.12.0](https://github.com/Xerrion/DragonLoot/compare/0.11.2...0.12.0) (2026-04-18)
 
 
