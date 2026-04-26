@@ -22,6 +22,7 @@ local IsShiftKeyDown = IsShiftKeyDown
 local math_floor = math.floor
 local math_abs = math.abs
 local string_format = string.format
+local table_sort = table.sort
 local tostring = tostring
 
 local L = ns.L
@@ -310,6 +311,13 @@ local function CreateEntryFrame()
     entry.winnerName:SetJustifyH("LEFT")
     entry.winnerName:SetWordWrap(false)
 
+    -- Pending highest roller (occupies the same slot as winnerName, never both visible)
+    entry.pendingText = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    entry.pendingText:SetPoint("BOTTOMLEFT", entry.icon, "BOTTOMRIGHT", 4, 1)
+    entry.pendingText:SetJustifyH("LEFT")
+    entry.pendingText:SetWordWrap(false)
+    entry.pendingText:Hide()
+
     -- Roll info (e.g. "Need 87")
     entry.rollInfo = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     entry.rollInfo:SetPoint("LEFT", entry.winnerName, "RIGHT", 6, 0)
@@ -443,6 +451,8 @@ local function ReleaseEntry(entry)
     entry.icon:SetTexture(nil)
     entry.itemName:SetText("")
     entry.winnerName:SetText("")
+    entry.pendingText:SetText("")
+    entry.pendingText:Hide()
     entry.rollInfo:SetText("")
     entry.timeText:SetText("")
     if entry.expandIndicator then
@@ -466,11 +476,45 @@ end
 -------------------------------------------------------------------------------
 
 local function OnEntryEnter(self)
-    if self.itemLink then
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetHyperlink(self.itemLink)
-        GameTooltip:Show()
+    if not self.itemLink then return end
+
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetHyperlink(self.itemLink)
+
+    local rollResults = self._rollResults
+    if rollResults and #rollResults > 0 then
+        -- Build a sorted copy: highest non-pass roll first, then passes at the bottom.
+        local sorted = {}
+        for i = 1, #rollResults do
+            sorted[i] = rollResults[i]
+        end
+        table_sort(sorted, function(a, b)
+            local aPass = (a.rollType == 0) or not a.roll
+            local bPass = (b.rollType == 0) or not b.roll
+            if aPass ~= bPass then
+                return not aPass  -- non-pass first
+            end
+            return (a.roll or 0) > (b.roll or 0)
+        end)
+
+        GameTooltip:AddLine(" ")
+        GameTooltip:AddLine(L["Rolls:"], 1, 0.82, 0)
+
+        for i = 1, #sorted do
+            local result = sorted[i]
+            local cr, cg, cb = GetClassColor(result.playerClass)
+            local typeName = ns.RollTypeNames and ns.RollTypeNames[result.rollType] or L["Unknown"]
+            local rightText
+            if result.rollType == 0 or not result.roll then
+                rightText = typeName
+            else
+                rightText = string_format("%d (%s)", result.roll, typeName)
+            end
+            GameTooltip:AddDoubleLine(result.playerName or "?", rightText, cr, cg, cb, 1, 1, 1)
+        end
     end
+
+    GameTooltip:Show()
 end
 
 local function OnEntryLeave()
@@ -594,15 +638,52 @@ local function PopulateEntry(entry, data)
     end
     entry.itemName:SetTextColor(qr, qg, qb)
 
-    -- Winner name (class colored)
+    -- Winner name (class colored) OR pending highest roller
     entry.winnerName:SetFont(fontPath, fontSize - 2, fontOutline)
     DU.ApplyFontShadow(entry.winnerName, ns.Addon.db)
+    entry.pendingText:SetFont(fontPath, fontSize - 2, fontOutline)
+    DU.ApplyFontShadow(entry.pendingText, ns.Addon.db)
+
     if data.winner then
+        -- Resolved: show class-colored winner, hide pending text
         local cr, cg, cb = GetClassColor(data.winnerClass)
         entry.winnerName:SetText(data.winner)
         entry.winnerName:SetTextColor(cr, cg, cb)
+        entry.winnerName:Show()
+        entry.pendingText:Hide()
     else
+        -- In progress or no winner: show pending leader (if any rolls), hide winnerName
         entry.winnerName:SetText("")
+        entry.winnerName:Hide()
+
+        local leaderName, leaderClass, leaderRoll = nil, nil, nil
+        if data.rollResults then
+            for _, result in ipairs(data.rollResults) do
+                -- Skip Pass (rollType 0); look for highest non-pass roll
+                if result.rollType and result.rollType ~= 0 and result.roll then
+                    if not leaderRoll or result.roll > leaderRoll then
+                        leaderName = result.playerName
+                        leaderClass = result.playerClass
+                        leaderRoll = result.roll
+                    end
+                end
+            end
+        end
+
+        if leaderName and leaderRoll then
+            local cr, cg, cb = GetClassColor(leaderClass)
+            entry.pendingText:SetText(string_format(L["Highest: %s (%d)"], leaderName, leaderRoll))
+            entry.pendingText:SetTextColor(cr, cg, cb)
+            entry.pendingText:Show()
+        elseif data.rollResults and #data.rollResults > 0 then
+            -- All passes - rare but possible
+            entry.pendingText:SetText(L["(waiting on rolls)"])
+            entry.pendingText:SetTextColor(0.6, 0.6, 0.6)
+            entry.pendingText:Show()
+        else
+            -- No roll data yet (very early in event flow, or direct loot)
+            entry.pendingText:Hide()
+        end
     end
 
     -- Roll info
@@ -1041,6 +1122,8 @@ function ns.HistoryFrame.ApplySettings()
             DU.ApplyFontShadow(entry.itemName, ns.Addon.db)
             entry.winnerName:SetFont(fontPath, fontSize - 2, fontOutline)
             DU.ApplyFontShadow(entry.winnerName, ns.Addon.db)
+            entry.pendingText:SetFont(fontPath, fontSize - 2, fontOutline)
+            DU.ApplyFontShadow(entry.pendingText, ns.Addon.db)
             entry.rollInfo:SetFont(fontPath, fontSize - 2, fontOutline)
             DU.ApplyFontShadow(entry.rollInfo, ns.Addon.db)
             entry.timeText:SetFont(fontPath, fontSize - 2, fontOutline)

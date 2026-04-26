@@ -128,9 +128,12 @@ L["The gap in pixels between the icon and the frame border when the icon is outs
 L["%dh ago"] = true
 L["%dm ago"] = true
 L["%ds ago"] = true
+L["(waiting on rolls)"] = true
 L["Clear History"] = true
 L["DragonLoot - Loot History"] = true
+L["Highest: %s (%d)"] = true
 L["Looted"] = true
+L["Rolls:"] = true
 L["Unknown Item"] = true
 
 -------------------------------------------------------------------------------
