@@ -101,6 +101,29 @@ local function RefreshFromAPI()
         }
     end
 
+    -- Carry forward persisted wallTime for drops we already saw on a prior day.
+    -- Without this, a drop persisted yesterday (yesterday's wallTime bucket) and
+    -- re-observed today (nowWall = today's bucket) produces two distinct dedup
+    -- keys, leaving a cross-midnight duplicate after the merge below.
+    if ns.historyData and #entries > 0 then
+        local persistedWallTime = {}
+        for _, persisted in ipairs(ns.historyData) do
+            if persisted.wallTime then
+                local link = persisted.itemLink or "?"
+                local winner = persisted.winner or "?"
+                persistedWallTime[link .. "|" .. winner] = persisted.wallTime
+            end
+        end
+        for _, entry in ipairs(entries) do
+            local link = entry.itemLink or "?"
+            local winner = entry.winner or "?"
+            local prior = persistedWallTime[link .. "|" .. winner]
+            if prior and (not entry.wallTime or prior < entry.wallTime) then
+                entry.wallTime = prior
+            end
+        end
+    end
+
     -- Merge persisted entries that the API does not know about.
     -- C_LootHistory in classic clients is volatile across sessions; without this
     -- merge a SetEntries() call would wipe restored history. Build a dedup-key
@@ -129,7 +152,11 @@ local function RefreshFromAPI()
             return at > bt
         end)
 
-        local maxEntries = (ns.Addon and ns.Addon.db and ns.Addon.db.profile.history.maxEntries) or 100
+        local maxEntries = (ns.Addon
+            and ns.Addon.db
+            and ns.Addon.db.profile
+            and ns.Addon.db.profile.history
+            and ns.Addon.db.profile.history.maxEntries) or 100
         while #entries > maxEntries do
             entries[#entries] = nil
         end
