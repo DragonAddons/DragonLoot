@@ -37,10 +37,11 @@ describe("Config", function()
             assert.are.equal(100, db.profile.history.maxEntries)
         end)
 
-        it("sets schemaVersion to 3", function()
+        it("sets schemaVersion to current schema", function()
             local db = initWithSeed(ns, nil)
 
-            assert.are.equal(3, db.profile.schemaVersion)
+            -- Keep in sync with CURRENT_SCHEMA in DragonLoot/Core/Config.lua
+            assert.are.equal(4, db.profile.schemaVersion)
         end)
 
         it("has lootIconSize in a fresh profile", function()
@@ -141,10 +142,13 @@ describe("Config", function()
         end)
 
         it(
-            "copies iconSize to lootIconSize when lootIconSize is absent (skips FillMissingDefaults at schema v3)",
+            "copies iconSize to lootIconSize when lootIconSize is absent (skips FillMissingDefaults at current schema)",
             function()
                 local db = initWithSeed(ns, {
-                    schemaVersion = 3,
+                    -- Seed at current schema so FillMissingDefaults is skipped and the
+                    -- (unconditional) iconSize-split migration can propagate iconSize=48.
+                    -- Keep in sync with CURRENT_SCHEMA in DragonLoot/Core/Config.lua.
+                    schemaVersion = 4,
                     appearance = {
                         iconSize = 48,
                         -- lootIconSize intentionally absent to test migration propagation
@@ -162,12 +166,13 @@ describe("Config", function()
     ---------------------------------------------------------------------------
 
     describe("schemaVersion", function()
-        it("is set to 3 after migration from version 0", function()
+        it("is set to current schema after migration from version 0", function()
             local db = initWithSeed(ns, {
                 -- schemaVersion intentionally missing (defaults to 0)
             })
 
-            assert.are.equal(3, db.profile.schemaVersion)
+            -- Keep in sync with CURRENT_SCHEMA in DragonLoot/Core/Config.lua
+            assert.are.equal(4, db.profile.schemaVersion)
         end)
     end)
 end)
