@@ -15,6 +15,10 @@ local L = ns.L
 local math_abs = math.abs
 local tostring = tostring
 local tonumber = tonumber
+local StaticPopup_Show = StaticPopup_Show
+local StaticPopupDialogs = StaticPopupDialogs
+local YES = YES
+local NO = NO
 
 -------------------------------------------------------------------------------
 -- DragonWidgets references
@@ -28,6 +32,27 @@ local LC = ns.DW.LayoutConstants
 -------------------------------------------------------------------------------
 
 local dlns
+
+-------------------------------------------------------------------------------
+-- Static popup dialogs (defined at file scope)
+-------------------------------------------------------------------------------
+
+StaticPopupDialogs["DRAGONLOOT_CLEAR_HISTORY"] = {
+    text = L["Are you sure you want to clear all loot history? This cannot be undone."],
+    button1 = YES,
+    button2 = NO,
+    OnAccept = function()
+        local dl = ns.dlns
+        if not dl or not dl.HistoryFrame or not dl.HistoryFrame.ClearHistory then
+            return
+        end
+        dl.HistoryFrame.ClearHistory()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
 
 -------------------------------------------------------------------------------
 -- Helper: call HistoryFrame.ApplySettings if available
@@ -215,6 +240,18 @@ local function CreateDisplaySection(parent, db, yOffset)
         end,
     })
     innerY = LC.AnchorWidget(contentPaddingSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    -- Clear History button (destructive action)
+    local clearBtn = W.CreateButton(content, {
+        text = L["Clear History"],
+        width = 160,
+        tooltip = L["Permanently delete all stored loot history entries"],
+        onClick = function()
+            StaticPopup_Show("DRAGONLOOT_CLEAR_HISTORY")
+        end,
+    })
+    clearBtn:SetPoint("TOPLEFT", content, "TOPLEFT", LC.PADDING_SIDE, innerY)
+    innerY = innerY - clearBtn:GetHeight() - LC.SPACING_BETWEEN_WIDGETS
 
     section:SetContentHeight(math_abs(innerY) + LC.SECTION_PADDING_BOTTOM)
     yOffset = LC.AnchorSection(section, parent, yOffset) - LC.SPACING_BETWEEN_SECTIONS

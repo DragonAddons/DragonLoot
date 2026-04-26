@@ -22,6 +22,8 @@ end
 local C_LootHistory = C_LootHistory
 local GetItemInfo = GetItemInfo
 local GetTime = GetTime
+local time = time
+local table_sort = table.sort
 
 -------------------------------------------------------------------------------
 -- Shared listener utilities
@@ -45,13 +47,10 @@ local function RefreshFromAPI()
     if not C_LootHistory or not C_LootHistory.GetNumItems then
         return
     end
-    local numItems = C_LootHistory.GetNumItems()
-    if not numItems or numItems == 0 then
-        ns.HistoryFrame.SetEntries({})
-        return
-    end
+    local numItems = C_LootHistory.GetNumItems() or 0
 
     local now = GetTime()
+    local nowWall = time()
     local entries = {}
     for i = 1, numItems do
         local _, itemLink, numPlayers, isDone, winnerIdx, _, _ = C_LootHistory.GetItem(i)
@@ -96,9 +95,71 @@ local function RefreshFromAPI()
             rollType = rollType,
             roll = roll,
             timestamp = now,
+            wallTime = nowWall,
             isComplete = isDone,
             rollResults = rollResults,
         }
+    end
+
+    -- Carry forward persisted wallTime for drops we already saw on a prior day.
+    -- Without this, a drop persisted yesterday (yesterday's wallTime bucket) and
+    -- re-observed today (nowWall = today's bucket) produces two distinct dedup
+    -- keys, leaving a cross-midnight duplicate after the merge below.
+    if ns.historyData and #entries > 0 then
+        local persistedWallTime = {}
+        for _, persisted in ipairs(ns.historyData) do
+            if persisted.wallTime then
+                local link = persisted.itemLink or "?"
+                local winner = persisted.winner or "?"
+                persistedWallTime[link .. "|" .. winner] = persisted.wallTime
+            end
+        end
+        for _, entry in ipairs(entries) do
+            local link = entry.itemLink or "?"
+            local winner = entry.winner or "?"
+            local prior = persistedWallTime[link .. "|" .. winner]
+            if prior and (not entry.wallTime or prior < entry.wallTime) then
+                entry.wallTime = prior
+            end
+        end
+    end
+
+    -- Merge persisted entries that the API does not know about.
+    -- C_LootHistory in classic clients is volatile across sessions; without this
+    -- merge a SetEntries() call would wipe restored history. Build a dedup-key
+    -- set from the API entries and append any persisted entry whose key is not
+    -- already represented.
+    local buildKey = ns.HistoryFrame_BuildDedupKey
+    if buildKey and ns.historyData then
+        local apiKeys = {}
+        for _, entry in ipairs(entries) do
+            local key = buildKey(entry)
+            if key then
+                apiKeys[key] = true
+            end
+        end
+        for _, persisted in ipairs(ns.historyData) do
+            local key = buildKey(persisted)
+            if key and not apiKeys[key] then
+                entries[#entries + 1] = persisted
+                apiKeys[key] = true
+            end
+        end
+
+        table_sort(entries, function(a, b)
+            local at = a.wallTime or a.timestamp or 0
+            local bt = b.wallTime or b.timestamp or 0
+            return at > bt
+        end)
+
+        local maxEntries = (ns.Addon
+            and ns.Addon.db
+            and ns.Addon.db.profile
+            and ns.Addon.db.profile.history
+            and ns.Addon.db.profile.history.maxEntries) or 100
+        while #entries > maxEntries do
+            entries[#entries] = nil
+        end
     end
 
     ns.HistoryFrame.SetEntries(entries)
@@ -182,6 +243,11 @@ local function OnAutoShow()
     ns.DebugPrint("LOOT_HISTORY_AUTO_SHOW")
 end
 
+-- LOOT_HISTORY_CLEAR_HISTORY in classic clients is unreliable and not all clients fire it.
+-- We deliberately do NOT clear ns.historyData or the persisted store here. Persisted history is
+-- only wiped via explicit user action (HistoryFrame.ClearHistory or the options-tab Clear button).
+-- The next RefreshFromAPI will reconcile against the now-empty C_LootHistory by adding only
+-- whatever the API still returns - persisted entries remain visible to the user.
 local function OnHistoryClear()
     wipe(notifiedRollResults)
     ns.DebugPrint("LOOT_HISTORY_CLEAR_HISTORY (Classic)")
