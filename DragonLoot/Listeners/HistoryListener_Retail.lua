@@ -22,6 +22,7 @@ end
 local C_LootHistory = C_LootHistory
 local GetItemInfo = GetItemInfo
 local GetTime = GetTime
+local time = time
 
 -------------------------------------------------------------------------------
 -- Shared listener utilities
@@ -166,6 +167,7 @@ local function ProcessDrop(encounterID, drop)
         rollType = leader and ConvertRollState(leader.state) or nil,
         roll = leader and leader.roll or nil,
         timestamp = GetTime(),
+        wallTime = time(),
         isComplete = drop.allPassed or (winner ~= nil),
         encounterID = encounterID,
         dropKey = dropKey,
@@ -219,6 +221,23 @@ local function OnHistoryClear()
 end
 
 -------------------------------------------------------------------------------
+-- Seed processedDrops from already-persisted entries so the API re-seed via
+-- PopulateExistingHistory does not duplicate entries we restored from
+-- SavedVariables. Persisted entries carry the same dropKey we generate here.
+-------------------------------------------------------------------------------
+
+local function SeedProcessedFromPersisted()
+    if not ns.historyData then
+        return
+    end
+    for _, entry in ipairs(ns.historyData) do
+        if entry.dropKey then
+            processedDrops[entry.dropKey] = true
+        end
+    end
+end
+
+-------------------------------------------------------------------------------
 -- Populate existing history on load
 -------------------------------------------------------------------------------
 
@@ -252,6 +271,7 @@ function ns.HistoryListener.Initialize(addonRef)
     addon:RegisterEvent("LOOT_HISTORY_CLEAR_HISTORY", OnHistoryClear)
 
     isInitializing = true
+    SeedProcessedFromPersisted()
     PopulateExistingHistory()
     isInitializing = false
 

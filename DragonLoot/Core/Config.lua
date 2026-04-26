@@ -127,13 +127,20 @@ local defaults = {
             lastConflictSignature = "",
         },
     },
+
+    char = {
+        history = {
+            entries = {},   -- persisted loot history entries; populated at runtime
+            schemaVersion = 4,
+        },
+    },
 }
 
 -------------------------------------------------------------------------------
 -- Profile Migration
 -------------------------------------------------------------------------------
 
-local CURRENT_SCHEMA = 3
+local CURRENT_SCHEMA = 4
 
 local function DeepCopyValue(value)
     if type(value) ~= "table" then
@@ -233,6 +240,11 @@ local function MigrateProfile(db)
             appearance.iconSize = nil
         end
     end
+
+    -- v3 -> v4: introduce db.char.history.entries for persistent loot history (issue #104).
+    -- No profile data needs transformation - the new char scope is added by AceDB's defaults
+    -- handling when InitializeDB passes the updated defaults table to AceDB:New. The schema
+    -- bump is recorded by the unconditional assignment to profile.schemaVersion below.
 
     profile.schemaVersion = CURRENT_SCHEMA
 end

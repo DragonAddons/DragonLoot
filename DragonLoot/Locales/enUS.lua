@@ -265,6 +265,8 @@ L["Track items you pick up directly (not from a loot window)"] = true
 L["Roll Details"] = true
 L["Show Roll Details"] = true
 L["Click history entries to expand and see all player rolls"] = true
+L["Permanently delete all stored loot history entries"] = true
+L["Are you sure you want to clear all loot history? This cannot be undone."] = true
 
 -- DragonLoot_Options/Tabs/AutoLootTab.lua
 L["Settings"] = true

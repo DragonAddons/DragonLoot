@@ -12,6 +12,7 @@ local _, ns = ...
 -------------------------------------------------------------------------------
 
 local GetTime = GetTime
+local time = time
 local UnitName = UnitName
 local UnitClass = UnitClass
 local GetPlayerInfoByGUID = GetPlayerInfoByGUID
@@ -179,6 +180,7 @@ local function AddLootEntry(playerName, playerClass, itemLink, _)
         rollType = nil,
         roll = nil,
         timestamp = GetTime(),
+        wallTime = time(),
         isComplete = true,
         isDirectLoot = true,
     }

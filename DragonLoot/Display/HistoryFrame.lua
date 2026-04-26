@@ -15,10 +15,12 @@ local CreateFrame = CreateFrame
 local GameTooltip = GameTooltip
 local UIParent = UIParent
 local GetTime = GetTime
+local time = time
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 local HandleModifiedItemClick = HandleModifiedItemClick
 local IsShiftKeyDown = IsShiftKeyDown
 local math_floor = math.floor
+local math_abs = math.abs
 local string_format = string.format
 local tostring = tostring
 
@@ -82,6 +84,67 @@ ns.historyData = {}
 
 -- Forward declaration for RefreshHistory (used by OnEntryClick)
 local RefreshHistory
+
+-------------------------------------------------------------------------------
+-- Persistence helpers (db.char.history.entries)
+-------------------------------------------------------------------------------
+
+local function BuildDedupKey(entry)
+    if not entry then
+        return nil
+    end
+    local bucket = entry.wallTime and math_floor(entry.wallTime / 86400) or 0
+    if entry.dropKey then
+        return entry.dropKey .. "|" .. bucket
+    end
+    local link = entry.itemLink or "?"
+    local winner = entry.winner or "?"
+    return link .. "|" .. winner .. "|" .. bucket
+end
+
+ns.HistoryFrame_BuildDedupKey = BuildDedupKey
+
+local function PersistEntries()
+    local db = ns.Addon and ns.Addon.db
+    if not db or not db.char or not db.char.history then
+        return
+    end
+    local store = db.char.history.entries
+    if type(store) ~= "table" then
+        store = {}
+        db.char.history.entries = store
+    end
+    wipe(store)
+    for i, entry in ipairs(ns.historyData) do
+        store[i] = entry
+    end
+end
+
+local function LoadPersistedEntries()
+    local db = ns.Addon and ns.Addon.db
+    if not db or not db.char or not db.char.history then
+        return
+    end
+    local stored = db.char.history.entries
+    if type(stored) ~= "table" or #stored == 0 then
+        return
+    end
+
+    local maxEntries = (db.profile and db.profile.history and db.profile.history.maxEntries) or 100
+    local limit = #stored
+    if limit > maxEntries then
+        limit = maxEntries
+    end
+
+    wipe(ns.historyData)
+    for i = 1, limit do
+        ns.historyData[i] = stored[i]
+    end
+
+    if db.profile and db.profile.debug then
+        ns.DebugPrint("HistoryFrame loaded " .. #ns.historyData .. " persisted entries")
+    end
+end
 
 -------------------------------------------------------------------------------
 -- Backdrop and font wrappers (delegate to DisplayUtils)
@@ -168,13 +231,33 @@ end
 -- Time formatting helper
 -------------------------------------------------------------------------------
 
-local function FormatTimeAgo(timestamp)
-    if not timestamp then
+local function FormatTimeAgo(entry)
+    if not entry then
         return ""
     end
-    local elapsed = GetTime() - timestamp
-    if elapsed < 0 then
-        elapsed = 0
+
+    local sessionElapsed
+    if entry.timestamp then
+        sessionElapsed = GetTime() - entry.timestamp
+        if sessionElapsed < 0 then
+            sessionElapsed = nil
+        end
+    end
+
+    local wallElapsed
+    if entry.wallTime then
+        wallElapsed = time() - entry.wallTime
+        if wallElapsed < 0 then
+            wallElapsed = nil
+        end
+    end
+
+    local elapsed
+    if wallElapsed and sessionElapsed and math_abs(wallElapsed - sessionElapsed) > 300 then
+        -- Disagreement larger than 5 minutes: persisted entry from prior session. Trust wall clock.
+        elapsed = wallElapsed
+    else
+        elapsed = sessionElapsed or wallElapsed or 0
     end
 
     if elapsed < 60 then
@@ -353,6 +436,8 @@ local function ReleaseEntry(entry)
     entry:ClearAllPoints()
     entry.itemLink = nil
     entry.quality = nil
+    entry.timestamp = nil
+    entry.wallTime = nil
     entry._entryKey = nil
     entry._rollResults = nil
     entry.icon:SetTexture(nil)
@@ -480,7 +565,8 @@ end
 
 local function PopulateEntry(entry, data)
     entry.itemLink = data.itemLink
-    entry.timestampValue = data.timestamp
+    entry.timestamp = data.timestamp
+    entry.wallTime = data.wallTime
     entry.quality = data.quality
 
     -- Icon
@@ -537,7 +623,7 @@ local function PopulateEntry(entry, data)
     -- Time
     entry.timeText:SetFont(fontPath, fontSize - 2, fontOutline)
     DU.ApplyFontShadow(entry.timeText, ns.Addon.db)
-    entry.timeText:SetText(FormatTimeAgo(data.timestamp))
+    entry.timeText:SetText(FormatTimeAgo(data))
 
     -- Roll details expand/collapse
     local db = ns.Addon.db.profile
@@ -850,8 +936,8 @@ local function StartTimeRefresh()
             return
         end
         for _, entry in ipairs(activeEntries) do
-            if entry.timestampValue then
-                entry.timeText:SetText(FormatTimeAgo(entry.timestampValue))
+            if entry.timestamp or entry.wallTime then
+                entry.timeText:SetText(FormatTimeAgo(entry))
             end
         end
     end, TIME_REFRESH_INTERVAL)
@@ -877,6 +963,7 @@ function ns.HistoryFrame.Initialize()
     ApplyLayoutOffsets(containerFrame)
     ns.HistoryFrame.ApplySettings()
     RestoreFramePosition()
+    LoadPersistedEntries()
     ns.DebugPrint("HistoryFrame initialized")
 end
 
@@ -1002,6 +1089,8 @@ function ns.HistoryFrame.AddEntry(data)
         table.remove(ns.historyData)
     end
 
+    PersistEntries()
+
     -- Refresh display if visible
     if containerFrame and containerFrame:IsShown() then
         RefreshHistory()
@@ -1011,14 +1100,24 @@ end
 function ns.HistoryFrame.UpdateEntryByKey(dropKey, newData)
     for i, data in ipairs(ns.historyData) do
         if data.dropKey == dropKey then
+            -- Preserve the original first-observation wall clock so persisted
+            -- timestamps survive cross-session re-seeds. The drop happened when
+            -- we first saw it, not when the API replayed it back to us.
+            if data.wallTime and (not newData.wallTime or data.wallTime < newData.wallTime) then
+                newData.wallTime = data.wallTime
+            end
+            if data.timestamp and not newData.timestamp then
+                newData.timestamp = data.timestamp
+            end
             ns.historyData[i] = newData
+            PersistEntries()
             if containerFrame and containerFrame:IsShown() then
                 RefreshHistory()
             end
             return
         end
     end
-    -- Not found, treat as new
+    -- Not found, treat as new (AddEntry persists)
     ns.HistoryFrame.AddEntry(newData)
 end
 
@@ -1035,6 +1134,8 @@ function ns.HistoryFrame.SetEntries(entries)
         ns.historyData[i] = entry
     end
 
+    PersistEntries()
+
     -- Refresh display if visible
     if containerFrame and containerFrame:IsShown() then
         RefreshHistory()
@@ -1044,6 +1145,7 @@ end
 function ns.HistoryFrame.ClearHistory()
     wipe(expandedEntries)
     wipe(ns.historyData)
+    PersistEntries()
     if containerFrame and containerFrame:IsShown() then
         RefreshHistory()
     end
