@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/Xerrion/DragonLoot/compare/0.13.0...0.14.0) (2026-04-26)
+
+
+### 🚀 Features
+
+* persist loot history across sessions ([#104](https://github.com/Xerrion/DragonLoot/issues/104)) ([#152](https://github.com/Xerrion/DragonLoot/issues/152)) ([c337e94](https://github.com/Xerrion/DragonLoot/commit/c337e94fb3ad34e4717a38a68754ce6da10a6178))
+
 ## [0.13.0](https://github.com/Xerrion/DragonLoot/compare/0.12.0...0.13.0) (2026-04-22)
 
 
