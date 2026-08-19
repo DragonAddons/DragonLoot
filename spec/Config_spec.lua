@@ -50,6 +50,12 @@ describe("Config", function()
             assert.is_not_nil(db.profile.appearance.lootIconSize)
             assert.are.equal(36, db.profile.appearance.lootIconSize)
         end)
+
+        it("defaults rollFrame.autoConfirmRolls to false (opt-in)", function()
+            local db = initWithSeed(ns, nil)
+
+            assert.is_false(db.profile.rollFrame.autoConfirmRolls)
+        end)
     end)
 
     ---------------------------------------------------------------------------
@@ -86,6 +92,27 @@ describe("Config", function()
             })
 
             assert.are.equal(50, db.profile.history.maxEntries)
+        end)
+
+        it("back-fills missing rollFrame.autoConfirmRolls with false", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    enabled = true,
+                    -- autoConfirmRolls intentionally missing
+                },
+            })
+
+            assert.is_false(db.profile.rollFrame.autoConfirmRolls)
+        end)
+
+        it("preserves an opted-in rollFrame.autoConfirmRolls", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    autoConfirmRolls = true,
+                },
+            })
+
+            assert.is_true(db.profile.rollFrame.autoConfirmRolls)
         end)
     end)
 

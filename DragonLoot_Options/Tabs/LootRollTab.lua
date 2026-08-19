@@ -133,6 +133,21 @@ local function CreateRollFrameSection(parent, db, yOffset, layoutWidgets, reappl
     layoutWidgets[#layoutWidgets + 1] = lockToggle
     innerY = LC.AnchorWidget(lockToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
+    local autoConfirmToggle = W.CreateToggle(content, {
+        label = L["Skip Roll Confirmations"],
+        -- stylua: ignore
+        tooltip = L["Skip bind-on-pickup and disenchant roll confirmations. The item binds to you"
+            .. " without asking, and disenchant rolls convert the item to materials."],
+        get = function()
+            return db.profile.rollFrame.autoConfirmRolls
+        end,
+        set = function(value)
+            db.profile.rollFrame.autoConfirmRolls = value
+        end,
+    })
+    layoutWidgets[#layoutWidgets + 1] = autoConfirmToggle
+    innerY = LC.AnchorWidget(autoConfirmToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
     local centerHBtn = W.CreateButton(content, {
         text = L["Center Horizontally"],
         width = 130,

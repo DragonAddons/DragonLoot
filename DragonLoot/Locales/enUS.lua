@@ -228,6 +228,10 @@ L["Show roll notifications while in dungeons"] = true
 L["Show roll notifications while in raids"] = true
 L["Show roll notifications while in the open world"] = true
 L["Size of Need/Greed/Pass buttons"] = true
+L["Skip Roll Confirmations"] = true
+-- stylua: ignore
+L["Skip bind-on-pickup and disenchant roll confirmations. The item binds to you"
+    .. " without asking, and disenchant rolls convert the item to materials."] = true
 L["Space between item row and timer bar"] = true
 L["Spacing between multiple roll frames"] = true
 L["Spacing between roll buttons"] = true

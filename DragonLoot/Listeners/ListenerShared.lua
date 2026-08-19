@@ -14,6 +14,7 @@ local _, ns = ...
 local GetItemInfoInstant = GetItemInfoInstant
 local GetItemInfo = GetItemInfo
 local GetLootRollItemInfo = GetLootRollItemInfo
+local ConfirmLootRoll = ConfirmLootRoll
 local StaticPopup_Show = StaticPopup_Show
 local ITEM_QUALITY_COLORS = ITEM_QUALITY_COLORS
 
@@ -126,7 +127,20 @@ function LS.OnCancelLootRoll(isRollActive, rollID)
     ns.DebugPrint("CANCEL_LOOT_ROLL: rollID=" .. tostring(rollID))
 end
 
+local function IsAutoConfirmRollsEnabled()
+    local db = ns.Addon and ns.Addon.db and ns.Addon.db.profile
+    return (db and db.rollFrame and db.rollFrame.autoConfirmRolls) or false
+end
+
 function LS.OnConfirmRoll(rollID, rollType)
+    if IsAutoConfirmRollsEnabled() then
+        -- Leave pendingHideAfterVote set: OnRollButtonClick's TryHideAfterVote
+        -- applies the post-vote display once RollOnLoot returns.
+        ConfirmLootRoll(rollID, rollType)
+        ns.DebugPrint("Auto-confirmed roll: rollID=" .. tostring(rollID) .. " rollType=" .. tostring(rollType))
+        return
+    end
+
     -- Clear pending hide-after-vote so the frame stays visible for confirmation
     local roll = ns.RollManager.GetActiveRolls()[rollID]
     if roll then

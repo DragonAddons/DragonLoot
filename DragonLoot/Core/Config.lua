@@ -35,6 +35,7 @@ local defaults = {
             enabled = true,
             scale = 1.0,
             lock = false,
+            autoConfirmRolls = false,
             timerBarHeight = 12,
             timerBarTexture = "Blizzard",
             timerBarBorder = false,
