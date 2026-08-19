@@ -60,9 +60,41 @@ The repository is structured as a multi-addon project separating core logic, con
 
 ### Roll Frame (`db.profile.rollFrame`)
 
-| Key             | Type   | Default    |
-| --------------- | ------ | ---------- |
-| timerBarTexture | string | "Blizzard" |
+| Key                      | Type    | Default                 |
+| ------------------------ | ------- | ----------------------- |
+| enabled                  | boolean | true                    |
+| scale                    | number  | 1.0                     |
+| lock                     | boolean | false                   |
+| autoConfirmRolls         | boolean | false                   |
+| keepOpenAfterVote        | boolean | false                   |
+| resultLingerDuration     | number  | 3                       |
+| showRollTally            | boolean | false                   |
+| timerBarHeight           | number  | 12                      |
+| timerBarTexture          | string  | "Blizzard"              |
+| timerBarBorder           | boolean | false                   |
+| timerBarBorderColor      | table   | {r=0.3,g=0.3,b=0.3}     |
+| timerBarColorMode        | string  | "gradient"              |
+| timerBarColor            | table   | {r=0,g=1,b=0}           |
+| timerBarBackgroundColor  | table   | {r=0.1,g=0.1,b=0.1}     |
+| timerBarBackgroundAlpha  | number  | 0.8                     |
+| frameWidth               | number  | 328                     |
+| rowSpacing               | number  | 4                       |
+| timerBarSpacing          | number  | 4                       |
+| contentPadding           | number  | 4                       |
+| buttonSize               | number  | 24                      |
+| buttonSpacing            | number  | 4                       |
+| frameSpacing             | number  | 4                       |
+| frameMinHeight           | number  | 68                      |
+| compactTextLayout        | boolean | false                   |
+| iconPosition             | string  | "inside"                |
+| iconSide                 | string  | "left"                  |
+| iconOffsetX              | number  | 0                       |
+| iconOffsetY              | number  | 0                       |
+| iconOutsideGap           | number  | 4                       |
+| timerBarStyle            | string  | "normal"                |
+| timerBarMinimalHeight    | number  | 3                       |
+
+`resultLingerDuration` applies only when `keepOpenAfterVote` is enabled. `showRollTally` is available only on Classic (TBC/MoP); Retail removed `C_LootHistory.GetItem` and `GetPlayerInfo` in patch 10.1.0.
 
 ### History (`db.profile.history`)
 
@@ -78,17 +110,18 @@ The repository is structured as a multi-addon project separating core logic, con
 
 ## Version-Specific API Differences
 
-| Aspect                      | Retail                        | Classic (TBC/MoP)       |
-| --------------------------- | ----------------------------- | ----------------------- |
-| GetLootSlotInfo returns     | 10                            | 6                       |
-| GetLootRollItemInfo returns | 13 (incl canTransmog)         | 12                      |
-| C_LootHistory               | Encounter-based               | Roll-item indexed       |
-| CANCEL_ALL_LOOT_ROLLS       | Yes                           | No                      |
-| LOOT_READY event            | Yes (fires after LOOT_OPENED) | No                      |
-| C_Loot.GetLootRollDuration  | Yes                           | No                      |
-| Loot listener               | LootListener_Retail           | LootListener_Classic    |
-| Roll listener               | RollListener_Retail           | RollListener_Classic    |
-| History listener            | HistoryListener_Retail        | HistoryListener_Classic |
+| Aspect                              | Retail                        | Classic (TBC/MoP)       |
+| ----------------------------------- | ----------------------------- | ----------------------- |
+| GetLootSlotInfo returns             | 10                            | 6                       |
+| GetLootRollItemInfo returns         | 13 (incl canTransmog)         | 12                      |
+| C_LootHistory                       | Encounter-based               | Roll-item indexed       |
+| C_LootHistory.GetItem/GetPlayerInfo | Removed in 10.1.0             | Available               |
+| CANCEL_ALL_LOOT_ROLLS               | Yes                           | No                      |
+| LOOT_READY event                    | Yes (fires after LOOT_OPENED) | No                      |
+| C_Loot.GetLootRollDuration          | Yes                           | No                      |
+| Loot listener                       | LootListener_Retail           | LootListener_Classic    |
+| Roll listener                       | RollListener_Retail           | RollListener_Classic    |
+| History listener                    | HistoryListener_Retail        | HistoryListener_Classic |
 
 ## DragonToast Integration
 

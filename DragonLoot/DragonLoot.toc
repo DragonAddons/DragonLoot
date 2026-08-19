@@ -44,6 +44,7 @@ Display\LootAnimations.lua
 Display\RollFrame.lua
 Display\RollAnimations.lua
 Display\RollManager.lua
+Display\RollTally.lua
 Display\HistoryFrame.lua
 Display\MasterLootFrame.lua
 

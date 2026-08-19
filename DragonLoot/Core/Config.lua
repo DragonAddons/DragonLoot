@@ -38,6 +38,7 @@ local defaults = {
             autoConfirmRolls = false,
             keepOpenAfterVote = false,
             resultLingerDuration = 3,
+            showRollTally = false,
             timerBarHeight = 12,
             timerBarTexture = "Blizzard",
             timerBarBorder = false,

@@ -68,6 +68,12 @@ describe("Config", function()
 
             assert.are.equal(3, db.profile.rollFrame.resultLingerDuration)
         end)
+
+        it("defaults rollFrame.showRollTally to false (opt-in)", function()
+            local db = initWithSeed(ns, nil)
+
+            assert.is_false(db.profile.rollFrame.showRollTally)
+        end)
     end)
 
     ---------------------------------------------------------------------------
@@ -159,6 +165,27 @@ describe("Config", function()
             })
 
             assert.are.equal(3, db.profile.rollFrame.resultLingerDuration)
+        end)
+
+        it("back-fills missing rollFrame.showRollTally with false", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    enabled = true,
+                    -- showRollTally intentionally missing
+                },
+            })
+
+            assert.is_false(db.profile.rollFrame.showRollTally)
+        end)
+
+        it("preserves an opted-in rollFrame.showRollTally", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    showRollTally = true,
+                },
+            })
+
+            assert.is_true(db.profile.rollFrame.showRollTally)
         end)
     end)
 

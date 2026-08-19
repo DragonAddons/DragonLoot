@@ -127,6 +127,7 @@ L["Test roll loop started. Type /dl testroll stop to end."] = true
 L["Test roll loop stopped."] = true
 L["Test roll: "] = true
 L["The gap in pixels between the icon and the frame border when the icon is outside"] = true
+L["You"] = true
 
 -- Display/HistoryFrame.lua
 L["%dh ago"] = true
@@ -219,12 +220,17 @@ L["Show Group Wins"] = true
 L["Show My Rolls"] = true
 L["Show Roll Results"] = true
 L["Show Roll Won"] = true
+L["Show Roll Tally"] = true
 L["Show a notification when someone wins a roll"] = true
 L["Show in Dungeons"] = true
 L["Show in Open World"] = true
 L["Show in Raids"] = true
 L["Show individual roll result notifications"] = true
 L["Show item name and bind type on the same line"] = true
+-- stylua: ignore
+L["Show how many group members picked each roll option,"
+    .. " and the winning roll once the roll ends. The result summary needs Keep Frame After Voting."] = true
+L["Roll tally needs the Classic loot history API and is not available on Retail."] = true
 L["Show notifications for other group members' roll results"] = true
 L["Show notifications for your own roll results"] = true
 L["Show notifications when other group members win rolls"] = true

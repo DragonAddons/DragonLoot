@@ -118,6 +118,42 @@ function GetLootRollItemLink(rollID)
 end
 
 -------------------------------------------------------------------------------
+-- Loot history mocks (Classic roll-item indexed C_LootHistory)
+--
+-- Tests populate M._lootHistory.items with an ordered list of
+-- { rollID, itemLink, numPlayers, isDone, winnerIndex, isMasterLoot } and
+-- M._lootHistory.players with players[itemIndex] = ordered list of
+-- { name, class, rollType, roll, isWinner, isMe }. Both default to empty, so a
+-- spec that never touches loot history sees an API reporting nothing.
+-------------------------------------------------------------------------------
+
+M._lootHistory = {
+    items = {},
+    players = {},
+}
+
+C_LootHistory = {
+    GetNumItems = function()
+        return #M._lootHistory.items
+    end,
+    GetItem = function(itemIndex)
+        local item = M._lootHistory.items[itemIndex]
+        if not item then
+            return nil
+        end
+        return item.rollID, item.itemLink, item.numPlayers, item.isDone, item.winnerIndex, item.isMasterLoot
+    end,
+    GetPlayerInfo = function(itemIndex, playerIndex)
+        local roster = M._lootHistory.players[itemIndex]
+        local player = roster and roster[playerIndex]
+        if not player then
+            return nil
+        end
+        return player.name, player.class, player.rollType, player.roll, player.isWinner, player.isMe
+    end,
+}
+
+-------------------------------------------------------------------------------
 -- WoW version constants
 -------------------------------------------------------------------------------
 
@@ -399,6 +435,7 @@ function M.CreateNamespace()
     ns.LootFrame = {}
     ns.RollFrame = {}
     ns.RollManager = {}
+    ns.RollTally = {}
     ns.HistoryFrame = {}
     ns.HistoryListener = {}
     ns.LootHistoryChat = {}
@@ -485,6 +522,9 @@ function M.Reset()
 
     M._masterLoot.candidates = {}
     M._masterLoot.given = {}
+
+    M._lootHistory.items = {}
+    M._lootHistory.players = {}
 
     M._group.numRaid = 0
     M._group.numParty = 0
