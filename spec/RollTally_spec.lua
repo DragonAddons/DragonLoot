@@ -101,6 +101,17 @@ local function LastView(recorder)
     return last and last.view
 end
 
+-- RollManager shows at most 4 rolls at once, so the 5th waits in the queue
+-- until a visible roll is retired. Returns the rollID left waiting.
+local VISIBLE_ROLL_LIMIT = 4
+
+local function StartRollsPastVisibleLimit(ns)
+    for rollID = 1, VISIBLE_ROLL_LIMIT + 1 do
+        ns.RollManager.StartRoll(rollID, 30)
+    end
+    return VISIBLE_ROLL_LIMIT + 1
+end
+
 describe("Roll tally", function()
     local recorder
 
@@ -320,6 +331,29 @@ describe("Roll tally", function()
     end)
 
     ---------------------------------------------------------------------------
+    -- Queue promotion
+    ---------------------------------------------------------------------------
+
+    describe("when a queued roll takes over a freed frame", function()
+        it("fills in its tally without waiting for the next history event", function()
+            local ns = NewTallyNamespace(recorder)
+            local queuedRollID = StartRollsPastVisibleLimit(ns)
+            SeedHistoryItem({ rollID = queuedRollID, numPlayers = 2, isDone = false, winnerIndex = 0 }, {
+                { name = "Ana", rollType = ROLL_NEED, roll = 91 },
+                { name = "Bo", rollType = ROLL_GREED, roll = 12 },
+            })
+
+            ns.RollManager.CancelRoll(1)
+
+            assert.are.equal(1, #recorder.updates)
+            local promoted = ns.RollManager.GetActiveRolls()[queuedRollID]
+            assert.are.equal(promoted.frameIndex, recorder.updates[1].frameIndex)
+            assert.are.equal(1, recorder.updates[1].view.counts[ROLL_NEED])
+            assert.are.equal(1, recorder.updates[1].view.counts[ROLL_GREED])
+        end)
+    end)
+
+    ---------------------------------------------------------------------------
     -- Teardown and opt-out
     ---------------------------------------------------------------------------
 
@@ -382,6 +416,18 @@ describe("Roll tally", function()
             end)
 
             assert.is_false(isRefreshCallable)
+            assert.are.equal(0, #recorder.updates)
+        end)
+
+        it("promotes a queued roll without reaching for the absent tally module", function()
+            local ns = NewTallyNamespace(recorder, { isRetail = true })
+            local queuedRollID = StartRollsPastVisibleLimit(ns)
+
+            assert.has_no.errors(function()
+                ns.RollManager.CancelRoll(1)
+            end)
+
+            assert.is_not_nil(ns.RollManager.GetActiveRolls()[queuedRollID])
             assert.are.equal(0, #recorder.updates)
         end)
     end)

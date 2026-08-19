@@ -236,6 +236,17 @@ local function RemoveFromWaitingQueue(rollID)
 end
 
 -------------------------------------------------------------------------------
+-- Roll tally
+-------------------------------------------------------------------------------
+
+-- RollTally is a no-op module on Retail, so the guard is the flavor gate too.
+local function RefreshRollTally()
+    if ns.RollTally and ns.RollTally.Refresh then
+        ns.RollTally.Refresh()
+    end
+end
+
+-------------------------------------------------------------------------------
 -- Queue promotion
 -------------------------------------------------------------------------------
 
@@ -271,6 +282,10 @@ local function PromoteFromQueue()
     activeRollCount = activeRollCount + 1
 
     ns.RollFrame.ShowRoll(frameIndex, entry.rollID)
+    -- The group may have finished voting while this roll sat in the queue, in
+    -- which case no further history event is coming and the strip would stay
+    -- blank for the whole of its visible life.
+    RefreshRollTally()
     StartTimer()
 end
 
