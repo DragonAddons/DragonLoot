@@ -466,7 +466,7 @@ local function OnRollButtonClick(self)
         RollOnLoot(frame.rollID, self.rollType)
 
         -- Hide now unless CONFIRM_LOOT_ROLL intercepted (flag cleared)
-        ns.RollManager.TryHideAfterVote(frame.rollID)
+        ns.RollManager.TryHideAfterVote(frame.rollID, self.rollType)
     end
 end
 
@@ -539,6 +539,18 @@ end
 -- Icon tooltip handlers
 -------------------------------------------------------------------------------
 
+-- SetLootRollItem stops resolving once the client considers the roll answered,
+-- so a frame held open after voting falls back to the item link RollManager
+-- cached while the roll was still fresh.
+local function SetRollItemTooltip(rollID)
+    local roll = ns.RollManager.GetActiveRolls()[rollID]
+    if roll and roll.heldAfterVote and roll.itemLink then
+        GameTooltip:SetHyperlink(roll.itemLink)
+        return
+    end
+    GameTooltip:SetLootRollItem(rollID)
+end
+
 local function OnIconEnter(self)
     local frame = self:GetParent()
     if frame.isTestMode then
@@ -549,7 +561,7 @@ local function OnIconEnter(self)
     end
     if frame.rollID then
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetLootRollItem(frame.rollID)
+        SetRollItemTooltip(frame.rollID)
         GameTooltip:Show()
 
         if ShouldShowCompareItem() then
@@ -776,6 +788,24 @@ local function SetButtonState(btn, canUse, reason)
         btn.icon:SetAlpha(0.4)
         btn.disabledReason = reason or L["Not available for this item"]
     end
+end
+
+-------------------------------------------------------------------------------
+-- Configure roll button state for a frame held open after voting
+-------------------------------------------------------------------------------
+
+local VOTED_UNCHOSEN_ALPHA = 0.25
+
+-- The chosen button keeps full colour so the player can read their own choice
+-- off a frame that no longer accepts input; every button locks so a held-open
+-- frame cannot be voted on twice.
+local function SetVotedButtonState(btn, isChosen)
+    if not btn then
+        return
+    end
+    btn:Disable()
+    btn.icon:SetDesaturated(not isChosen)
+    btn.icon:SetAlpha(isChosen and 1 or VOTED_UNCHOSEN_ALPHA)
 end
 
 -------------------------------------------------------------------------------
@@ -1224,6 +1254,22 @@ function ns.RollFrame.ShowRoll(frameIndex, rollID)
     ns.RollAnimations.PlayShow(frame)
 end
 
+--- Switch a visible roll frame into its "voted, awaiting result" state.
+--- @param frameIndex number Pool index of the frame to update
+--- @param rollType number The roll type the local player chose
+function ns.RollFrame.MarkVoted(frameIndex, rollType)
+    local frame = rollFramePool[frameIndex]
+    if not frame or not frame:IsShown() then
+        return
+    end
+
+    SetVotedButtonState(frame.needButton, rollType == ROLL_NEED)
+    SetVotedButtonState(frame.greedButton, rollType == ROLL_GREED)
+    SetVotedButtonState(frame.disenchantButton, rollType == ROLL_DISENCHANT)
+    SetVotedButtonState(frame.transmogButton, rollType == ROLL_TRANSMOG)
+    SetVotedButtonState(frame.passButton, rollType == ROLL_PASS)
+end
+
 function ns.RollFrame.HideRoll(frameIndex, onComplete)
     local frame = rollFramePool[frameIndex]
     if not frame or not frame:IsShown() then
@@ -1350,11 +1396,16 @@ function ns.RollFrame.ApplySettings()
             DU.ApplyFontShadow(frame.bindText, ns.Addon.db)
             DU.ApplyFontShadow(frame.timerBar.text, ns.Addon.db)
 
+            -- RollManager's cache is the reliable source of item data for a
+            -- frame still on screen: GetLootRollItemInfo and GetLootRollItemLink
+            -- both stop answering once the player has voted, which a held-open
+            -- frame outlives.
+            local activeRoll = frame.rollID and ns.RollManager.GetActiveRolls()[frame.rollID]
+
             -- Update quality border
             if frame.rollID and frame:IsShown() then
-                local _, _, _, quality = GetLootRollItemInfo(frame.rollID)
                 if appearance.qualityBorder then
-                    local r, g, b = DU.GetQualityColor(quality)
+                    local r, g, b = DU.GetQualityColor(activeRoll and activeRoll.itemQuality)
                     frame.iconFrame.border:SetColorTexture(r, g, b, 0.8)
                     frame.iconFrame.border:Show()
                 else
@@ -1365,7 +1416,7 @@ function ns.RollFrame.ApplySettings()
             -- Update item level overlay visibility
             if frame.iconFrame.ilvl then
                 if appearance.showItemLevel and frame.rollID and frame:IsShown() then
-                    local link = GetLootRollItemLink(frame.rollID)
+                    local link = (activeRoll and activeRoll.itemLink) or GetLootRollItemLink(frame.rollID)
                     local ilvl = link
                         and C_Item
                         and C_Item.GetDetailedItemLevelInfo

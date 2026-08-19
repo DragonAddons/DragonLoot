@@ -99,6 +99,25 @@ function UnitClass(unit)
 end
 
 -------------------------------------------------------------------------------
+-- Loot roll API mocks
+--
+-- RollManager.lua caches these at load time and registers a StaticPopup entry
+-- at file scope, so they must exist as globals before the module is loaded.
+-------------------------------------------------------------------------------
+
+StaticPopupDialogs = {}
+
+function ConfirmLootRoll() end
+
+function GetLootRollItemInfo()
+    return 12345, "Test Item", 1, 4
+end
+
+function GetLootRollItemLink(rollID)
+    return "|Hitem:1000" .. tostring(rollID) .. "|h[Test Item]|h"
+end
+
+-------------------------------------------------------------------------------
 -- WoW version constants
 -------------------------------------------------------------------------------
 

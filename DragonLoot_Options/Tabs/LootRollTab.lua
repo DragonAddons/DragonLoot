@@ -148,6 +148,46 @@ local function CreateRollFrameSection(parent, db, yOffset, layoutWidgets, reappl
     layoutWidgets[#layoutWidgets + 1] = autoConfirmToggle
     innerY = LC.AnchorWidget(autoConfirmToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
+    local lingerSlider -- forward declared; only usable while keepOpenAfterVote is on
+
+    local keepOpenToggle = W.CreateToggle(content, {
+        label = L["Keep Frame After Voting"],
+        tooltip = L["Keep the roll frame visible until the roll finishes, then hide after the result delay."],
+        get = function()
+            return db.profile.rollFrame.keepOpenAfterVote
+        end,
+        set = function(value)
+            db.profile.rollFrame.keepOpenAfterVote = value
+            if lingerSlider then
+                lingerSlider:SetDisabled(not value)
+            end
+        end,
+    })
+    layoutWidgets[#layoutWidgets + 1] = keepOpenToggle
+    innerY = LC.AnchorWidget(keepOpenToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    lingerSlider = W.CreateSlider(content, {
+        label = L["Result Delay"],
+        tooltip = L["How long the roll frame stays visible after the roll finishes"],
+        min = 0,
+        max = 10,
+        step = 0.5,
+        format = "%.1f",
+        get = function()
+            return db.profile.rollFrame.resultLingerDuration
+        end,
+        set = function(value)
+            db.profile.rollFrame.resultLingerDuration = value
+        end,
+    })
+    lingerSlider:SetDisabled(not db.profile.rollFrame.keepOpenAfterVote)
+    layoutWidgets[#layoutWidgets + 1] = lingerSlider
+    innerY = LC.AnchorWidget(lingerSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    reapplySubState[#reapplySubState + 1] = function()
+        lingerSlider:SetDisabled(not db.profile.rollFrame.keepOpenAfterVote)
+    end
+
     local centerHBtn = W.CreateButton(content, {
         text = L["Center Horizontally"],
         width = 130,

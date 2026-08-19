@@ -28,6 +28,7 @@ local LifecycleUtil = ns.LifecycleUtil
 local MAX_VISIBLE_ROLLS = 4
 local TIMER_INTERVAL = 0.05
 local ROLL_COMPLETE_CANCEL_DELAY = 0.5
+local DEFAULT_RESULT_LINGER_SECONDS = 3
 
 -- Canonical roll type enum (shared with listeners)
 local ROLL_TYPE_PASS = 0
@@ -87,7 +88,26 @@ local notifiedRolls = {} -- rollID -> true (prevent duplicate winner notificatio
 local activeRollCount = 0
 local timerHandle
 local lifecycleState = LifecycleUtil.CreateState()
-local HideAfterVote -- forward declaration; defined after helpers
+local ApplyPostVoteDisplay -- forward declaration; defined after the queue helpers
+
+-------------------------------------------------------------------------------
+-- Roll frame settings
+-------------------------------------------------------------------------------
+
+local function GetRollFrameSettings()
+    local db = ns.Addon and ns.Addon.db and ns.Addon.db.profile
+    return db and db.rollFrame
+end
+
+local function IsKeepOpenAfterVoteEnabled()
+    local settings = GetRollFrameSettings()
+    return (settings and settings.keepOpenAfterVote) or false
+end
+
+local function GetResultLingerDuration()
+    local settings = GetRollFrameSettings()
+    return (settings and settings.resultLingerDuration) or DEFAULT_RESULT_LINGER_SECONDS
+end
 
 -------------------------------------------------------------------------------
 -- StaticPopup for roll confirmations (shared by Retail and Classic listeners)
@@ -102,8 +122,7 @@ StaticPopupDialogs["DRAGONLOOT_CONFIRM_LOOT_ROLL"] = {
             return
         end
         ConfirmLootRoll(self.data.rollID, self.data.rollType)
-        -- Hide frame after confirming BoP roll
-        HideAfterVote(self.data.rollID)
+        ApplyPostVoteDisplay(self.data.rollID, self.data.rollType)
     end,
     timeout = 0,
     whileDead = 1,
@@ -129,6 +148,31 @@ local function ReleaseFrameIndex(frameIndex)
 end
 
 -------------------------------------------------------------------------------
+-- Post-vote hold release
+--
+-- Idempotent on purpose: the roll resolution signal and the timer-expiry
+-- backstop may both fire for the same roll, and the first one to arrive owns
+-- the retirement.
+-------------------------------------------------------------------------------
+
+local function ScheduleHeldRollRelease(rollID)
+    local roll = activeRolls[rollID]
+    if not roll or roll.releaseScheduled then
+        return
+    end
+    roll.releaseScheduled = true
+
+    LifecycleUtil.After(lifecycleState, GetResultLingerDuration(), function()
+        local heldRoll = activeRolls[rollID]
+        if not heldRoll then
+            return
+        end
+        heldRoll.heldAfterVote = nil
+        ns.RollManager.CancelRoll(rollID)
+    end)
+end
+
+-------------------------------------------------------------------------------
 -- Timer management
 -------------------------------------------------------------------------------
 
@@ -142,15 +186,18 @@ end
 local function OnTimerTick()
     local now = GetTime()
 
-    for _, roll in pairs(activeRolls) do
+    for rollID, roll in pairs(activeRolls) do
         local elapsed = now - roll.startTime
         local timeLeft = max(0, roll.rollTime - elapsed)
         if roll.frameIndex then
             ns.RollFrame.UpdateTimer(roll.frameIndex, timeLeft, roll.rollTime)
         end
-        -- Timer expired - Blizzard will send CANCEL_LOOT_ROLL, don't remove here
-        if timeLeft <= 0 then -- luacheck: ignore 542
-            -- Wait for the event
+        -- A held frame outlives the vote, so the roll-resolution signal
+        -- (CANCEL_LOOT_ROLL; also LOOT_ROLLS_COMPLETE on Retail) is no longer
+        -- guaranteed to arrive for it. Expiry of the cached roll timer is the
+        -- backstop that always retires it.
+        if timeLeft <= 0 and roll.heldAfterVote then
+            ScheduleHeldRollRelease(rollID)
         end
     end
 end
@@ -235,6 +282,71 @@ local function StartTimerIfNeeded()
     if activeRollCount > 0 then
         StartTimer()
     end
+end
+
+-------------------------------------------------------------------------------
+-- Post-vote frame handling
+-------------------------------------------------------------------------------
+
+local function HideVotedFrame(roll)
+    local frameIndex = roll.frameIndex
+    if not frameIndex then
+        return
+    end
+
+    roll.frameIndex = nil
+    roll.votedAndHidden = true
+
+    activeRollCount = activeRollCount - 1
+    if activeRollCount <= 0 then
+        activeRollCount = 0
+        StopTimer()
+    end
+
+    local token = LifecycleUtil.CaptureToken(lifecycleState)
+    ns.RollFrame.HideRoll(
+        frameIndex,
+        LifecycleUtil.Guard(lifecycleState, token, function()
+            ReleaseFrameIndex(frameIndex)
+            PromoteFromQueue()
+        end)
+    )
+end
+
+-- Frees the pool slot of the roll that has been held open the longest. A frame
+-- the player has already voted on must never keep a roll they can still act on
+-- out of the pool, so the stale result overview is sacrificed instead.
+local function EvictOldestHeldRoll()
+    local oldestRoll
+    for _, roll in pairs(activeRolls) do
+        if roll.heldAfterVote and roll.frameIndex then
+            if not oldestRoll or roll.startTime < oldestRoll.startTime then
+                oldestRoll = roll
+            end
+        end
+    end
+    if not oldestRoll then
+        return
+    end
+
+    oldestRoll.heldAfterVote = nil
+    HideVotedFrame(oldestRoll)
+end
+
+ApplyPostVoteDisplay = function(rollID, rollType)
+    local roll = activeRolls[rollID]
+    if not roll or not roll.frameIndex then
+        return
+    end
+
+    if not IsKeepOpenAfterVoteEnabled() then
+        HideVotedFrame(roll)
+        return
+    end
+
+    roll.heldAfterVote = true
+    roll.votedRollType = rollType
+    ns.RollFrame.MarkVoted(roll.frameIndex, rollType)
 end
 
 -------------------------------------------------------------------------------
@@ -449,6 +561,7 @@ function ns.RollManager.StartRoll(rollID, rollTime)
             itemQuality = quality,
             itemLink = fullItemLink,
         }
+        EvictOldestHeldRoll()
     end
 end
 
@@ -494,6 +607,13 @@ end
 function ns.RollManager.CancelRoll(rollID)
     local roll = activeRolls[rollID]
     if roll then
+        -- The roll resolved, but the player asked to keep the result on screen.
+        -- ScheduleHeldRollRelease re-enters this function once the linger ends.
+        if roll.heldAfterVote then
+            ScheduleHeldRollRelease(rollID)
+            return
+        end
+
         local lifecycleToken = LifecycleUtil.CaptureToken(lifecycleState)
         local frameIndex = roll.frameIndex
 
@@ -601,32 +721,6 @@ function ns.RollManager.IsNotified(rollID)
     return notifiedRolls[rollID] or false
 end
 
-HideAfterVote = function(rollID)
-    local roll = activeRolls[rollID]
-    if not roll or not roll.frameIndex then
-        return
-    end
-
-    local frameIndex = roll.frameIndex
-    roll.frameIndex = nil
-    roll.votedAndHidden = true
-
-    activeRollCount = activeRollCount - 1
-    if activeRollCount <= 0 then
-        activeRollCount = 0
-        StopTimer()
-    end
-
-    local token = LifecycleUtil.CaptureToken(lifecycleState)
-    ns.RollFrame.HideRoll(
-        frameIndex,
-        LifecycleUtil.Guard(lifecycleState, token, function()
-            ReleaseFrameIndex(frameIndex)
-            PromoteFromQueue()
-        end)
-    )
-end
-
 function ns.RollManager.MarkPendingHide(rollID)
     local roll = activeRolls[rollID]
     if not roll then
@@ -635,13 +729,13 @@ function ns.RollManager.MarkPendingHide(rollID)
     roll.pendingHideAfterVote = true
 end
 
-function ns.RollManager.TryHideAfterVote(rollID)
+function ns.RollManager.TryHideAfterVote(rollID, rollType)
     local roll = activeRolls[rollID]
     if not roll or not roll.pendingHideAfterVote then
         return
     end
     roll.pendingHideAfterVote = nil
-    HideAfterVote(rollID)
+    ApplyPostVoteDisplay(rollID, rollType)
 end
 
 function ns.RollManager.OnLootItemRollWon(itemLink, rollType, rollValue)
