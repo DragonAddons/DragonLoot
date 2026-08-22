@@ -50,6 +50,30 @@ describe("Config", function()
             assert.is_not_nil(db.profile.appearance.lootIconSize)
             assert.are.equal(36, db.profile.appearance.lootIconSize)
         end)
+
+        it("defaults rollFrame.autoConfirmRolls to false (opt-in)", function()
+            local db = initWithSeed(ns, nil)
+
+            assert.is_false(db.profile.rollFrame.autoConfirmRolls)
+        end)
+
+        it("defaults rollFrame.keepOpenAfterVote to false (opt-in)", function()
+            local db = initWithSeed(ns, nil)
+
+            assert.is_false(db.profile.rollFrame.keepOpenAfterVote)
+        end)
+
+        it("defaults rollFrame.resultLingerDuration to 3 seconds", function()
+            local db = initWithSeed(ns, nil)
+
+            assert.are.equal(3, db.profile.rollFrame.resultLingerDuration)
+        end)
+
+        it("defaults rollFrame.showRollTally to false (opt-in)", function()
+            local db = initWithSeed(ns, nil)
+
+            assert.is_false(db.profile.rollFrame.showRollTally)
+        end)
     end)
 
     ---------------------------------------------------------------------------
@@ -86,6 +110,82 @@ describe("Config", function()
             })
 
             assert.are.equal(50, db.profile.history.maxEntries)
+        end)
+
+        it("back-fills missing rollFrame.autoConfirmRolls with false", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    enabled = true,
+                    -- autoConfirmRolls intentionally missing
+                },
+            })
+
+            assert.is_false(db.profile.rollFrame.autoConfirmRolls)
+        end)
+
+        it("preserves an opted-in rollFrame.autoConfirmRolls", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    autoConfirmRolls = true,
+                },
+            })
+
+            assert.is_true(db.profile.rollFrame.autoConfirmRolls)
+        end)
+
+        it("back-fills missing rollFrame.keepOpenAfterVote and resultLingerDuration", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    enabled = true,
+                    -- keepOpenAfterVote and resultLingerDuration intentionally missing
+                },
+            })
+
+            assert.is_false(db.profile.rollFrame.keepOpenAfterVote)
+            assert.are.equal(3, db.profile.rollFrame.resultLingerDuration)
+        end)
+
+        it("preserves an opted-in rollFrame.keepOpenAfterVote and custom linger", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    keepOpenAfterVote = true,
+                    resultLingerDuration = 7,
+                },
+            })
+
+            assert.is_true(db.profile.rollFrame.keepOpenAfterVote)
+            assert.are.equal(7, db.profile.rollFrame.resultLingerDuration)
+        end)
+
+        it("resets a wrong-type resultLingerDuration to the default number", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    resultLingerDuration = "bad",
+                },
+            })
+
+            assert.are.equal(3, db.profile.rollFrame.resultLingerDuration)
+        end)
+
+        it("back-fills missing rollFrame.showRollTally with false", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    enabled = true,
+                    -- showRollTally intentionally missing
+                },
+            })
+
+            assert.is_false(db.profile.rollFrame.showRollTally)
+        end)
+
+        it("preserves an opted-in rollFrame.showRollTally", function()
+            local db = initWithSeed(ns, {
+                rollFrame = {
+                    showRollTally = true,
+                },
+            })
+
+            assert.is_true(db.profile.rollFrame.showRollTally)
         end)
     end)
 

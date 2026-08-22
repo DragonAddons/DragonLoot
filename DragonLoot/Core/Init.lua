@@ -53,6 +53,7 @@ ns.LootAnimations = {}
 ns.RollFrame = {}
 ns.RollAnimations = {}
 ns.RollManager = {}
+ns.RollTally = {}
 ns.RollListener = {}
 ns.HistoryFrame = {}
 ns.HistoryListener = {}

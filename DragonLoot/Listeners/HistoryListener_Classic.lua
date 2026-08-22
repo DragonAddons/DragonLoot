@@ -218,6 +218,7 @@ end
 
 local function OnFullUpdate()
     RefreshFromAPI()
+    ns.RollTally.Refresh()
     ns.DebugPrint("LOOT_HISTORY_FULL_UPDATE")
 end
 
@@ -228,11 +229,13 @@ local function OnRollChanged(_, historyIndex, playerIndex)
     end
     -- Still refresh the full history display
     RefreshFromAPI()
+    ns.RollTally.Refresh()
     ns.DebugPrint("LOOT_HISTORY_ROLL_CHANGED")
 end
 
 local function OnRollComplete()
     RefreshFromAPI()
+    ns.RollTally.Refresh()
     ns.DebugPrint("LOOT_HISTORY_ROLL_COMPLETE")
 end
 
@@ -252,6 +255,7 @@ end
 -- whatever the API still returns - persisted entries remain visible to the user.
 local function OnHistoryClear()
     wipe(notifiedRollResults)
+    ns.RollTally.ClearAll()
     ns.DebugPrint("LOOT_HISTORY_CLEAR_HISTORY (Classic)")
 end
 
@@ -270,6 +274,9 @@ function ns.HistoryListener.Initialize(addonRef)
 
     -- Load any existing data
     RefreshFromAPI()
+    -- RollManager already recovered any roll that survived a /reload, so their
+    -- tallies can be filled in without waiting for the next roll change.
+    ns.RollTally.Refresh()
 
     ns.DebugPrint("Classic History Listener initialized")
 end
@@ -284,6 +291,7 @@ function ns.HistoryListener.Shutdown()
     end
 
     wipe(notifiedRollResults)
+    ns.RollTally.ClearAll()
 
     ns.DebugPrint("Classic History Listener shut down")
 end

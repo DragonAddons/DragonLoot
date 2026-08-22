@@ -127,6 +127,7 @@ L["Test roll loop started. Type /dl testroll stop to end."] = true
 L["Test roll loop stopped."] = true
 L["Test roll: "] = true
 L["The gap in pixels between the icon and the frame border when the icon is outside"] = true
+L["You"] = true
 
 -- Display/HistoryFrame.lua
 L["%dh ago"] = true
@@ -199,13 +200,17 @@ L["Frame Spacing"] = true
 L["Frame Height"] = true
 L["Frame Width"] = true
 L["Height of the countdown timer bar"] = true
+L["How long the roll frame stays visible after the roll finishes"] = true
 L["Minimum height of the roll frame (effective height may be higher based on icon size)"] = true
 L["Inner padding of the roll frame"] = true
 L["Instance Filters"] = true
+L["Keep Frame After Voting"] = true
+L["Keep the roll frame visible until the roll finishes, then hide after the result delay."] = true
 L["Loot Roll"] = true
 L["Minimum Quality"] = true
 L["Prevent the roll frame from being dragged"] = true
 L["Replace the default Blizzard roll frame with DragonLoot's custom version"] = true
+L["Result Delay"] = true
 L["Roll Frame"] = true
 L["Roll Notifications"] = true
 L["Roll frame scale"] = true
@@ -215,12 +220,17 @@ L["Show Group Wins"] = true
 L["Show My Rolls"] = true
 L["Show Roll Results"] = true
 L["Show Roll Won"] = true
+L["Show Roll Tally"] = true
 L["Show a notification when someone wins a roll"] = true
 L["Show in Dungeons"] = true
 L["Show in Open World"] = true
 L["Show in Raids"] = true
 L["Show individual roll result notifications"] = true
 L["Show item name and bind type on the same line"] = true
+-- stylua: ignore
+L["Show how many group members picked each roll option,"
+    .. " and the winning roll once the roll ends. The result summary needs Keep Frame After Voting."] = true
+L["Roll tally needs the Classic loot history API and is not available on Retail."] = true
 L["Show notifications for other group members' roll results"] = true
 L["Show notifications for your own roll results"] = true
 L["Show notifications when other group members win rolls"] = true
@@ -228,6 +238,10 @@ L["Show roll notifications while in dungeons"] = true
 L["Show roll notifications while in raids"] = true
 L["Show roll notifications while in the open world"] = true
 L["Size of Need/Greed/Pass buttons"] = true
+L["Skip Roll Confirmations"] = true
+-- stylua: ignore
+L["Skip bind-on-pickup and disenchant roll confirmations. The item binds to you"
+    .. " without asking, and disenchant rolls convert the item to materials."] = true
 L["Space between item row and timer bar"] = true
 L["Spacing between multiple roll frames"] = true
 L["Spacing between roll buttons"] = true

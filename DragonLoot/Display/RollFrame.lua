@@ -26,6 +26,10 @@ local RollOnLoot = RollOnLoot
 local HandleModifiedItemClick = HandleModifiedItemClick
 local C_Texture = C_Texture
 local C_Item = C_Item
+local RAID_CLASS_COLORS = RAID_CLASS_COLORS
+local string_format = string.format
+local math_floor = math.floor
+local math_max = math.max
 
 local LSM = LibStub("LibSharedMedia-3.0")
 local L = ns.L
@@ -144,6 +148,9 @@ local ROLL_FRAME_EXTRA_HEIGHT = 18
 local TEST_ROLL_TICK_INTERVAL = 0.1
 local ROLL_TEXT_LEFT_GAP = 6 -- gap between icon right edge and text/timer-bar left
 local ROLL_TIMER_RIGHT_GAP = 2 -- timer bar right inset from frame RIGHT edge
+local TALLY_ROW_PADDING = 4 -- extra height the tally row adds on top of the font size
+local TALLY_ENTRY_GAP = 6 -- horizontal gap between two tally entries
+local TALLY_ICON_TEXT_GAP = 1 -- gap between a tally entry's icon and its count
 
 -- Returns the left content inset (icon width + padding + text gap + border thickness).
 -- Used by both ApplyTextLayoutOffsets and ApplyTimerBarOffsets to keep the left
@@ -246,12 +253,20 @@ local function GetTimerBarMinimalHeight()
     return db.timerBarMinimalHeight or 3
 end
 
-local function CalculateFrameHeight(iconSize)
+-- Height the tally row currently claims at the bottom of a frame. Owned by the
+-- frame itself so the layout helpers never have to ask whether the tally
+-- feature is on; UpdateTally is the only writer.
+local function GetFrameTallyHeight(frame)
+    return (frame and frame.tallyRowHeight) or 0
+end
+
+local function CalculateFrameHeight(iconSize, frame)
     local db = ns.Addon.db.profile
     local rollFrameDB = GetRollFrameDB()
     if not rollFrameDB then
         return GetFrameMinHeight()
     end
+    local tallyHeight = GetFrameTallyHeight(frame)
     local effectiveIconSize = (rollFrameDB.iconPosition == "outside") and 0 or iconSize
     if rollFrameDB.compactTextLayout then
         local padding = GetContentPadding()
@@ -265,14 +280,19 @@ local function CalculateFrameHeight(iconSize)
             timerBarHeight = (rollFrameDB.timerBarHeight or 12)
         end
         -- Content row must fit buttons or icon (inside only), whichever is taller
-        local contentRow = math.max(buttonSize, effectiveIconSize)
-        -- Top padding + content + spacing + timer bar + bottom padding
-        local fromContent = (padding + borderSize) + contentRow + timerBarSpacing + timerBarHeight + borderSize
+        local contentRow = math_max(buttonSize, effectiveIconSize)
+        -- Top padding + content + spacing + timer bar + tally row + bottom padding
+        local fromContent = (padding + borderSize)
+            + contentRow
+            + timerBarSpacing
+            + timerBarHeight
+            + tallyHeight
+            + borderSize
         -- Icon must also fit (vertically centered) -- only relevant when inside
         local fromIcon = effectiveIconSize + (padding + borderSize) + borderSize
-        return math.max(fromContent, fromIcon)
+        return math_max(fromContent, fromIcon)
     end
-    return math.max(GetFrameMinHeight(), effectiveIconSize + ROLL_FRAME_EXTRA_HEIGHT)
+    return math_max(GetFrameMinHeight(), effectiveIconSize + ROLL_FRAME_EXTRA_HEIGHT) + tallyHeight
 end
 
 local function ApplyTextLayoutOffsets(frame, compact, iconSize, padding, borderSize, rowSpacing)
@@ -323,29 +343,43 @@ end
 local function ApplyTimerBarOffsets(frame, rollFrameDB, iconSize, padding, borderSize, timerBarSpacing)
     local contentLeftInset = GetRollContentLeftInset(iconSize, padding, borderSize)
     local timerBarAnchor = frame.timerBar.container or frame.timerBar
+    -- The tally row occupies the very bottom of the frame, so the timer bar
+    -- floats above it by exactly that much whenever it is shown.
+    local bottomInset = borderSize + GetFrameTallyHeight(frame)
     timerBarAnchor:ClearAllPoints()
 
     if GetTimerBarStyle() == "minimal" then
         -- Minimal: full width at very bottom, thin bar, no text
         local minimalHeight = GetTimerBarMinimalHeight()
         timerBarAnchor:SetHeight(minimalHeight)
-        timerBarAnchor:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", borderSize, borderSize)
-        timerBarAnchor:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -borderSize, borderSize)
+        timerBarAnchor:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", borderSize, bottomInset)
+        timerBarAnchor:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -borderSize, bottomInset)
         frame.timerBar.text:Hide()
     else
         -- Normal: indented past icon, configurable height, text visible
         local barHeight = (rollFrameDB and rollFrameDB.timerBarHeight) or 12
         timerBarAnchor:SetHeight(barHeight)
-        timerBarAnchor:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", contentLeftInset, timerBarSpacing + borderSize)
+        timerBarAnchor:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", contentLeftInset, timerBarSpacing + bottomInset)
         timerBarAnchor:SetPoint(
             "BOTTOMRIGHT",
             frame,
             "BOTTOMRIGHT",
             -(padding + ROLL_TIMER_RIGHT_GAP + borderSize),
-            timerBarSpacing + borderSize
+            timerBarSpacing + bottomInset
         )
         frame.timerBar.text:Show()
     end
+end
+
+local function ApplyTallyRowOffsets(frame, iconSize, padding, borderSize)
+    local row = frame.tallyRow
+    if not row then
+        return
+    end
+    row:SetHeight(math_max(1, GetFrameTallyHeight(frame)))
+    row:ClearAllPoints()
+    row:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", GetRollContentLeftInset(iconSize, padding, borderSize), borderSize)
+    row:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -(padding + ROLL_TIMER_RIGHT_GAP + borderSize), borderSize)
 end
 
 local function ApplyLayoutOffsets(frame)
@@ -383,6 +417,7 @@ local function ApplyLayoutOffsets(frame)
 
     ApplyTextLayoutOffsets(frame, compact, iconSize, padding, borderSize, rowSpacing)
     ApplyTimerBarOffsets(frame, rollFrameDB, iconSize, padding, borderSize, timerBarSpacing)
+    ApplyTallyRowOffsets(frame, iconSize, padding, borderSize)
 end
 
 -------------------------------------------------------------------------------
@@ -466,7 +501,7 @@ local function OnRollButtonClick(self)
         RollOnLoot(frame.rollID, self.rollType)
 
         -- Hide now unless CONFIRM_LOOT_ROLL intercepted (flag cleared)
-        ns.RollManager.TryHideAfterVote(frame.rollID)
+        ns.RollManager.TryHideAfterVote(frame.rollID, self.rollType)
     end
 end
 
@@ -539,6 +574,18 @@ end
 -- Icon tooltip handlers
 -------------------------------------------------------------------------------
 
+-- SetLootRollItem stops resolving once the client considers the roll answered,
+-- so a frame held open after voting falls back to the item link RollManager
+-- cached while the roll was still fresh.
+local function SetRollItemTooltip(rollID)
+    local roll = ns.RollManager.GetActiveRolls()[rollID]
+    if roll and roll.heldAfterVote and roll.itemLink then
+        GameTooltip:SetHyperlink(roll.itemLink)
+        return
+    end
+    GameTooltip:SetLootRollItem(rollID)
+end
+
 local function OnIconEnter(self)
     local frame = self:GetParent()
     if frame.isTestMode then
@@ -549,7 +596,7 @@ local function OnIconEnter(self)
     end
     if frame.rollID then
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetLootRollItem(frame.rollID)
+        SetRollItemTooltip(frame.rollID)
         GameTooltip:Show()
 
         if ShouldShowCompareItem() then
@@ -754,6 +801,7 @@ local function CreateRollFrame(index)
     frame.transmogButton:Hide()
 
     frame.frameIndex = index
+    frame.tallyRowHeight = 0
     return frame
 end
 
@@ -776,6 +824,24 @@ local function SetButtonState(btn, canUse, reason)
         btn.icon:SetAlpha(0.4)
         btn.disabledReason = reason or L["Not available for this item"]
     end
+end
+
+-------------------------------------------------------------------------------
+-- Configure roll button state for a frame held open after voting
+-------------------------------------------------------------------------------
+
+local VOTED_UNCHOSEN_ALPHA = 0.25
+
+-- The chosen button keeps full colour so the player can read their own choice
+-- off a frame that no longer accepts input; every button locks so a held-open
+-- frame cannot be voted on twice.
+local function SetVotedButtonState(btn, isChosen)
+    if not btn then
+        return
+    end
+    btn:Disable()
+    btn.icon:SetDesaturated(not isChosen)
+    btn.icon:SetAlpha(isChosen and 1 or VOTED_UNCHOSEN_ALPHA)
 end
 
 -------------------------------------------------------------------------------
@@ -889,7 +955,7 @@ local function RenderRollFrame(frame, data, rollID, isTest)
     frame.iconFrame:SetSize(iconSize, iconSize)
 
     -- Adjust frame height based on icon size
-    frame:SetHeight(CalculateFrameHeight(iconSize))
+    frame:SetHeight(CalculateFrameHeight(iconSize, frame))
 
     -- Icon
     frame.iconFrame.icon:SetTexture(data.texture)
@@ -1045,6 +1111,198 @@ local function LayoutRollFrames()
 end
 
 -------------------------------------------------------------------------------
+-- Roll tally row
+--
+-- A compact strip at the bottom of the frame: one small icon + count per roll
+-- type on the right, and the winner / own-roll overview on the left once the
+-- roll has resolved. Populated exclusively by ns.RollFrame.UpdateTally.
+-------------------------------------------------------------------------------
+
+local TALLY_ROLL_TYPE_ORDER = { ROLL_NEED, ROLL_GREED, ROLL_DISENCHANT, ROLL_PASS }
+
+local TALLY_ROLL_TYPE_ICONS = {
+    [ROLL_NEED] = NEED_ICON,
+    [ROLL_GREED] = GREED_ICON,
+    [ROLL_DISENCHANT] = DE_ICON,
+    [ROLL_PASS] = PASS_ICON,
+}
+
+-- Single source for the tally's text metric: row height and icon size are
+-- derived from it, so they cannot drift apart.
+local function GetTallyFontSize()
+    return ns.Addon.db.profile.appearance.fontSize or 12
+end
+
+local function GetTallyRowHeight()
+    return GetTallyFontSize() + TALLY_ROW_PADDING
+end
+
+-- Entry icons are squared to the text height so the strip reads as one line.
+local function GetTallyIconSize()
+    return GetTallyFontSize()
+end
+
+local function CreateTallyRow(parent)
+    local row = CreateFrame("Frame", nil, parent)
+    row:SetHeight(1)
+    row.entries = {}
+
+    row.resultText = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    row.resultText:SetPoint("LEFT", row, "LEFT", 0, 0)
+    row.resultText:SetJustifyH("LEFT")
+    row.resultText:SetWordWrap(false)
+
+    row:Hide()
+    return row
+end
+
+local function AcquireTallyEntry(row, index)
+    local entry = row.entries[index]
+    if entry then
+        return entry
+    end
+    entry = {
+        icon = row:CreateTexture(nil, "ARTWORK"),
+        text = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"),
+    }
+    row.entries[index] = entry
+    return entry
+end
+
+local function ApplyTallyAppearance(frame)
+    local row = frame.tallyRow
+    if not row then
+        return
+    end
+    local fontPath, fontSize, fontOutline = GetFont()
+    local iconSize = GetTallyIconSize()
+    row.resultText:SetFont(fontPath, fontSize, fontOutline)
+    DU.ApplyFontShadow(row.resultText, ns.Addon.db)
+    for _, entry in ipairs(row.entries) do
+        entry.text:SetFont(fontPath, fontSize, fontOutline)
+        DU.ApplyFontShadow(entry.text, ns.Addon.db)
+        entry.icon:SetSize(iconSize, iconSize)
+    end
+end
+
+-- Ordered list of { texture, label } strips. Roll types the group has not
+-- picked at all are omitted so the strip stays as short as the data allows;
+-- players who have not answered yet share one trailing text-only "?" entry.
+local function BuildTallyEntries(view)
+    local entries = {}
+    for _, rollType in ipairs(TALLY_ROLL_TYPE_ORDER) do
+        local count = view.counts and view.counts[rollType]
+        if count and count > 0 then
+            entries[#entries + 1] = { texture = TALLY_ROLL_TYPE_ICONS[rollType], label = tostring(count) }
+        end
+    end
+    if view.pending and view.pending > 0 then
+        entries[#entries + 1] = { label = "?" .. view.pending }
+    end
+    return entries
+end
+
+-- Positions only; icon sizing and fonts belong to ApplyTallyAppearance.
+local function LayoutTallyEntries(row, entries)
+    -- Anchored right-to-left so the strip always hugs the frame's bottom-right.
+    local previous
+    for i = #entries, 1, -1 do
+        local entry = entries[i]
+        local widget = AcquireTallyEntry(row, i)
+
+        widget.text:SetText(entry.label)
+        widget.text:ClearAllPoints()
+        if previous then
+            widget.text:SetPoint("RIGHT", previous, "LEFT", -TALLY_ENTRY_GAP, 0)
+        else
+            widget.text:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        end
+        widget.text:Show()
+
+        widget.icon:ClearAllPoints()
+        if entry.texture then
+            widget.icon:SetTexture(entry.texture)
+            widget.icon:SetPoint("RIGHT", widget.text, "LEFT", -TALLY_ICON_TEXT_GAP, 0)
+            widget.icon:Show()
+            previous = widget.icon
+        else
+            widget.icon:Hide()
+            previous = widget.text
+        end
+    end
+
+    for i = #entries + 1, #row.entries do
+        row.entries[i].icon:Hide()
+        row.entries[i].text:Hide()
+    end
+
+    -- Bound the non-wrapping result text against the leftmost entry so a long
+    -- winner name truncates instead of drawing over the strip. Re-anchored on
+    -- every layout because the bounding widget changes as entries come and go.
+    row.resultText:ClearAllPoints()
+    row.resultText:SetPoint("LEFT", row, "LEFT", 0, 0)
+    if previous then
+        row.resultText:SetPoint("RIGHT", previous, "LEFT", -TALLY_ENTRY_GAP, 0)
+    end
+end
+
+local function ColorizePlayerName(name, class)
+    local r, g, b = 0.7, 0.7, 0.7
+    if class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class] then
+        local cc = RAID_CLASS_COLORS[class]
+        r, g, b = cc.r, cc.g, cc.b
+    end
+    return string_format(
+        "|cff%02x%02x%02x%s|r",
+        math_floor(r * 255 + 0.5),
+        math_floor(g * 255 + 0.5),
+        math_floor(b * 255 + 0.5),
+        name
+    )
+end
+
+local function FormatRollChoice(rollType, rollValue)
+    local label = ns.RollTypeNames[rollType] or L["Unknown"]
+    if rollValue then
+        return label .. " " .. rollValue
+    end
+    return label
+end
+
+local function FormatResultText(result)
+    local text = ColorizePlayerName(result.winnerName, result.winnerClass)
+        .. " "
+        .. FormatRollChoice(result.winnerRollType, result.winnerRoll)
+    if result.selfRoll then
+        text = text
+            .. "  "
+            .. ns.COLOR_GRAY
+            .. L["You"]
+            .. ns.COLOR_RESET
+            .. " "
+            .. FormatRollChoice(result.selfRollType, result.selfRoll)
+    end
+    return text
+end
+
+-- Re-runs the layout pass that depends on the tally row's height, then restacks
+-- the visible frames because this frame just grew or shrank.
+local function RelayoutForTallyRow(frame)
+    frame:SetHeight(CalculateFrameHeight(GetRollIconSize(), frame))
+    ApplyLayoutOffsets(frame)
+    LayoutRollFrames()
+end
+
+local function HideTallyRow(frame)
+    if not frame.tallyRow or frame.tallyRowHeight == 0 then
+        return
+    end
+    frame.tallyRow:Hide()
+    frame.tallyRowHeight = 0
+    RelayoutForTallyRow(frame)
+end
+
+-------------------------------------------------------------------------------
 -- Acquire / Release frames from pool
 -------------------------------------------------------------------------------
 
@@ -1070,6 +1328,7 @@ local function ReleaseRollFrame(index)
     frame.rollID = nil
     frame.iconFrame._comparing = nil
     frame.iconFrame:SetScript("OnUpdate", nil)
+    HideTallyRow(frame)
     frame:Hide()
 end
 
@@ -1224,6 +1483,59 @@ function ns.RollFrame.ShowRoll(frameIndex, rollID)
     ns.RollAnimations.PlayShow(frame)
 end
 
+--- Switch a visible roll frame into its "voted, awaiting result" state.
+--- @param frameIndex number Pool index of the frame to update
+--- @param rollType number The roll type the local player chose
+function ns.RollFrame.MarkVoted(frameIndex, rollType)
+    local frame = rollFramePool[frameIndex]
+    if not frame or not frame:IsShown() then
+        return
+    end
+
+    SetVotedButtonState(frame.needButton, rollType == ROLL_NEED)
+    SetVotedButtonState(frame.greedButton, rollType == ROLL_GREED)
+    SetVotedButtonState(frame.disenchantButton, rollType == ROLL_DISENCHANT)
+    SetVotedButtonState(frame.transmogButton, rollType == ROLL_TRANSMOG)
+    SetVotedButtonState(frame.passButton, rollType == ROLL_PASS)
+end
+
+--- Render, or remove, the group vote tally and result overview on a roll frame.
+--- @param frameIndex number Pool index of the frame to update
+--- @param view table|nil Tally view built by ns.RollTally, shaped as
+---        { counts = { [rollType] = count }, pending = number, result = table|nil }.
+---        Pass nil to remove the tally row and shrink the frame back.
+function ns.RollFrame.UpdateTally(frameIndex, view)
+    local frame = rollFramePool[frameIndex]
+    if not frame then
+        return
+    end
+    if not view then
+        HideTallyRow(frame)
+        return
+    end
+
+    -- Nothing to say yet: no group member has been reported and no winner is
+    -- known. Claim no space rather than reserving an empty strip.
+    local entries = BuildTallyEntries(view)
+    if #entries == 0 and not view.result then
+        HideTallyRow(frame)
+        return
+    end
+
+    frame.tallyRow = frame.tallyRow or CreateTallyRow(frame)
+
+    LayoutTallyEntries(frame.tallyRow, entries)
+    frame.tallyRow.resultText:SetText(view.result and FormatResultText(view.result) or "")
+    ApplyTallyAppearance(frame)
+    frame.tallyRow:Show()
+
+    local rowHeight = GetTallyRowHeight()
+    if frame.tallyRowHeight ~= rowHeight then
+        frame.tallyRowHeight = rowHeight
+        RelayoutForTallyRow(frame)
+    end
+end
+
 function ns.RollFrame.HideRoll(frameIndex, onComplete)
     local frame = rollFramePool[frameIndex]
     if not frame or not frame:IsShown() then
@@ -1318,8 +1630,15 @@ function ns.RollFrame.ApplySettings()
             -- transmogButton defaults to hidden, matching CreateRollFrame state.
             RebuildButtonChain(frame)
 
+            -- Refresh the tally row's height first: the frame height and every
+            -- bottom-anchored offset below depend on it.
+            if frame.tallyRow and frame.tallyRow:IsShown() then
+                frame.tallyRowHeight = GetTallyRowHeight()
+                ApplyTallyAppearance(frame)
+            end
+
             -- Adjust frame height based on icon size
-            frame:SetHeight(CalculateFrameHeight(iconSize))
+            frame:SetHeight(CalculateFrameHeight(iconSize, frame))
 
             -- Update layout offsets for border thickness
             ApplyLayoutOffsets(frame)
@@ -1350,11 +1669,16 @@ function ns.RollFrame.ApplySettings()
             DU.ApplyFontShadow(frame.bindText, ns.Addon.db)
             DU.ApplyFontShadow(frame.timerBar.text, ns.Addon.db)
 
+            -- RollManager's cache is the reliable source of item data for a
+            -- frame still on screen: GetLootRollItemInfo and GetLootRollItemLink
+            -- both stop answering once the player has voted, which a held-open
+            -- frame outlives.
+            local activeRoll = frame.rollID and ns.RollManager.GetActiveRolls()[frame.rollID]
+
             -- Update quality border
             if frame.rollID and frame:IsShown() then
-                local _, _, _, quality = GetLootRollItemInfo(frame.rollID)
                 if appearance.qualityBorder then
-                    local r, g, b = DU.GetQualityColor(quality)
+                    local r, g, b = DU.GetQualityColor(activeRoll and activeRoll.itemQuality)
                     frame.iconFrame.border:SetColorTexture(r, g, b, 0.8)
                     frame.iconFrame.border:Show()
                 else
@@ -1365,7 +1689,7 @@ function ns.RollFrame.ApplySettings()
             -- Update item level overlay visibility
             if frame.iconFrame.ilvl then
                 if appearance.showItemLevel and frame.rollID and frame:IsShown() then
-                    local link = GetLootRollItemLink(frame.rollID)
+                    local link = (activeRoll and activeRoll.itemLink) or GetLootRollItemLink(frame.rollID)
                     local ilvl = link
                         and C_Item
                         and C_Item.GetDetailedItemLevelInfo

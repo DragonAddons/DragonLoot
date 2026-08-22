@@ -38,6 +38,13 @@ local function NotifyRollManager()
     end
 end
 
+-- RollTally is a no-op module on Retail, so the guard is the flavor gate too.
+local function NotifyRollTally()
+    if dlns.RollTally and dlns.RollTally.Refresh then
+        dlns.RollTally.Refresh()
+    end
+end
+
 -------------------------------------------------------------------------------
 -- Timer bar color mode values
 -------------------------------------------------------------------------------
@@ -132,6 +139,88 @@ local function CreateRollFrameSection(parent, db, yOffset, layoutWidgets, reappl
     })
     layoutWidgets[#layoutWidgets + 1] = lockToggle
     innerY = LC.AnchorWidget(lockToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    local autoConfirmToggle = W.CreateToggle(content, {
+        label = L["Skip Roll Confirmations"],
+        -- stylua: ignore
+        tooltip = L["Skip bind-on-pickup and disenchant roll confirmations. The item binds to you"
+            .. " without asking, and disenchant rolls convert the item to materials."],
+        get = function()
+            return db.profile.rollFrame.autoConfirmRolls
+        end,
+        set = function(value)
+            db.profile.rollFrame.autoConfirmRolls = value
+        end,
+    })
+    layoutWidgets[#layoutWidgets + 1] = autoConfirmToggle
+    innerY = LC.AnchorWidget(autoConfirmToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    local lingerSlider -- forward declared; only usable while keepOpenAfterVote is on
+
+    local keepOpenToggle = W.CreateToggle(content, {
+        label = L["Keep Frame After Voting"],
+        tooltip = L["Keep the roll frame visible until the roll finishes, then hide after the result delay."],
+        get = function()
+            return db.profile.rollFrame.keepOpenAfterVote
+        end,
+        set = function(value)
+            db.profile.rollFrame.keepOpenAfterVote = value
+            if lingerSlider then
+                lingerSlider:SetDisabled(not value)
+            end
+        end,
+    })
+    layoutWidgets[#layoutWidgets + 1] = keepOpenToggle
+    innerY = LC.AnchorWidget(keepOpenToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    lingerSlider = W.CreateSlider(content, {
+        label = L["Result Delay"],
+        tooltip = L["How long the roll frame stays visible after the roll finishes"],
+        min = 0,
+        max = 10,
+        step = 0.5,
+        format = "%.1f",
+        get = function()
+            return db.profile.rollFrame.resultLingerDuration
+        end,
+        set = function(value)
+            db.profile.rollFrame.resultLingerDuration = value
+        end,
+    })
+    lingerSlider:SetDisabled(not db.profile.rollFrame.keepOpenAfterVote)
+    layoutWidgets[#layoutWidgets + 1] = lingerSlider
+    innerY = LC.AnchorWidget(lingerSlider, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    reapplySubState[#reapplySubState + 1] = function()
+        lingerSlider:SetDisabled(not db.profile.rollFrame.keepOpenAfterVote)
+    end
+
+    -- The tally reads Classic's roll-item indexed C_LootHistory, which Retail
+    -- removed in 10.1.0 with no rollID-keyed replacement.
+    local isTallySupported = dlns.IsClassic and true or false
+    -- stylua: ignore
+    local tallySupportedTooltip = L["Show how many group members picked each roll option,"
+        .. " and the winning roll once the roll ends. The result summary needs Keep Frame After Voting."]
+    local tallyUnsupportedTooltip = L["Roll tally needs the Classic loot history API and is not available on Retail."]
+
+    local tallyToggle = W.CreateToggle(content, {
+        label = L["Show Roll Tally"],
+        tooltip = isTallySupported and tallySupportedTooltip or tallyUnsupportedTooltip,
+        disabled = not isTallySupported,
+        get = function()
+            return db.profile.rollFrame.showRollTally
+        end,
+        set = function(value)
+            db.profile.rollFrame.showRollTally = value
+            NotifyRollTally()
+        end,
+    })
+    -- Registering it as a layout widget would let the master enable toggle
+    -- re-enable it on Retail, where it must stay locked.
+    if isTallySupported then
+        layoutWidgets[#layoutWidgets + 1] = tallyToggle
+    end
+    innerY = LC.AnchorWidget(tallyToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     local centerHBtn = W.CreateButton(content, {
         text = L["Center Horizontally"],
