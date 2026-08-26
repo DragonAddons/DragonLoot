@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/Xerrion/DragonLoot/compare/0.15.5...0.16.0) (2026-08-22)
+
+
+### 🚀 Features
+
+* **rollframe:** more options for the item roll window ([#182](https://github.com/Xerrion/DragonLoot/issues/182)) ([1ece01f](https://github.com/Xerrion/DragonLoot/commit/1ece01f91f74fa14b06fddebe3bcabdb77732274))
+
 ## [0.15.5](https://github.com/Xerrion/DragonLoot/compare/0.15.4...0.15.5) (2026-08-19)
 
 
