@@ -57,6 +57,7 @@ local defaults = {
             frameSpacing = 4,
             frameMinHeight = 68,
             compactTextLayout = false,
+            reverseButtonOrder = false,
             iconPosition = "inside",
             iconSide = "left",
             iconOffsetX = 0,
@@ -145,7 +146,7 @@ local defaults = {
 -- Profile Migration
 -------------------------------------------------------------------------------
 
-local CURRENT_SCHEMA = 5
+local CURRENT_SCHEMA = 6
 
 local function DeepCopyValue(value)
     if type(value) ~= "table" then

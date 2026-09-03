@@ -639,6 +639,20 @@ local function CreateButtonsSection(parent, db, yOffset, layoutWidgets)
     local content = section.content
     local innerY = -LC.SECTION_PADDING_TOP
 
+    local reverseOrderToggle = W.CreateToggle(content, {
+        label = L["Reverse Button Order"],
+        tooltip = L["Reverse the complete roll button order so Pass is on the left and Need is on the right"],
+        get = function()
+            return db.profile.rollFrame.reverseButtonOrder
+        end,
+        set = function(value)
+            db.profile.rollFrame.reverseButtonOrder = value
+            NotifyRollManager()
+        end,
+    })
+    layoutWidgets[#layoutWidgets + 1] = reverseOrderToggle
+    innerY = LC.AnchorWidget(reverseOrderToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
     innerY = CreateLayoutSlider(
         content,
         db,

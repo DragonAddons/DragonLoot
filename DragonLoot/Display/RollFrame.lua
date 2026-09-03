@@ -294,26 +294,28 @@ local function CalculateFrameHeight(iconSize, frame)
     return math_max(GetFrameMinHeight(), effectiveIconSize + ROLL_FRAME_EXTRA_HEIGHT) + tallyHeight
 end
 
+local function GetRollActionButtons(frame)
+    local middleButton = frame.transmogButton:IsShown() and frame.transmogButton or frame.greedButton
+    local rollFrameDB = GetRollFrameDB()
+    if rollFrameDB and rollFrameDB.reverseButtonOrder then
+        return { frame.passButton, frame.disenchantButton, middleButton, frame.needButton }
+    end
+    return { frame.needButton, middleButton, frame.disenchantButton, frame.passButton }
+end
+
 local function ApplyTextLayoutOffsets(frame, compact, iconSize, padding, borderSize, rowSpacing)
     local contentLeftInset = GetRollContentLeftInset(iconSize, padding, borderSize)
+    local leftmostButton = frame.rollActionButtons[1]
+    local rightmostButton = frame.rollActionButtons[#frame.rollActionButtons]
     -- Item name top-left anchor (shared by both modes)
     frame.itemName:ClearAllPoints()
     frame.itemName:SetPoint("TOPLEFT", frame, "TOPLEFT", contentLeftInset, -(padding + borderSize))
 
     if compact then
         -- Compact: buttons sit on the same row as the item name
-        frame.passButton:ClearAllPoints()
-        frame.passButton:SetPoint(
-            "RIGHT",
-            frame,
-            "RIGHT",
-            -(GetRollContentRightInset(iconSize, padding, borderSize)),
-            0
-        )
-        frame.passButton:SetPoint("TOP", frame, "TOP", 0, -(padding + borderSize))
-
-        -- needButton is always the leftmost button (transmog occupies greed's slot to the right).
-        local leftmostButton = frame.needButton
+        rightmostButton:ClearAllPoints()
+        rightmostButton:SetPoint("RIGHT", frame, "RIGHT", -(GetRollContentRightInset(iconSize, padding, borderSize)), 0)
+        rightmostButton:SetPoint("TOP", frame, "TOP", 0, -(padding + borderSize))
 
         if frame.bindText:IsShown() then
             -- bindText sits to the left of the buttons
@@ -334,8 +336,8 @@ local function ApplyTextLayoutOffsets(frame, compact, iconSize, padding, borderS
         frame.bindText:ClearAllPoints()
         frame.bindText:SetPoint("TOPLEFT", frame.itemName, "BOTTOMLEFT", 0, -rowSpacing)
 
-        frame.passButton:ClearAllPoints()
-        frame.passButton:SetPoint("TOPRIGHT", frame.itemName, "BOTTOMRIGHT", 0, -rowSpacing)
+        rightmostButton:ClearAllPoints()
+        rightmostButton:SetPoint("TOPRIGHT", frame.itemName, "BOTTOMRIGHT", 0, -rowSpacing)
     end
 end
 
@@ -792,6 +794,8 @@ local function CreateRollFrame(index)
     end
     frame.transmogButton:Hide()
 
+    frame.rollActionButtons = GetRollActionButtons(frame)
+
     frame.frameIndex = index
     frame.tallyRowHeight = 0
     return frame
@@ -901,37 +905,17 @@ local function BuildTestRollData(testEntry)
     }
 end
 
--------------------------------------------------------------------------------
--- Re-anchor the roll button chain based on current greed/transmog visibility.
--- When transmog is shown (greed's slot), the chain is:
---   need <- transmog <- disenchant <- pass
--- When greed is shown (normal), the chain is:
---   need <- greed <- disenchant <- pass
--------------------------------------------------------------------------------
-
 local function RebuildButtonChain(frame)
     local btnSpacing = GetButtonSpacing()
-    -- disenchant always anchors off pass
-    frame.disenchantButton:ClearAllPoints()
-    frame.disenchantButton:SetPoint("RIGHT", frame.passButton, "LEFT", -btnSpacing, 0)
+    local buttons = GetRollActionButtons(frame)
 
-    -- greed/transmog share the slot between disenchant and need
-    -- transmogButton is always created in CreateRollFrame; nil guard is unnecessary.
-    -- IsShown() (not IsVisible()) is intentional: parent frame may be hidden,
-    -- but we need to know whether transmog was set for this roll's data.
-    if frame.transmogButton:IsShown() then
-        -- transmog occupies greed's slot
-        frame.transmogButton:ClearAllPoints()
-        frame.transmogButton:SetPoint("RIGHT", frame.disenchantButton, "LEFT", -btnSpacing, 0)
-        frame.needButton:ClearAllPoints()
-        frame.needButton:SetPoint("RIGHT", frame.transmogButton, "LEFT", -btnSpacing, 0)
-    else
-        -- greed in its normal slot
-        frame.greedButton:ClearAllPoints()
-        frame.greedButton:SetPoint("RIGHT", frame.disenchantButton, "LEFT", -btnSpacing, 0)
-        frame.needButton:ClearAllPoints()
-        frame.needButton:SetPoint("RIGHT", frame.greedButton, "LEFT", -btnSpacing, 0)
+    for _, button in ipairs(buttons) do
+        button:ClearAllPoints()
     end
+    for index = #buttons - 1, 1, -1 do
+        buttons[index]:SetPoint("RIGHT", buttons[index + 1], "LEFT", -btnSpacing, 0)
+    end
+    frame.rollActionButtons = buttons
 end
 
 -------------------------------------------------------------------------------

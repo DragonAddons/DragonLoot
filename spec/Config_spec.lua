@@ -41,7 +41,7 @@ describe("Config", function()
             local db = initWithSeed(ns, nil)
 
             -- Keep in sync with CURRENT_SCHEMA in DragonLoot/Core/Config.lua
-            assert.are.equal(5, db.profile.schemaVersion)
+            assert.are.equal(6, db.profile.schemaVersion)
         end)
 
         it("has lootIconSize in a fresh profile", function()
@@ -79,6 +79,12 @@ describe("Config", function()
             local db = initWithSeed(ns, nil)
 
             assert.is_false(db.profile.rollFrame.showRollTally)
+        end)
+
+        it("defaults rollFrame.reverseButtonOrder to false", function()
+            local db = initWithSeed(ns, nil)
+
+            assert.is_false(db.profile.rollFrame.reverseButtonOrder)
         end)
     end)
 
@@ -215,6 +221,28 @@ describe("Config", function()
 
             assert.is_true(db.profile.rollFrame.showRollTally)
         end)
+
+        it("back-fills missing rollFrame.reverseButtonOrder with false", function()
+            local db = initWithSeed(ns, {
+                schemaVersion = 5,
+                rollFrame = {
+                    enabled = true,
+                },
+            })
+
+            assert.is_false(db.profile.rollFrame.reverseButtonOrder)
+        end)
+
+        it("preserves an opted-in rollFrame.reverseButtonOrder", function()
+            local db = initWithSeed(ns, {
+                schemaVersion = 5,
+                rollFrame = {
+                    reverseButtonOrder = true,
+                },
+            })
+
+            assert.is_true(db.profile.rollFrame.reverseButtonOrder)
+        end)
     end)
 
     ---------------------------------------------------------------------------
@@ -276,7 +304,7 @@ describe("Config", function()
                     -- Seed at current schema so FillMissingDefaults is skipped and the
                     -- (unconditional) iconSize-split migration can propagate iconSize=48.
                     -- Keep in sync with CURRENT_SCHEMA in DragonLoot/Core/Config.lua.
-                    schemaVersion = 5,
+                    schemaVersion = 6,
                     appearance = {
                         iconSize = 48,
                         -- lootIconSize intentionally absent to test migration propagation
@@ -300,7 +328,7 @@ describe("Config", function()
             })
 
             -- Keep in sync with CURRENT_SCHEMA in DragonLoot/Core/Config.lua
-            assert.are.equal(5, db.profile.schemaVersion)
+            assert.are.equal(6, db.profile.schemaVersion)
         end)
     end)
 end)
