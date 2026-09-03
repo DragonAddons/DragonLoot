@@ -14,6 +14,8 @@ local _, ns = ...
 local GetTime = GetTime
 local GetLootRollItemInfo = GetLootRollItemInfo
 local GetLootRollItemLink = GetLootRollItemLink
+local RollOnLoot = RollOnLoot
+local StaticPopup_Show = StaticPopup_Show
 local UnitName = UnitName
 local UnitClass = UnitClass
 local max = math.max
@@ -109,6 +111,53 @@ local function GetResultLingerDuration()
     return (settings and settings.resultLingerDuration) or DEFAULT_RESULT_LINGER_SECONDS
 end
 
+local function ShouldConfirmSelection(rollType)
+    local settings = GetRollFrameSettings()
+    if not settings or not settings.confirmGreedAndPass then
+        return false
+    end
+    return rollType == ROLL_TYPE_GREED or rollType == ROLL_TYPE_PASS
+end
+
+local function ClearSelectionConfirmation(roll, dialog)
+    if not roll or roll.selectionConfirmationDialog ~= dialog then
+        return false
+    end
+    roll.pendingSelectionRollType = nil
+    roll.selectionConfirmationDialog = nil
+    return true
+end
+
+local function DismissSelectionConfirmation(roll)
+    local dialog = roll and roll.selectionConfirmationDialog
+    if not dialog then
+        return
+    end
+    dialog.data = nil
+    roll.pendingSelectionRollType = nil
+    roll.selectionConfirmationDialog = nil
+    dialog:Hide()
+end
+
+local function DismissOtherSelectionConfirmations(rollID)
+    for activeRollID, activeRoll in pairs(activeRolls) do
+        if activeRollID ~= rollID then
+            DismissSelectionConfirmation(activeRoll)
+        end
+    end
+end
+
+local function SubmitRollSelection(rollID, rollType)
+    local roll = activeRolls[rollID]
+    if not roll or not roll.frameIndex or roll.heldAfterVote then
+        return
+    end
+
+    ns.RollManager.MarkPendingHide(rollID)
+    RollOnLoot(rollID, rollType)
+    ns.RollManager.TryHideAfterVote(rollID, rollType)
+end
+
 -------------------------------------------------------------------------------
 -- StaticPopup for roll confirmations (shared by Retail and Classic listeners)
 -------------------------------------------------------------------------------
@@ -123,6 +172,35 @@ StaticPopupDialogs["DRAGONLOOT_CONFIRM_LOOT_ROLL"] = {
         end
         ConfirmLootRoll(self.data.rollID, self.data.rollType)
         ApplyPostVoteDisplay(self.data.rollID, self.data.rollType)
+    end,
+    timeout = 0,
+    whileDead = 1,
+    hideOnEscape = 1,
+}
+
+StaticPopupDialogs["DRAGONLOOT_CONFIRM_ROLL_SELECTION"] = {
+    text = L["Are you sure you want to choose %s for %s?"],
+    button1 = YES,
+    button2 = NO,
+    OnAccept = function(self)
+        local data = self.data
+        self.data = nil
+        if not data then
+            return
+        end
+        local roll = activeRolls[data.rollID]
+        if not ClearSelectionConfirmation(roll, self) then
+            return
+        end
+        SubmitRollSelection(data.rollID, data.rollType)
+    end,
+    OnCancel = function(self)
+        local data = self.data
+        self.data = nil
+        if not data then
+            return
+        end
+        ClearSelectionConfirmation(activeRolls[data.rollID], self)
     end,
     timeout = 0,
     whileDead = 1,
@@ -632,6 +710,8 @@ function ns.RollManager.CancelRoll(rollID)
         local lifecycleToken = LifecycleUtil.CaptureToken(lifecycleState)
         local frameIndex = roll.frameIndex
 
+        DismissSelectionConfirmation(roll)
+
         activeRolls[rollID] = nil
         notifiedRolls[rollID] = nil
 
@@ -667,6 +747,7 @@ end
 
 function ns.RollManager.CancelAllRolls()
     for rollID, roll in pairs(activeRolls) do
+        DismissSelectionConfirmation(roll)
         activeRolls[rollID] = nil
         if roll.frameIndex then
             ReleaseFrameIndex(roll.frameIndex)
@@ -734,6 +815,37 @@ end
 
 function ns.RollManager.IsNotified(rollID)
     return notifiedRolls[rollID] or false
+end
+
+function ns.RollManager.RequestRollSelection(rollID, rollType)
+    local roll = activeRolls[rollID]
+    if not roll or not roll.frameIndex or roll.heldAfterVote then
+        return
+    end
+
+    if roll.selectionConfirmationDialog then
+        if roll.pendingSelectionRollType == rollType then
+            return
+        end
+        DismissSelectionConfirmation(roll)
+    end
+
+    if not ShouldConfirmSelection(rollType) then
+        SubmitRollSelection(rollID, rollType)
+        return
+    end
+
+    local rollTypeName = ns.RollTypeNames[rollType] or L["Unknown"]
+    local itemName = roll.itemName or L["Unknown"]
+    DismissOtherSelectionConfirmations(rollID)
+    local dialog = StaticPopup_Show("DRAGONLOOT_CONFIRM_ROLL_SELECTION", rollTypeName, itemName)
+    if not dialog then
+        return
+    end
+
+    roll.pendingSelectionRollType = rollType
+    roll.selectionConfirmationDialog = dialog
+    dialog.data = { rollID = rollID, rollType = rollType }
 end
 
 function ns.RollManager.MarkPendingHide(rollID)

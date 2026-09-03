@@ -239,6 +239,11 @@ L["Show roll notifications while in raids"] = true
 L["Show roll notifications while in the open world"] = true
 L["Size of Need/Greed/Pass buttons"] = true
 L["Skip Roll Confirmations"] = true
+L["Confirm Greed and Pass"] = true
+-- stylua: ignore
+L["Ask before submitting Greed or Pass from DragonLoot's roll frame."
+    .. " This does not change confirmations required by Blizzard."] = true
+L["Are you sure you want to choose %s for %s?"] = true
 -- stylua: ignore
 L["Skip bind-on-pickup and disenchant roll confirmations. The item binds to you"
     .. " without asking, and disenchant rolls convert the item to materials."] = true
