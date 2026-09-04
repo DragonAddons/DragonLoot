@@ -36,6 +36,7 @@ local defaults = {
             scale = 1.0,
             lock = false,
             autoConfirmRolls = false,
+            confirmGreedAndPass = false,
             keepOpenAfterVote = false,
             resultLingerDuration = 3,
             showRollTally = false,
@@ -144,7 +145,7 @@ local defaults = {
 -- Profile Migration
 -------------------------------------------------------------------------------
 
-local CURRENT_SCHEMA = 4
+local CURRENT_SCHEMA = 5
 
 local function DeepCopyValue(value)
     if type(value) ~= "table" then
@@ -245,10 +246,8 @@ local function MigrateProfile(db)
         end
     end
 
-    -- v3 -> v4: introduce db.char.history.entries for persistent loot history (issue #104).
-    -- No profile data needs transformation - the new char scope is added by AceDB's defaults
-    -- handling when InitializeDB passes the updated defaults table to AceDB:New. The schema
-    -- bump is recorded by the unconditional assignment to profile.schemaVersion below.
+    -- v3 -> v4 introduced db.char.history.entries. AceDB applies that char-scope
+    -- default when InitializeDB creates the database, so no profile transform is needed.
 
     profile.schemaVersion = CURRENT_SCHEMA
 end

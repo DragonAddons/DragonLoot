@@ -22,7 +22,6 @@ local ShoppingTooltip2 = ShoppingTooltip2
 local UIParent = UIParent
 local GetLootRollItemInfo = GetLootRollItemInfo
 local GetLootRollItemLink = GetLootRollItemLink
-local RollOnLoot = RollOnLoot
 local HandleModifiedItemClick = HandleModifiedItemClick
 local C_Texture = C_Texture
 local C_Item = C_Item
@@ -494,14 +493,7 @@ local function OnRollButtonClick(self)
         return
     end
     if frame.rollID then
-        -- Mark pending hide BEFORE RollOnLoot; synchronous CONFIRM_LOOT_ROLL
-        -- will clear the flag if a confirmation popup is needed.
-        ns.RollManager.MarkPendingHide(frame.rollID)
-
-        RollOnLoot(frame.rollID, self.rollType)
-
-        -- Hide now unless CONFIRM_LOOT_ROLL intercepted (flag cleared)
-        ns.RollManager.TryHideAfterVote(frame.rollID, self.rollType)
+        ns.RollManager.RequestRollSelection(frame.rollID, self.rollType)
     end
 end
 

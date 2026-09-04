@@ -155,6 +155,21 @@ local function CreateRollFrameSection(parent, db, yOffset, layoutWidgets, reappl
     layoutWidgets[#layoutWidgets + 1] = autoConfirmToggle
     innerY = LC.AnchorWidget(autoConfirmToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
+    local confirmGreedAndPassToggle = W.CreateToggle(content, {
+        label = L["Confirm Greed and Pass"],
+        -- stylua: ignore
+        tooltip = L["Ask before submitting Greed or Pass from DragonLoot's roll frame."
+            .. " This does not change confirmations required by Blizzard."],
+        get = function()
+            return db.profile.rollFrame.confirmGreedAndPass
+        end,
+        set = function(value)
+            db.profile.rollFrame.confirmGreedAndPass = value
+        end,
+    })
+    layoutWidgets[#layoutWidgets + 1] = confirmGreedAndPassToggle
+    innerY = LC.AnchorWidget(confirmGreedAndPassToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
     local lingerSlider -- forward declared; only usable while keepOpenAfterVote is on
 
     local keepOpenToggle = W.CreateToggle(content, {

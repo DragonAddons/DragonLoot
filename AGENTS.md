@@ -66,6 +66,7 @@ The repository is structured as a multi-addon project separating core logic, con
 | scale                    | number  | 1.0                     |
 | lock                     | boolean | false                   |
 | autoConfirmRolls         | boolean | false                   |
+| confirmGreedAndPass      | boolean | false                   |
 | keepOpenAfterVote        | boolean | false                   |
 | resultLingerDuration     | number  | 3                       |
 | showRollTally            | boolean | false                   |
@@ -94,7 +95,7 @@ The repository is structured as a multi-addon project separating core logic, con
 | timerBarStyle            | string  | "normal"                |
 | timerBarMinimalHeight    | number  | 3                       |
 
-`resultLingerDuration` applies only when `keepOpenAfterVote` is enabled. `showRollTally` is available only on Classic (TBC/MoP); Retail removed `C_LootHistory.GetItem` and `GetPlayerInfo` in patch 10.1.0.
+`confirmGreedAndPass` asks for confirmation before Greed or Pass is submitted. `resultLingerDuration` applies only when `keepOpenAfterVote` is enabled. `showRollTally` is available only on Classic (TBC/MoP); Retail removed `C_LootHistory.GetItem` and `GetPlayerInfo` in patch 10.1.0.
 
 ### History (`db.profile.history`)
 

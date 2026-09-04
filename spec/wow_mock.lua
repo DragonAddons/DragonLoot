@@ -109,6 +109,35 @@ StaticPopupDialogs = {}
 
 function ConfirmLootRoll() end
 
+M._rollSubmissions = {}
+
+function RollOnLoot(rollID, rollType)
+    M._rollSubmissions[#M._rollSubmissions + 1] = { rollID = rollID, rollType = rollType }
+end
+
+M._popupDialogs = {}
+
+function StaticPopup_Show(which, textArg1, textArg2)
+    local dialog = {
+        which = which,
+        textArg1 = textArg1,
+        textArg2 = textArg2,
+        Hide = function(self)
+            self.hidden = true
+        end,
+    }
+    M._popupDialogs[#M._popupDialogs + 1] = dialog
+    return dialog
+end
+
+function M.AcceptPopup(dialog)
+    _G.StaticPopupDialogs[dialog.which].OnAccept(dialog)
+end
+
+function M.CancelPopup(dialog)
+    _G.StaticPopupDialogs[dialog.which].OnCancel(dialog)
+end
+
 function GetLootRollItemInfo()
     return 12345, "Test Item", 1, 4
 end
@@ -525,6 +554,9 @@ function M.Reset()
 
     M._lootHistory.items = {}
     M._lootHistory.players = {}
+
+    M._rollSubmissions = {}
+    M._popupDialogs = {}
 
     M._group.numRaid = 0
     M._group.numParty = 0
