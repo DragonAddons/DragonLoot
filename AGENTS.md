@@ -87,6 +87,7 @@ The repository is structured as a multi-addon project separating core logic, con
 | frameSpacing             | number  | 4                       |
 | frameMinHeight           | number  | 68                      |
 | compactTextLayout        | boolean | false                   |
+| reverseButtonOrder       | boolean | false                   |
 | iconPosition             | string  | "inside"                |
 | iconSide                 | string  | "left"                  |
 | iconOffsetX              | number  | 0                       |
@@ -95,7 +96,7 @@ The repository is structured as a multi-addon project separating core logic, con
 | timerBarStyle            | string  | "normal"                |
 | timerBarMinimalHeight    | number  | 3                       |
 
-`confirmGreedAndPass` asks for confirmation before Greed or Pass is submitted. `resultLingerDuration` applies only when `keepOpenAfterVote` is enabled. `showRollTally` is available only on Classic (TBC/MoP); Retail removed `C_LootHistory.GetItem` and `GetPlayerInfo` in patch 10.1.0.
+`confirmGreedAndPass` asks for confirmation before Greed or Pass is submitted. `reverseButtonOrder` reverses the roll action button order. `resultLingerDuration` applies only when `keepOpenAfterVote` is enabled. `showRollTally` is available only on Classic (TBC/MoP); Retail removed `C_LootHistory.GetItem` and `GetPlayerInfo` in patch 10.1.0.
 
 ### History (`db.profile.history`)
 
