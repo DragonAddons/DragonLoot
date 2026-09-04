@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.17.0](https://github.com/Xerrion/DragonLoot/compare/0.16.0...0.17.0) (2026-09-04)
+
+
+### 🚀 Features
+
+* **rollframe:** configurable reversed roll-button order ([#187](https://github.com/Xerrion/DragonLoot/issues/187)) ([84e4d19](https://github.com/Xerrion/DragonLoot/commit/84e4d19de8d2d85d5cb81d68519dd36c7a3b4ae3))
+* **rollframe:** optional confirmation for Greed and Pass rolls ([#186](https://github.com/Xerrion/DragonLoot/issues/186)) ([b8cbf0f](https://github.com/Xerrion/DragonLoot/commit/b8cbf0fb1e2cdba8574613449ad6d8f15ad8680a))
+
 ## [0.16.0](https://github.com/Xerrion/DragonLoot/compare/0.15.5...0.16.0) (2026-08-22)
 
 
