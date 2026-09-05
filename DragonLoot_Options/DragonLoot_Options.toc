@@ -7,6 +7,7 @@
 ## Version: @project-version@
 ## Dependencies: DragonLoot
 ## LoadOnDemand: 1
+## IconTexture: Interface\AddOns\DragonLoot\DragonLoot_Icon
 
 ## DragonWidgets embedded library
 Libs\DragonWidgets\DragonWidgets\DragonWidgets.lua
