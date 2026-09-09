@@ -8,8 +8,8 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/Xerrion/DragonLoot?style=for-the-badge)](https://github.com/Xerrion/DragonLoot/releases/latest)
 [![License](https://img.shields.io/github/license/Xerrion/DragonLoot?style=for-the-badge)](https://github.com/Xerrion/DragonLoot/blob/master/LICENSE)
-[![CurseForge](https://img.shields.io/badge/CurseForge-1472582-f16436?style=for-the-badge&logo=curseforge)](https://www.curseforge.com/wow/addons/dragonloot)
-[![Wago](https://img.shields.io/badge/Wago-qKQmADKx-c0392b?style=for-the-badge&logo=wago)](https://addons.wago.io/addons/dragonloot)
+[![CurseForge](https://img.shields.io/badge/CurseForge-1472582-f16436?style=for-the-badge&logo=curseforge)](https://www.curseforge.com/wow/addons/dragon-loot)
+[![Wago](https://img.shields.io/badge/Wago-qKQmADKx-c0392b?style=for-the-badge&logo=wago)](https://addons.wago.io/addons/dragon-loot)
 [![WoW Versions](https://img.shields.io/badge/WoW-Retail%20%7C%20MoP%20Classic%20%7C%20TBC%20Anniversary-blue?style=for-the-badge&logo=battledotnet)](https://worldofwarcraft.blizzard.com/)
 [![Lint](https://img.shields.io/github/actions/workflow/status/Xerrion/DragonLoot/lint.yml?style=for-the-badge&label=luacheck)](https://github.com/Xerrion/DragonLoot/actions)
 
@@ -48,8 +48,8 @@ adds a dedicated loot history panel for tracking drops and winners.
 
 Available on major platforms:
 
-- [**CurseForge**](https://www.curseforge.com/wow/addons/dragonloot)
-- [**Wago.io**](https://addons.wago.io/addons/dragonloot)
+- [**CurseForge**](https://www.curseforge.com/wow/addons/dragon-loot)
+- [**Wago.io**](https://addons.wago.io/addons/dragon-loot)
 - [**GitHub Releases**](https://github.com/Xerrion/DragonLoot/releases/latest)
 
 ### Manual Install
