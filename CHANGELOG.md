@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.18.0](https://github.com/Xerrion/DragonLoot/compare/0.17.0...0.18.0) (2026-09-09)
+
+
+### 🚀 Features
+
+* **config:** add login message toggle ([#190](https://github.com/Xerrion/DragonLoot/issues/190)) ([#195](https://github.com/Xerrion/DragonLoot/issues/195)) ([d0b8f1b](https://github.com/Xerrion/DragonLoot/commit/d0b8f1bd71abfc72c69ffefe908402d71fd4b0c6))
+
+
+### 🐛 Bug Fixes
+
+* **config:** add addon icon to DragonLoot Options TOC ([#191](https://github.com/Xerrion/DragonLoot/issues/191)) ([3a208b0](https://github.com/Xerrion/DragonLoot/commit/3a208b00e15d87b6806b8af354a99eaed3504995))
+* correct CurseForge and Wago download links ([#193](https://github.com/Xerrion/DragonLoot/issues/193)) ([#194](https://github.com/Xerrion/DragonLoot/issues/194)) ([59fb38e](https://github.com/Xerrion/DragonLoot/commit/59fb38e3d168ec9a7a2c294ee9e9ee6afb909297))
+
 ## [0.17.0](https://github.com/Xerrion/DragonLoot/compare/0.16.0...0.17.0) (2026-09-04)
 
 
