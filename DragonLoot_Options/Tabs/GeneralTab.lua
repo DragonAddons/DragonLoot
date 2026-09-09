@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 -- GeneralTab.lua
--- General settings tab: enabled, minimap icon, debug mode
+-- General settings tab: addon state, login message, minimap icon, debug mode
 --
 -- Supported versions: Retail, MoP Classic, TBC Anniversary, Cata, Classic
 -------------------------------------------------------------------------------
@@ -60,6 +60,19 @@ local function CreateContent(parent)
         end,
     })
     innerY = LC.AnchorWidget(enableToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
+
+    -- Toggle: Show Login Message
+    local loginMessageToggle = W.CreateToggle(content, {
+        label = L["Show the login message"],
+        tooltip = L["Show DragonLoot's loaded message in chat after login or a UI reload."],
+        get = function()
+            return db.profile.showLoginMessage
+        end,
+        set = function(value)
+            db.profile.showLoginMessage = value
+        end,
+    })
+    innerY = LC.AnchorWidget(loginMessageToggle, content, innerY) - LC.SPACING_BETWEEN_WIDGETS
 
     -- Toggle: Show Minimap Icon
     local minimapToggle = W.CreateToggle(content, {

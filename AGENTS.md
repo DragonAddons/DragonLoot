@@ -28,6 +28,14 @@ The repository is structured as a multi-addon project separating core logic, con
 
 ## Config Schema Reference
 
+### General (`db.profile`)
+
+| Key              | Type    | Default |
+| ---------------- | ------- | ------- |
+| enabled          | boolean | true    |
+| debug            | boolean | false   |
+| showLoginMessage | boolean | true    |
+
 ### Appearance (`db.profile.appearance`)
 
 | Key               | Type    | Default                |

@@ -320,7 +320,9 @@ function Addon:OnInitialize()
         ns.MinimapIcon.Initialize()
     end
 
-    ns.Print(L["Loaded. Type /dl help for commands."])
+    if self.db.profile.showLoginMessage then
+        ns.Print(L["Loaded. Type /dl help for commands."])
+    end
 end
 
 function Addon:OnEnable()

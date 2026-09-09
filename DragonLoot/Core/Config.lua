@@ -15,6 +15,7 @@ local defaults = {
     profile = {
         enabled = true,
         debug = false,
+        showLoginMessage = true,
 
         minimap = {
             hide = false,
@@ -146,7 +147,7 @@ local defaults = {
 -- Profile Migration
 -------------------------------------------------------------------------------
 
-local CURRENT_SCHEMA = 6
+local CURRENT_SCHEMA = 7
 
 local function DeepCopyValue(value)
     if type(value) ~= "table" then
