@@ -170,7 +170,9 @@ L["Enable DragonLoot"] = true
 L["Enable or disable the DragonLoot addon"] = true
 L["Enable verbose debug output in chat"] = true
 L["General"] = true
+L["Show DragonLoot's loaded message in chat after login or a UI reload."] = true
 L["Show Minimap Icon"] = true
+L["Show the login message"] = true
 L["Show or hide the minimap button"] = true
 
 -- DragonLoot_Options/Tabs/LootWindowTab.lua
